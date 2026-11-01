@@ -136,7 +136,7 @@ class AppState extends ChangeNotifier {
   /// wins); at app start the newer side wins so offline edits are not lost.
   Future<void> syncAfterLogin({bool preferRemote = false}) async {
     final c = cloud;
-    if (c == null || !signedIn) return;
+    if (c == null || !signedIn || syncing) return;
     syncing = true;
     notifyListeners();
     try {
@@ -179,6 +179,48 @@ class AppState extends ChangeNotifier {
       notifyListeners();
     }
     return r;
+  }
+
+  /// Checks the code the user got by email. Success signs the user in.
+  Future<AuthOutcome> verifyCode(String email, String code) async {
+    final c = cloud;
+    if (c == null) return const AuthOutcome(error: 'Cloud sync is not set up.');
+    final r = await c.verifyEmailCode(email, code);
+    if (r.error == null) {
+      guestMode = false;
+      await syncAfterLogin(preferRemote: true);
+      notifyListeners();
+    }
+    return r;
+  }
+
+  Future<AuthOutcome> resendCode(String email) async {
+    final c = cloud;
+    if (c == null) return const AuthOutcome(error: 'Cloud sync is not set up.');
+    return c.resendCode(email);
+  }
+
+  Future<AuthOutcome> signInWithGoogle() async {
+    final c = cloud;
+    if (c == null) return const AuthOutcome(error: 'Cloud sync is not set up.');
+    return c.signInWithGoogle();
+  }
+
+  StreamSubscription<void>? _signedInSub;
+  StreamSubscription<void>? _anyAuthSub;
+
+  /// Reacts to logins that finish outside the app screen, like Google
+  /// sign-in coming back through the deep link, and to sign-outs.
+  void listenAuth() {
+    final c = cloud;
+    if (c == null) return;
+    _signedInSub?.cancel();
+    _anyAuthSub?.cancel();
+    _signedInSub = c.signedInEvents.listen((_) {
+      guestMode = false;
+      syncAfterLogin(preferRemote: true);
+    });
+    _anyAuthSub = c.anyAuthEvents.listen((_) => notifyListeners());
   }
 
   Future<void> signOut() async {

@@ -19,6 +19,7 @@ Future<void> main() async {
   if (cloudEnabled) {
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
     state.cloud = CloudSync();
+    state.listenAuth();
     // Already signed in from a previous run: merge cloud data in the background.
     unawaited(state.syncAfterLogin());
   }

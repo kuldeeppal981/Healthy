@@ -47,6 +47,18 @@ jobs:
           )
           if 'android.permission.CAMERA' not in s:
               s = re.sub(r'(<manifest[^>]*>)', r'\1' + perms, s, count=1)
+          # Deep link so Google sign-in can return to the app.
+          if 'login-callback' not in s:
+              link = (
+                  '\n            <meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>'
+                  '\n            <intent-filter>'
+                  '\n                <action android:name="android.intent.action.VIEW"/>'
+                  '\n                <category android:name="android.intent.category.DEFAULT"/>'
+                  '\n                <category android:name="android.intent.category.BROWSABLE"/>'
+                  '\n                <data android:scheme="io.supabase.healthy" android:host="login-callback"/>'
+                  '\n            </intent-filter>'
+              )
+              s = s.replace('</activity>', link + '\n        </activity>', 1)
           open(p, 'w', encoding='utf-8').write(s)
           EOF
 

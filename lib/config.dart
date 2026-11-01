@@ -9,4 +9,8 @@ const supabaseUrl = String.fromEnvironment(
 );
 const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
+/// Where Google sign-in sends the user back to the app (Android deep link).
+/// Add the same value in Supabase: Authentication, URL Configuration, Redirect URLs.
+const oauthRedirect = 'io.supabase.healthy://login-callback/';
+
 bool get cloudEnabled => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;

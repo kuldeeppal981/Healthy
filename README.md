@@ -51,7 +51,7 @@ Theme: bright purple, font: Outfit. UI language: English.
 
 ## Accounts and cloud backup (Supabase)
 
-Each user signs in with email and password, and their data is saved to their own account.
+Users register with email and password, confirm with a code sent by email, or continue with Google. Their data is saved to their own account.
 The app keeps working offline and syncs to the cloud a couple of seconds after each change.
 
 1. In Supabase, open SQL Editor and run `supabase/schema.sql` once (creates the `user_data` table with
@@ -78,3 +78,14 @@ Note: the cloud copy is one JSON snapshot per user for now. Splitting it into se
 
 Note: this code was written without being compiled in the build environment, so expect to fix a few
 small errors on the first `flutter run`.
+
+### Email code and Google sign-in
+
+1. Supabase, Authentication, Email Templates, "Confirm signup": put `Your code is {{ .Token }}` in the
+   body (remove the confirmation link). Keep "Confirm email" ON.
+2. Authentication, URL Configuration: set Site URL to something real (not localhost) and add the
+   redirect URL `io.supabase.healthy://login-callback/`.
+3. Google: create an OAuth Web client in Google Cloud, set its redirect URI to
+   `https://<project>.supabase.co/auth/v1/callback`, then enable Google under Authentication, Providers
+   and paste the client id and secret.
+4. Supabase's built-in email sender is rate limited; add custom SMTP before launch.
