@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'screens/app_shell.dart';
 import 'services/cloud_sync.dart';
+import 'services/reminder_service.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
 
@@ -23,6 +24,9 @@ Future<void> main() async {
     // Already signed in from a previous run: merge cloud data in the background.
     unawaited(state.syncAfterLogin());
   }
+
+  await ReminderService.instance.init();
+  unawaited(ReminderService.instance.reschedule(state));
 
   runApp(
     ChangeNotifierProvider<AppState>.value(

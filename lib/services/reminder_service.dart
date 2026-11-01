@@ -1,0 +1,185 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
+
+import '../state/app_state.dart';
+
+class Reminder {
+  bool enabled;
+  TimeOfDay time;
+
+  Reminder(this.enabled, this.time);
+
+  Map<String, dynamic> toJson() =>
+      {'on': enabled, 'h': time.hour, 'm': time.minute};
+
+  static Reminder fromJson(Object? j, Reminder fallback) {
+    if (j is! Map) return fallback;
+    return Reminder(
+      j['on'] as bool? ?? fallback.enabled,
+      TimeOfDay(
+        hour: (j['h'] as num?)?.toInt() ?? fallback.time.hour,
+        minute: (j['m'] as num?)?.toInt() ?? fallback.time.minute,
+      ),
+    );
+  }
+}
+
+/// Local reminders on this phone: meals, water and workout days.
+/// They are device settings, so they are not part of the cloud backup.
+class ReminderService {
+  ReminderService._();
+  static final instance = ReminderService._();
+
+  final _plugin = FlutterLocalNotificationsPlugin();
+  bool _ready = false;
+
+  Reminder breakfast = Reminder(false, const TimeOfDay(hour: 8, minute: 30));
+  Reminder lunch = Reminder(false, const TimeOfDay(hour: 13, minute: 0));
+  Reminder dinner = Reminder(false, const TimeOfDay(hour: 20, minute: 0));
+  Reminder workout = Reminder(false, const TimeOfDay(hour: 18, minute: 0));
+  bool water = false;
+  int waterEveryHours = 2; // between 9:00 and 21:00
+
+  static const _channel = AndroidNotificationDetails(
+    'reminders',
+    'Reminders',
+    channelDescription: 'Meal, water and workout reminders',
+    importance: Importance.high,
+    priority: Priority.high,
+  );
+  static const _details = NotificationDetails(android: _channel);
+
+  Future<void> init() async {
+    if (_ready) return;
+    try {
+      tzdata.initializeTimeZones();
+      try {
+        final name = await FlutterTimezone.getLocalTimezone();
+        tz.setLocalLocation(tz.getLocation(name));
+      } catch (_) {
+        tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+      }
+      await _plugin.initialize(const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ));
+      await _load();
+      _ready = true;
+    } catch (_) {
+      _ready = false;
+    }
+  }
+
+  bool get available => _ready;
+
+  Future<bool> askPermission() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return await android?.requestNotificationsPermission() ?? true;
+  }
+
+  Future<void> _load() async {
+    final raw = (await SharedPreferences.getInstance()).getString('reminders');
+    if (raw == null) return;
+    final j = jsonDecode(raw) as Map<String, dynamic>;
+    breakfast = Reminder.fromJson(j['breakfast'], breakfast);
+    lunch = Reminder.fromJson(j['lunch'], lunch);
+    dinner = Reminder.fromJson(j['dinner'], dinner);
+    workout = Reminder.fromJson(j['workout'], workout);
+    water = j['water'] as bool? ?? false;
+    waterEveryHours = (j['waterEvery'] as num?)?.toInt() ?? 2;
+  }
+
+  Future<void> _store() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(
+      'reminders',
+      jsonEncode({
+        'breakfast': breakfast.toJson(),
+        'lunch': lunch.toJson(),
+        'dinner': dinner.toJson(),
+        'workout': workout.toJson(),
+        'water': water,
+        'waterEvery': waterEveryHours,
+      }),
+    );
+  }
+
+  tz.TZDateTime _next(int hour, int minute, {int? weekday}) {
+    final now = tz.TZDateTime.now(tz.local);
+    var t = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    while (t.isBefore(now) || (weekday != null && t.weekday != weekday)) {
+      t = t.add(const Duration(days: 1));
+    }
+    return t;
+  }
+
+  Future<void> _daily(int id, String title, String body, TimeOfDay t) {
+    return _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      _next(t.hour, t.minute),
+      _details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  Future<void> _weekly(int id, int weekday, String title, String body, TimeOfDay t) {
+    return _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      _next(t.hour, t.minute, weekday: weekday),
+      _details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+    );
+  }
+
+  /// Saves the settings and schedules everything again from scratch.
+  Future<void> apply(AppState state) async {
+    await _store();
+    await reschedule(state);
+  }
+
+  Future<void> reschedule(AppState state) async {
+    if (!_ready) return;
+    try {
+      await _plugin.cancelAll();
+      if (breakfast.enabled) {
+        await _daily(1, 'Breakfast time', 'Log your breakfast in Healthy.', breakfast.time);
+      }
+      if (lunch.enabled) {
+        await _daily(2, 'Lunch time', 'Log your lunch in Healthy.', lunch.time);
+      }
+      if (dinner.enabled) {
+        await _daily(3, 'Dinner time', 'Log your dinner in Healthy.', dinner.time);
+      }
+      if (workout.enabled) {
+        for (var wd = 1; wd <= 7; wd++) {
+          final plan = state.planFor(wd);
+          if (plan.rest) continue;
+          await _weekly(10 + wd, wd, 'Workout time', "Today: ${plan.title}", workout.time);
+        }
+      }
+      if (water) {
+        var id = 100;
+        for (var h = 9; h <= 21; h += waterEveryHours) {
+          await _daily(id++, 'Drink some water',
+              'Have a glass of water and log it.', TimeOfDay(hour: h, minute: 0));
+        }
+      }
+    } catch (_) {}
+  }
+}

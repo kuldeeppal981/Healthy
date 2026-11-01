@@ -44,9 +44,23 @@ jobs:
           perms = (
               '\n    <uses-permission android:name="android.permission.INTERNET"/>'
               '\n    <uses-permission android:name="android.permission.CAMERA"/>'
+              '\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>'
+              '\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>'
           )
           if 'android.permission.CAMERA' not in s:
               s = re.sub(r'(<manifest[^>]*>)', r'\1' + perms, s, count=1)
+          # Receivers that keep scheduled reminders alive and restore them after a reboot.
+          if 'ScheduledNotificationReceiver' not in s:
+              recv = (
+                  '\n        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"/>'
+                  '\n        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">'
+                  '\n            <intent-filter>'
+                  '\n                <action android:name="android.intent.action.BOOT_COMPLETED"/>'
+                  '\n                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>'
+                  '\n            </intent-filter>'
+                  '\n        </receiver>'
+              )
+              s = s.replace('</application>', recv + '\n    </application>', 1)
           # Deep link so Google sign-in can return to the app.
           if 'login-callback' not in s:
               link = (
@@ -68,6 +82,27 @@ jobs:
             [ -f "$f" ] && sed -i -E 's/minSdk(Version)?[ =]+flutter\.minSdkVersion/minSdk = 23/' "$f" || true
           done
           grep -n "minSdk" android/app/build.gradle* || true
+
+      - name: Enable core library desugaring (needed by notifications)
+        run: |
+          python3 - <<'EOF'
+          import os, re
+          kts = 'android/app/build.gradle.kts'
+          groovy = 'android/app/build.gradle'
+          if os.path.exists(kts):
+              p = kts; s = open(p).read()
+              if 'isCoreLibraryDesugaringEnabled' not in s:
+                  s = s.replace('compileOptions {', 'compileOptions {\n        isCoreLibraryDesugaringEnabled = true', 1)
+                  s += '\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n'
+                  open(p, 'w').write(s)
+          elif os.path.exists(groovy):
+              p = groovy; s = open(p).read()
+              if 'coreLibraryDesugaringEnabled' not in s:
+                  s = s.replace('compileOptions {', 'compileOptions {\n        coreLibraryDesugaringEnabled true', 1)
+                  s += "\ndependencies {\n    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'\n}\n"
+                  open(p, 'w').write(s)
+          EOF
+          grep -n -i "desugar" android/app/build.gradle* || true
 
       - name: Install packages
         run: flutter pub get

@@ -7,6 +7,7 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/sparkline.dart';
 import 'onboarding_screen.dart';
+import 'reminders_screen.dart';
 
 /// Body stats, weight tracking and daily targets.
 class ProfileScreen extends StatelessWidget {
@@ -78,6 +79,20 @@ class ProfileScreen extends StatelessWidget {
           )
         else
           _bodyCard(context, s),
+        const SizedBox(height: 12),
+        AppCard(
+          radius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          child: ListTile(
+            leading: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
+            title: const Text('Reminders', style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: const Text('Meals, water and workouts'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const RemindersScreen()),
+            ),
+          ),
+        ),
         const SizedBox(height: 20),
         const Text('Daily targets',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),

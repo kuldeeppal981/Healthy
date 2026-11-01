@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../profile_models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../services/reminder_service.dart';
 import 'plan_editor.dart';
 import 'workout_data.dart';
 
@@ -90,6 +91,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           _skipRest();
           _resetDay(day);
           state.resetPlan(day);
+          ReminderService.instance.reschedule(state);
         },
       ),
     );
@@ -97,6 +99,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     _skipRest();
     _resetDay(day);
     state.saveCustomPlan(day, result);
+    ReminderService.instance.reschedule(state);
   }
 
   static const _dayNames = [
