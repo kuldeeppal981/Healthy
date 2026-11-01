@@ -8,6 +8,7 @@ import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/ring.dart';
 import 'coach_screen.dart';
+import 'steps_screen.dart';
 import 'workout_data.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -226,6 +227,8 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        const StepsCard(),
         if (cloudEnabled) ...[
           const SizedBox(height: 16),
           AppCard(

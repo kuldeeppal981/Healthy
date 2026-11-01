@@ -8,6 +8,7 @@ import 'config.dart';
 import 'screens/app_shell.dart';
 import 'services/cloud_sync.dart';
 import 'services/reminder_service.dart';
+import 'services/step_service.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
 
@@ -27,6 +28,8 @@ Future<void> main() async {
 
   await ReminderService.instance.init();
   unawaited(ReminderService.instance.reschedule(state));
+
+  unawaited(StepService.instance.start());
 
   runApp(
     ChangeNotifierProvider<AppState>.value(
