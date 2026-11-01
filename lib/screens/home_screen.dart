@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../config.dart';
 import '../models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/ring.dart';
+import 'coach_screen.dart';
 import 'workout_data.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -224,6 +226,23 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
+        if (cloudEnabled) ...[
+          const SizedBox(height: 16),
+          AppCard(
+            radius: 16,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: ListTile(
+              leading: const Icon(Icons.auto_awesome, color: AppColors.primary),
+              title: const Text('Ask the coach',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              subtitle: const Text('Food, protein and workout questions'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const CoachScreen()),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         const Text("Today's meals",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
