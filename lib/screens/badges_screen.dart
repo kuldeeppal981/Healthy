@@ -25,7 +25,7 @@ class BadgesCard extends StatelessWidget {
             title: const Text('Streaks and badges',
                 style: TextStyle(fontWeight: FontWeight.w700)),
             subtitle: Text(
-                '${a.currentStreak} day streak  |  ${a.earnedCount} of ${a.badges.length} badges'),
+                '${a.currentStreak} day food streak  |  ${a.earnedCount} of ${a.badges.length} badges'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const BadgesScreen()),

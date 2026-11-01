@@ -38,6 +38,10 @@ class AppState extends ChangeNotifier {
   final Map<String, int> water = {}; // yyyy-mm-dd -> glasses
   final List<WorkoutLog> workouts = [];
 
+  /// Days the user tapped Check in, and days a streak freeze covered.
+  final Set<String> checkIns = {};
+  final Set<String> frozen = {};
+
   /// The user's own plan per weekday (Monday = 1). Days not in here use the
   /// suggested plan.
   final Map<int, DayPlan> customPlans = {};
@@ -79,6 +83,8 @@ class AppState extends ChangeNotifier {
         'water': water,
         'workouts': workouts.map((e) => e.toJson()).toList(),
         'customPlans': customPlans.map((k, v) => MapEntry('$k', v.toJson())),
+        'checkIns': checkIns.toList(),
+        'frozen': frozen.toList(),
       };
 
   void applySnapshot(Map<String, dynamic> j, DateTime at) {
@@ -120,6 +126,12 @@ class AppState extends ChangeNotifier {
       ..addAll(((j['workouts'] as List?) ?? const []).map(
           (x) => WorkoutLog.fromJson(Map<String, dynamic>.from(x as Map))));
     _readCustomPlans(j['customPlans']);
+    checkIns
+      ..clear()
+      ..addAll(((j['checkIns'] as List?) ?? const []).map((x) => x.toString()));
+    frozen
+      ..clear()
+      ..addAll(((j['frozen'] as List?) ?? const []).map((x) => x.toString()));
 
     lastModified = at;
     notifyListeners();
@@ -310,6 +322,13 @@ class AppState extends ChangeNotifier {
     final cp = p.getString('customPlans');
     _readCustomPlans(cp == null ? null : jsonDecode(cp));
 
+    checkIns
+      ..clear()
+      ..addAll(p.getStringList('checkIns') ?? const []);
+    frozen
+      ..clear()
+      ..addAll(p.getStringList('frozen') ?? const []);
+
     workouts.clear();
     final wk = p.getString('workouts');
     if (wk != null) {
@@ -345,6 +364,8 @@ class AppState extends ChangeNotifier {
     await p.setString('entries', jsonEncode(entries.map((e) => e.toJson()).toList()));
     await p.setString('water', jsonEncode(water));
     await p.setString('workouts', jsonEncode(workouts.map((e) => e.toJson()).toList()));
+    await p.setStringList('checkIns', checkIns.toList());
+    await p.setStringList('frozen', frozen.toList());
     await p.setString(
         'customPlans', jsonEncode(customPlans.map((k, v) => MapEntry('$k', v.toJson()))));
   }
@@ -470,6 +491,67 @@ class AppState extends ChangeNotifier {
     return n;
   }
 
+
+  // ---- Daily streak, check-in and freezes ----
+  static const freezesPerMonth = 2;
+
+  bool get checkedInToday => checkIns.contains(dayKey(DateTime.now()));
+
+  /// A day counts when the user checked in, logged food or finished a workout.
+  Set<String> get activeDays => {
+        ...checkIns,
+        for (final e in entries) dayKey(e.at),
+        for (final w in workouts) dayKey(w.at),
+      };
+
+  void checkIn() {
+    if (checkedInToday) return;
+    checkIns.add(dayKey(DateTime.now()));
+    _changed();
+  }
+
+  int get freezesLeft {
+    final prefix = dayKey(DateTime.now()).substring(0, 7);
+    final used = frozen.where((d) => d.startsWith(prefix)).length;
+    return (freezesPerMonth - used).clamp(0, freezesPerMonth);
+  }
+
+  /// Days in a row that count. A frozen day keeps the streak alive but adds
+  /// nothing. Today not done yet does not break it.
+  int get dailyStreak {
+    final active = activeDays;
+    var d = DateTime.now();
+    final today = dayKey(d);
+    if (!active.contains(today) && !frozen.contains(today)) {
+      d = d.subtract(const Duration(days: 1));
+    }
+    var n = 0;
+    while (true) {
+      final k = dayKey(d);
+      if (active.contains(k)) {
+        n++;
+      } else if (!frozen.contains(k)) {
+        break;
+      }
+      d = d.subtract(const Duration(days: 1));
+    }
+    return n;
+  }
+
+  /// If exactly yesterday was missed after a running streak, spend a freeze
+  /// on it (2 per month). Safe to call again and again.
+  bool settleFreezes() {
+    final now = DateTime.now();
+    final y = dayKey(now.subtract(const Duration(days: 1)));
+    final yy = dayKey(now.subtract(const Duration(days: 2)));
+    final active = activeDays;
+    bool covered(String k) => active.contains(k) || frozen.contains(k);
+    if (covered(y) || !covered(yy) || freezesLeft <= 0) return false;
+    frozen.add(y);
+    _changed();
+    return true;
+  }
+
   // ---- Water ----
   int get waterToday => water[dayKey(DateTime.now())] ?? 0;
 
@@ -538,6 +620,8 @@ class AppState extends ChangeNotifier {
     entries.clear();
     water.clear();
     workouts.clear();
+    checkIns.clear();
+    frozen.clear();
     customPlans.clear();
     notifyListeners();
     await _p?.clear();

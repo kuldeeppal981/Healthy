@@ -14,6 +14,7 @@ import 'report_screen.dart';
 import 'social_screen.dart';
 import 'coach_screen.dart';
 import 'steps_screen.dart';
+import 'streak_card.dart';
 import 'workout_data.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -232,6 +233,8 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        const StreakCard(),
         const SizedBox(height: 16),
         const StepsCard(),
         const SizedBox(height: 16),
