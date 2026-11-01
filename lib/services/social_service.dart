@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../profile_models.dart';
 
 import '../config.dart';
 import '../state/app_state.dart';
@@ -68,6 +71,84 @@ class ChallengeRow {
   const ChallengeRow(this.userId, this.name, this.score, this.isMe);
 }
 
+
+class FeedPost {
+  final String id;
+  final String userId;
+  final String name;
+  final String kind; // pr | workout | streak | badge | steps
+  final String title;
+  final String? body;
+  final DateTime at;
+  final bool isMe;
+  String? myReaction;
+  final Map<String, int> counts;
+
+  FeedPost({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.kind,
+    required this.title,
+    required this.body,
+    required this.at,
+    required this.isMe,
+    required this.myReaction,
+    required this.counts,
+  });
+
+  int get total => counts.values.fold(0, (a, b) => a + b);
+}
+
+/// A new personal record found in a finished workout.
+class NewPr {
+  final String exercise;
+  final double kg;
+  final int reps;
+  final double? previousKg;
+
+  const NewPr(this.exercise, this.kg, this.reps, this.previousKg);
+
+  String get text => '${kg == kg.roundToDouble() ? kg.round() : kg} kg x $reps';
+}
+
+/// Best set ever logged per exercise (heavier wins, then more reps).
+Map<String, Map<String, dynamic>> bestSetsOf(Iterable<WorkoutLog> history) {
+  final out = <String, Map<String, dynamic>>{};
+  for (final w in history) {
+    for (final b in w.bests) {
+      final name = (b['name'] as String).toLowerCase();
+      final kg = (b['kg'] as num).toDouble();
+      final reps = (b['reps'] as num).toInt();
+      final cur = out[name];
+      if (cur == null ||
+          kg > (cur['kg'] as double) ||
+          (kg == (cur['kg'] as double) && reps > (cur['reps'] as int))) {
+        out[name] = {'kg': kg, 'reps': reps};
+      }
+    }
+  }
+  return out;
+}
+
+/// Exercises where this workout beat everything logged before. The first time
+/// an exercise is logged is not a record, there is nothing to beat yet.
+List<NewPr> findNewPrs(Iterable<WorkoutLog> before, List<Map<String, dynamic>> bests) {
+  final old = bestSetsOf(before);
+  final prs = <NewPr>[];
+  for (final b in bests) {
+    final name = b['name'] as String;
+    final kg = (b['kg'] as num).toDouble();
+    final reps = (b['reps'] as num).toInt();
+    final prev = old[name.toLowerCase()];
+    if (prev == null) continue;
+    final pk = prev['kg'] as double;
+    final pr = prev['reps'] as int;
+    if (kg > pk || (kg == pk && reps > pr)) prs.add(NewPr(name, kg, reps, pk));
+  }
+  return prs;
+}
+
 /// Friends, leaderboards and challenges. All data lives in Supabase and is
 /// only visible to friends and challenge members. Sharing is opt-in.
 class SocialService extends ChangeNotifier {
@@ -104,6 +185,7 @@ class SocialService extends ChangeNotifier {
     requests = [];
     challenges = [];
     suggestions = [];
+    feed = [];
     loaded = false;
     error = null;
     notifyListeners();
@@ -349,6 +431,126 @@ class SocialService extends ChangeNotifier {
           x['is_me'] as bool,
         ),
     ];
+  }
+
+
+  // ---- Friend feed ----
+
+  List<FeedPost> feed = [];
+  bool feedLoading = false;
+  String? feedError;
+  bool shareAchievements = true;
+  bool _prefsRead = false;
+
+  Future<void> _readPrefs() async {
+    if (_prefsRead) return;
+    try {
+      final p = await SharedPreferences.getInstance();
+      shareAchievements = p.getBool('shareAchievements') ?? true;
+    } catch (_) {}
+    _prefsRead = true;
+  }
+
+  Future<void> setShareAchievements(bool v) async {
+    shareAchievements = v;
+    notifyListeners();
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setBool('shareAchievements', v);
+    } catch (_) {}
+  }
+
+  Future<void> loadFeed() async {
+    if (!available) return;
+    await _readPrefs();
+    feedLoading = true;
+    feedError = null;
+    notifyListeners();
+    try {
+      final r = await _c.rpc('get_feed', params: {'p_limit': 60}) as List;
+      feed = [
+        for (final x in r)
+          FeedPost(
+            id: x['id'] as String,
+            userId: x['user_id'] as String,
+            name: (x['name'] as String?) ?? 'Friend',
+            kind: x['kind'] as String,
+            title: x['title'] as String,
+            body: x['body'] as String?,
+            at: DateTime.parse(x['created_at'] as String).toLocal(),
+            isMe: x['is_me'] as bool,
+            myReaction: x['my_reaction'] as String?,
+            counts: {
+              'fire': (x['fire'] as num).toInt(),
+              'clap': (x['clap'] as num).toInt(),
+              'muscle': (x['muscle'] as num).toInt(),
+              'heart': (x['heart'] as num).toInt(),
+            },
+          ),
+      ];
+    } catch (e) {
+      feedError = _err(e);
+    }
+    feedLoading = false;
+    notifyListeners();
+  }
+
+  /// Puts an achievement on the feed. Silent when the person has not turned on
+  /// friends, has switched sharing off, or is offline.
+  Future<void> postAchievement({
+    required String kind,
+    required String title,
+    String? body,
+    required String dedupe,
+  }) async {
+    try {
+      if (!available) return;
+      await _readPrefs();
+      if (!shareAchievements) return;
+      final uid = _c.auth.currentUser!.id;
+      if (!enabled || _uid != uid) {
+        final me = await _c
+            .from('social_profiles')
+            .select('user_id')
+            .eq('user_id', uid)
+            .maybeSingle();
+        if (me == null) return;
+      }
+      await _c.from('feed_posts').upsert(
+        {
+          'user_id': uid,
+          'kind': kind,
+          'title': title,
+          'body': body,
+          'dedupe': dedupe,
+        },
+        onConflict: 'user_id,dedupe',
+        ignoreDuplicates: true,
+      );
+    } catch (_) {}
+  }
+
+  Future<void> deletePost(FeedPost p) async {
+    feed = feed.where((x) => x.id != p.id).toList();
+    notifyListeners();
+    try {
+      await _c.from('feed_posts').delete().eq('id', p.id);
+    } catch (_) {}
+  }
+
+  /// Tap an emoji to cheer; tap the same one again to take it back.
+  Future<void> react(FeedPost p, String emoji) async {
+    final old = p.myReaction;
+    final next = old == emoji ? null : emoji;
+    if (old != null) p.counts[old] = (p.counts[old] ?? 1) - 1;
+    if (next != null) p.counts[next] = (p.counts[next] ?? 0) + 1;
+    p.myReaction = next;
+    notifyListeners();
+    try {
+      await _c.rpc('react_to_post', params: {'p_post': p.id, 'p_emoji': next ?? ''});
+    } catch (_) {
+      await loadFeed();
+    }
   }
 
   // ---- Sending today's numbers ----

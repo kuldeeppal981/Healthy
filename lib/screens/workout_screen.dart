@@ -7,6 +7,7 @@ import '../profile_models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../services/reminder_service.dart';
+import '../services/social_service.dart';
 import '../services/voice_parser.dart';
 import '../widgets/voice_capture.dart';
 import 'plan_editor.dart';
@@ -265,7 +266,29 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       }
     }
 
-    context.read<AppState>().addWorkout(
+    final state = context.read<AppState>();
+    final prs = findNewPrs(state.workouts, bests);
+    final now = DateTime.now();
+    final stamp = SocialService.dayText(now);
+    for (final pr in prs) {
+      SocialService.instance.postAchievement(
+        kind: 'pr',
+        title: 'New PR: ${pr.exercise} ${pr.text}',
+        body: pr.previousKg == null
+            ? null
+            : 'Previous best was ${pr.previousKg == pr.previousKg!.roundToDouble() ? pr.previousKg!.round() : pr.previousKg} kg',
+        dedupe: 'pr-${pr.exercise.toLowerCase()}-$stamp',
+      );
+    }
+    if (sets > 0) {
+      SocialService.instance.postAchievement(
+        kind: 'workout',
+        title: 'Finished ${plan.title}',
+        body: '$sets sets, ${volume.round()} kg lifted',
+        dedupe: 'workout-${now.microsecondsSinceEpoch}',
+      );
+    }
+    state.addWorkout(
           WorkoutLog(
             id: DateTime.now().microsecondsSinceEpoch.toString(),
             at: DateTime.now(),
@@ -279,7 +302,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     _resetDay(_weekday);
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Workout saved: $sets sets, ${volume.round()} kg lifted')),
+      SnackBar(
+        content: Text(prs.isEmpty
+            ? 'Workout saved: $sets sets, ${volume.round()} kg lifted'
+            : 'New PR! ${prs.map((e) => '${e.exercise} ${e.text}').join(', ')}'),
+      ),
     );
   }
 

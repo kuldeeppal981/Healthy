@@ -55,7 +55,7 @@ class _SocialScreenState extends State<SocialScreen> {
       listenable: _svc,
       builder: (context, _) {
         return DefaultTabController(
-          length: 3,
+          length: 4,
           child: Scaffold(
             appBar: AppBar(
               title: const Text('Friends and challenges'),
@@ -68,6 +68,7 @@ class _SocialScreenState extends State<SocialScreen> {
               ],
               bottom: _svc.enabled
                   ? const TabBar(tabs: [
+                      Tab(text: 'Feed'),
                       Tab(text: 'Leaderboard'),
                       Tab(text: 'Friends'),
                       Tab(text: 'Challenges'),
@@ -83,6 +84,7 @@ class _SocialScreenState extends State<SocialScreen> {
                         : !_svc.enabled
                             ? _TurnOn(svc: _svc)
                             : TabBarView(children: [
+                                _FeedTab(svc: _svc),
                                 _LeaderboardTab(svc: _svc),
                                 _FriendsTab(svc: _svc),
                                 _ChallengesTab(svc: _svc),
@@ -212,6 +214,184 @@ class _TurnOnState extends State<_TurnOn> {
               : const Text('Turn on friends'),
         ),
       ],
+    );
+  }
+}
+
+class _FeedTab extends StatefulWidget {
+  final SocialService svc;
+
+  const _FeedTab({required this.svc});
+
+  @override
+  State<_FeedTab> createState() => _FeedTabState();
+}
+
+class _FeedTabState extends State<_FeedTab> {
+  static const _emojis = [
+    ('fire', '🔥'),
+    ('clap', '👏'),
+    ('muscle', '💪'),
+    ('heart', '❤️'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    widget.svc.loadFeed();
+  }
+
+  String _ago(DateTime t) {
+    final d = DateTime.now().difference(t);
+    if (d.inMinutes < 1) return 'just now';
+    if (d.inMinutes < 60) return '${d.inMinutes} min ago';
+    if (d.inHours < 24) return '${d.inHours} h ago';
+    if (d.inDays == 1) return 'yesterday';
+    return '${d.inDays} days ago';
+  }
+
+  String _icon(String kind) => switch (kind) {
+        'pr' => '🏆',
+        'workout' => '🏋️',
+        'streak' => '🔥',
+        'badge' => '🎖️',
+        _ => '👟',
+      };
+
+  Widget _myPrs(AppState state) {
+    final best = bestSetsOf(state.workouts).entries.toList()
+      ..sort((a, b) => (b.value['kg'] as double).compareTo(a.value['kg'] as double));
+    if (best.isEmpty) return const SizedBox.shrink();
+    String kg(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: AppCard(
+        radius: 16,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('🏆 My personal records',
+                style: TextStyle(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final e in best.take(8))
+                  Chip(
+                    label: Text(
+                        '${e.key[0].toUpperCase()}${e.key.substring(1)}  ${kg(e.value['kg'] as double)} kg x ${e.value['reps']}'),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _post(FeedPost p) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
+        radius: 16,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primary.withOpacity(0.12),
+                  child: Text(p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800, color: AppColors.primary)),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(p.isMe ? 'You' : p.name,
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      Text(_ago(p.at),
+                          style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                if (p.isMe)
+                  IconButton(
+                    tooltip: 'Delete post',
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    onPressed: () => widget.svc.deletePost(p),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text('${_icon(p.kind)}  ${p.title}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            if (p.body != null && p.body!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(p.body!, style: const TextStyle(color: AppColors.muted)),
+            ],
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: [
+                for (final (key, emoji) in _emojis)
+                  ChoiceChip(
+                    label: Text(
+                        (p.counts[key] ?? 0) > 0 ? '$emoji ${p.counts[key]}' : emoji),
+                    selected: p.myReaction == key,
+                    onSelected: (_) => widget.svc.react(p, key),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final svc = widget.svc;
+    final state = context.watch<AppState>();
+    return RefreshIndicator(
+      onRefresh: svc.loadFeed,
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          _myPrs(state),
+          if (svc.feedLoading && svc.feed.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (svc.feedError != null && svc.feed.isEmpty)
+            _Retry(message: svc.feedError!, onRetry: svc.loadFeed)
+          else if (svc.feed.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                'Nothing here yet. Finish a workout or beat a personal record and it shows up here for you and your friends. Add friends to see theirs.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.muted, height: 1.4),
+              ),
+            )
+          else
+            for (final p in svc.feed) _post(p),
+          const SizedBox(height: 8),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            value: svc.shareAchievements,
+            onChanged: svc.setShareAchievements,
+            title: const Text('Share my achievements with friends'),
+            subtitle: const Text('New records and finished workouts are posted here.'),
+          ),
+        ],
+      ),
     );
   }
 }
