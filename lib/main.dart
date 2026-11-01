@@ -7,7 +7,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config.dart';
 import 'screens/app_shell.dart';
 import 'services/cloud_sync.dart';
+import 'services/health_service.dart';
 import 'services/reminder_service.dart';
+import 'services/social_service.dart';
 import 'services/step_service.dart';
 import 'services/widget_service.dart';
 import 'state/app_state.dart';
@@ -33,7 +35,11 @@ Future<void> main() async {
   unawaited(StepService.instance.start());
 
   // Keep the home screen widget in step with the app.
-  void refreshWidget() => unawaited(WidgetService.instance.update(state));
+  void refreshWidget() {
+    unawaited(WidgetService.instance.update(state));
+    SocialService.instance.schedulePush(state);
+  }
+  unawaited(HealthService.instance.init(state));
   state.addListener(refreshWidget);
   StepService.instance.addListener(refreshWidget);
   refreshWidget();

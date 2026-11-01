@@ -23,6 +23,11 @@ dependencies:
   home_widget: ^0.6.0
   image_picker: ^1.1.2
   speech_to_text: ^7.0.0
+  health: ^11.1.0
+  share_plus: ^10.1.4
+  pdf: ^3.11.1
+  printing: ^5.13.4
+  path_provider: ^2.1.5
   google_mlkit_text_recognition: ^0.13.1
 
 dev_dependencies:

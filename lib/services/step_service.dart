@@ -27,6 +27,8 @@ class StepService extends ChangeNotifier {
   int _base = 0;
   int _carry = 0; // steps taken before a phone restart today
   int _lastRaw = 0;
+  int _external = 0; // steps reported by Health Connect today
+  String _externalDay = '';
 
   static String _key(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -99,6 +101,7 @@ class StepService extends ChangeNotifier {
 
     _lastRaw = raw;
     steps = _carry + (raw - _base).clamp(0, 1 << 30);
+    if (_externalDay == today && _external > steps) steps = _external;
     history[today] = steps;
     // Keep only the last 14 days.
     if (history.length > 14) {
@@ -119,6 +122,19 @@ class StepService extends ChangeNotifier {
     await p.setInt('stepCarry', _carry);
     await p.setInt('stepLastRaw', _lastRaw);
     await p.setString('stepHistory', jsonEncode(history));
+  }
+
+  /// Steps from Health Connect (watch). The larger of the two sources is used.
+  void setExternal(int v) {
+    final today = _key(DateTime.now());
+    _externalDay = today;
+    _external = v;
+    if (v > steps) {
+      steps = v;
+      history[today] = v;
+      _persist();
+      notifyListeners();
+    }
   }
 
   Future<void> setGoal(int g) async {

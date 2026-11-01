@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config.dart';
+import '../services/health_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/voice_capture.dart';
@@ -56,6 +57,8 @@ class _CoachScreenState extends State<CoachScreen> {
       'Allergies: ${s.allergies.isEmpty ? 'none' : s.allergies.join(', ')}',
       if (s.conditions.isNotEmpty)
         'Health conditions (be conservative, defer to their doctor): ${s.conditions.join(', ')}',
+      if (HealthService.instance.sleepHours != null)
+        'Sleep last night: ${HealthService.instance.sleepHours!.toStringAsFixed(1)} hours',
       "Today's workout: ${plan.rest ? 'rest day' : plan.title}",
     ].join('\n');
   }

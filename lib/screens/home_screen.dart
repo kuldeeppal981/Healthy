@@ -9,6 +9,9 @@ import '../widgets/add_food_sheet.dart';
 import '../widgets/ring.dart';
 import '../widgets/voice_review.dart';
 import 'badges_screen.dart';
+import 'health_connect_screen.dart';
+import 'report_screen.dart';
+import 'social_screen.dart';
 import 'coach_screen.dart';
 import 'steps_screen.dart';
 import 'workout_data.dart';
@@ -233,6 +236,26 @@ class HomeScreen extends StatelessWidget {
         const StepsCard(),
         const SizedBox(height: 16),
         const BadgesCard(),
+        const SizedBox(height: 16),
+        AppCard(
+          radius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          child: ListTile(
+            leading: const Icon(Icons.insights_outlined, color: AppColors.primary),
+            title: const Text('Monthly report', style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: const Text('Workouts, calories, protein, records, PDF'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const ReportScreen()),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const HealthConnectCard(),
+        if (cloudEnabled) ...[
+          const SizedBox(height: 16),
+          const SocialCard(),
+        ],
         if (cloudEnabled) ...[
           const SizedBox(height: 16),
           AppCard(

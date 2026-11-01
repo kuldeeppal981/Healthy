@@ -242,8 +242,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   void _finish(DayPlan plan, List<List<_SetLog>> logs) {
     var sets = 0;
     var volume = 0.0;
+    final bests = <Map<String, dynamic>>[];
     for (var i = 0; i < plan.exercises.length; i++) {
       final ex = plan.exercises[i];
+      double bestKg = 0;
+      int bestReps = 0;
       for (final l in logs[i]) {
         if (!l.done) continue;
         sets++;
@@ -251,7 +254,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           final kg = double.tryParse(l.kg.text.trim()) ?? 0;
           final reps = double.tryParse(l.reps.text.trim()) ?? 0;
           volume += kg * reps;
+          if (kg > bestKg || (kg == bestKg && reps > bestReps)) {
+            bestKg = kg;
+            bestReps = reps.round();
+          }
         }
+      }
+      if (bestKg > 0) {
+        bests.add({'name': ex.name, 'kg': bestKg, 'reps': bestReps});
       }
     }
 
@@ -262,6 +272,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             title: plan.title,
             sets: sets,
             volumeKg: volume,
+            bests: bests,
           ),
         );
     _skipRest();
@@ -408,7 +419,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                               ],
                             ),
                           ),
-                          Text('${w.sets} sets  |  ${w.volumeKg.round()} kg',
+                          Text(w.sets == 0 ? 'Synced' : '${w.sets} sets  |  ${w.volumeKg.round()} kg',
                               style: const TextStyle(
                                   fontSize: 13, color: AppColors.muted)),
                         ],

@@ -64,12 +64,16 @@ class WorkoutLog {
   final int sets;
   final double volumeKg; // sum of kg x reps over completed sets
 
+  /// Best set per exercise in this workout: {name, kg, reps}.
+  final List<Map<String, dynamic>> bests;
+
   const WorkoutLog({
     required this.id,
     required this.at,
     required this.title,
     required this.sets,
     required this.volumeKg,
+    this.bests = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -78,6 +82,7 @@ class WorkoutLog {
         'title': title,
         'sets': sets,
         'volumeKg': volumeKg,
+        'bests': bests,
       };
 
   factory WorkoutLog.fromJson(Map<String, dynamic> j) => WorkoutLog(
@@ -86,5 +91,8 @@ class WorkoutLog {
         title: j['title'] as String,
         sets: (j['sets'] as num).toInt(),
         volumeKg: (j['volumeKg'] as num).toDouble(),
+        bests: ((j['bests'] as List?) ?? const [])
+            .map((x) => Map<String, dynamic>.from(x as Map))
+            .toList(),
       );
 }
