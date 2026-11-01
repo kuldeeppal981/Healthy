@@ -7,13 +7,17 @@ import '../services/food_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
+import 'label_scan_screen.dart';
 
 /// Shows a scanned product, warns about the user's allergies, and lets the
 /// user add it to today's diary.
 class ScanResultScreen extends StatefulWidget {
   final String barcode;
 
-  const ScanResultScreen({super.key, required this.barcode});
+  /// A product already built in the app, like one read from a label photo.
+  final FoodItem? item;
+
+  const ScanResultScreen({super.key, required this.barcode, this.item});
 
   @override
   State<ScanResultScreen> createState() => _ScanResultScreenState();
@@ -24,7 +28,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   double _grams = 100;
 
   Future<FoodItem?> _load() async {
-    final item = await FoodService().lookup(widget.barcode);
+    final item = widget.item ?? await FoodService().lookup(widget.barcode);
     if (item != null) _grams = item.servingGrams;
     return item;
   }
@@ -91,6 +95,13 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 16),
           FilledButton(onPressed: onAction, child: Text(actionLabel)),
+          if (widget.item == null && widget.barcode.isNotEmpty)
+            TextButton(
+              onPressed: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute<void>(builder: (_) => const LabelScanScreen()),
+              ),
+              child: const Text('Scan the ingredients label instead'),
+            ),
         ],
       ),
     );
@@ -112,7 +123,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
       children: [
-        _banner(contains, traces, incomplete, s.allergies.isEmpty),
+        _banner(contains, traces, incomplete, s.allergies.isEmpty, item.fromLabel),
         const SizedBox(height: 12),
         AppCard(
           radius: 18,
@@ -233,6 +244,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     List<AllergyHit> traces,
     bool incomplete,
     bool noAllergiesSet,
+    bool fromLabel,
   ) {
     Widget box(Color bg, Color fg, IconData icon, String title, String body) {
       return Container(
@@ -303,7 +315,9 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       AppColors.safe,
       Icons.check_circle_outline,
       'No match with your allergies',
-      'Data is from Open Food Facts. Please also check the label before eating.',
+      fromLabel
+          ? 'Read from your photo. Photo reading can miss words, so please read the label yourself before eating.'
+          : 'Data is from Open Food Facts. Please also check the label before eating.',
     );
   }
 

@@ -14,6 +14,9 @@ class FoodItem {
   final String? nutriGrade;
   final double servingGrams;
 
+  /// True when the data was read from a photo of the label, not a database.
+  final bool fromLabel;
+
   const FoodItem({
     required this.barcode,
     required this.name,
@@ -28,6 +31,7 @@ class FoodItem {
     required this.traceTags,
     required this.nutriGrade,
     required this.servingGrams,
+    this.fromLabel = false,
   });
 
   static double scale(double per100, double grams) => per100 * grams / 100;
