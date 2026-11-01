@@ -110,6 +110,81 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     ));
   }
 
+  Future<void> _toggleAlarm(AppState state, bool on) async {
+    final svc = ReminderService.instance;
+    if (on) {
+      final ok = await svc.askPermission();
+      if (!ok) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Allow notifications for Healthy in your phone settings.'),
+        ));
+        return;
+      }
+      final exact = await svc.askExactAlarm();
+      if (!exact && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Allow "Alarms and reminders" for Healthy so the alarm rings on time.'),
+        ));
+      }
+    }
+    svc.workout.enabled = on;
+    await svc.apply(state);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _pickAlarmTime(AppState state) async {
+    final svc = ReminderService.instance;
+    final t = await showTimePicker(context: context, initialTime: svc.workout.time);
+    if (t == null) return;
+    svc.workout.time = t;
+    if (!svc.workout.enabled) {
+      await _toggleAlarm(state, true);
+    } else {
+      await svc.apply(state);
+      if (mounted) setState(() {});
+    }
+  }
+
+  Widget _alarmCard(AppState state) {
+    final w = ReminderService.instance.workout;
+    return AppCard(
+      radius: 16,
+      padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+      child: Row(
+        children: [
+          const Icon(Icons.alarm, color: AppColors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Daily gym alarm',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                Text(
+                  w.enabled
+                      ? 'Rings at ${w.time.format(context)} on workout days'
+                      : 'Off',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => _pickAlarmTime(state),
+            child: Text(w.enabled ? 'Change' : 'Set time'),
+          ),
+          Switch(
+            value: w.enabled,
+            activeColor: AppColors.primary,
+            onChanged: (v) => _toggleAlarm(state, v),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _edit(AppState state) async {
     final day = _weekday;
     final result = await showModalBottomSheet<DayPlan>(
@@ -269,6 +344,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              _alarmCard(state),
+              const SizedBox(height: 12),
               if (plan.rest)
                 const AppCard(
                   child: Text(

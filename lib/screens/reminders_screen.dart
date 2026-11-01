@@ -93,7 +93,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 const SizedBox(height: 10),
                 _row('Dinner', 'Daily', _svc.dinner),
                 const SizedBox(height: 10),
-                _row('Workout', 'On the days your plan is not a rest day', _svc.workout),
+                _row('Workout', 'Gym alarm on days that are not rest days', _svc.workout),
                 const SizedBox(height: 10),
                 AppCard(
                   radius: 16,

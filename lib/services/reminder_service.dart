@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -54,6 +55,43 @@ class ReminderService {
     priority: Priority.high,
   );
   static const _details = NotificationDetails(android: _channel);
+
+  /// Gym alarm: rings on the alarm volume and repeats the sound until the
+  /// user opens or dismisses it.
+  static final _gymAlarm = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'gym_alarm',
+      'Gym alarm',
+      channelDescription: 'Rings at your daily gym time',
+      importance: Importance.max,
+      priority: Priority.max,
+      category: AndroidNotificationCategory.alarm,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      fullScreenIntent: true,
+      autoCancel: false,
+      playSound: true,
+      enableVibration: true,
+      additionalFlags: Int32List.fromList(<int>[4]), // FLAG_INSISTENT
+    ),
+  );
+
+  bool _exact = false;
+
+  /// Exact alarms need a permission the user grants in system settings.
+  Future<bool> askExactAlarm() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    try {
+      var ok = await android?.canScheduleExactNotifications() ?? true;
+      if (!ok) {
+        await android?.requestExactAlarmsPermission();
+        ok = await android?.canScheduleExactNotifications() ?? false;
+      }
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<void> init() async {
     if (_ready) return;
@@ -133,14 +171,17 @@ class ReminderService {
     );
   }
 
-  Future<void> _weekly(int id, int weekday, String title, String body, TimeOfDay t) {
+  Future<void> _weekly(int id, int weekday, String title, String body, TimeOfDay t,
+      {bool alarm = false}) {
     return _plugin.zonedSchedule(
       id,
       title,
       body,
       _next(t.hour, t.minute, weekday: weekday),
-      _details,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      alarm ? _gymAlarm : _details,
+      androidScheduleMode: (alarm && _exact)
+          ? AndroidScheduleMode.exactAllowWhileIdle
+          : AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
@@ -157,6 +198,13 @@ class ReminderService {
     if (!_ready) return;
     try {
       await _plugin.cancelAll();
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      try {
+        _exact = await android?.canScheduleExactNotifications() ?? false;
+      } catch (_) {
+        _exact = false;
+      }
       if (breakfast.enabled) {
         await _daily(1, 'Breakfast time', 'Log your breakfast in Healthy.', breakfast.time);
       }
@@ -170,7 +218,8 @@ class ReminderService {
         for (var wd = 1; wd <= 7; wd++) {
           final plan = state.planFor(wd);
           if (plan.rest) continue;
-          await _weekly(10 + wd, wd, 'Workout time', "Today: ${plan.title}", workout.time);
+          await _weekly(10 + wd, wd, 'Time to hit the gym', "Today: ${plan.title}", workout.time,
+              alarm: true);
         }
       }
       if (water) {
