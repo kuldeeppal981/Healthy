@@ -8,7 +8,6 @@ import '../services/health_conditions.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
-import 'label_scan_screen.dart';
 
 /// Shows a scanned product, warns about the user's allergies, and lets the
 /// user add it to today's diary.
@@ -96,13 +95,6 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 16),
           FilledButton(onPressed: onAction, child: Text(actionLabel)),
-          if (widget.item == null && widget.barcode.isNotEmpty)
-            TextButton(
-              onPressed: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute<void>(builder: (_) => const LabelScanScreen()),
-              ),
-              child: const Text('Scan the ingredients label instead'),
-            ),
         ],
       ),
     );

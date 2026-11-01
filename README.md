@@ -89,3 +89,10 @@ small errors on the first `flutter run`.
    `https://<project>.supabase.co/auth/v1/callback`, then enable Google under Authentication, Providers
    and paste the client id and secret.
 4. Supabase's built-in email sender is rate limited; add custom SMTP before launch.
+
+## Parked: label scan
+
+Label scan (photo of the ingredients label, read on the phone) is parked because its ML Kit
+package broke the release build. The screen is kept in `parked/label_scan_screen.dart`.
+To bring it back: move it to `lib/screens/`, add `image_picker` and
+`google_mlkit_text_recognition` to `pubspec.yaml`, and link it from the scan screen.

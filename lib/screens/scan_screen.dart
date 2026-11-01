@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../theme.dart';
-import 'label_scan_screen.dart';
 import 'scan_result_screen.dart';
 
 /// Camera barcode scanner. Also has a manual barcode box for emulators or
@@ -106,13 +105,6 @@ class _ScanScreenState extends State<ScanScreen> {
                 const Text(
                   'Place the barcode inside the box',
                   style: TextStyle(color: AppColors.muted),
-                ),
-                TextButton.icon(
-                  onPressed: () => Navigator.of(context).pushReplacement(
-                    MaterialPageRoute<void>(builder: (_) => const LabelScanScreen()),
-                  ),
-                  icon: const Icon(Icons.document_scanner_outlined),
-                  label: const Text('No barcode? Scan the ingredients label'),
                 ),
                 const SizedBox(height: 12),
                 Row(
