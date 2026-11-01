@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../config.dart';
 import '../services/nutrition_calc.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -53,6 +54,10 @@ class ProfileScreen extends StatelessWidget {
         const Text('Profile',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
         const SizedBox(height: 16),
+        if (cloudEnabled) ...[
+          _accountCard(s),
+          const SizedBox(height: 16),
+        ],
         if (p == null)
           AppCard(
             child: Column(
@@ -117,11 +122,64 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             );
-            if (ok == true) await s.clearAll();
+            if (ok == true) await s.clearAll(deleteCloud: true);
           },
           child: const Text('Delete all data'),
         ),
       ],
+    );
+  }
+
+  Widget _accountCard(AppState s) {
+    if (!s.signedIn) {
+      return AppCard(
+        radius: 18,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Your data is only on this phone.',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            const Text('Sign in to back it up to your account.',
+                style: TextStyle(color: AppColors.muted)),
+            const SizedBox(height: 12),
+            FilledButton(
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+              onPressed: s.leaveGuest,
+              child: const Text('Sign in or create account'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final status = s.syncing
+        ? 'Syncing...'
+        : (s.syncError ?? 'Backed up to your account');
+
+    return AppCard(
+      radius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.accountEmail ?? 'Signed in',
+              style: const TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 2),
+          Text(
+            status,
+            style: TextStyle(
+              fontSize: 13,
+              color: s.syncError == null ? AppColors.muted : AppColors.danger,
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            onPressed: s.signOut,
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
     );
   }
 

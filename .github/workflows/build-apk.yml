@@ -60,8 +60,12 @@ jobs:
       - name: Install packages
         run: flutter pub get
 
+      # Add SUPABASE_ANON_KEY under repo Settings -> Secrets and variables ->
+      # Actions. Without it the app builds fine and keeps data on the phone only.
       - name: Build release APK
-        run: flutter build apk --release
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: flutter build apk --release --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

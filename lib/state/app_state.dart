@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../config.dart';
 import '../models.dart';
 import '../profile_models.dart';
+import '../services/cloud_sync.dart';
 import '../services/nutrition_calc.dart';
 
 /// App-wide state, saved on the phone with shared_preferences.
@@ -41,6 +44,160 @@ class AppState extends ChangeNotifier {
 
   bool get needsOnboarding => profile == null && !onboardingSkipped;
 
+  // ---- Cloud (Supabase) ----
+  CloudSync? cloud; // set in main() when Supabase is configured
+  bool guestMode = false;
+  DateTime? lastModified;
+  bool syncing = false;
+  String? syncError;
+  Timer? _pushTimer;
+
+  bool get signedIn => cloud?.userId != null;
+  String? get accountEmail => cloud?.email;
+  bool get needsAuth => cloudEnabled && !signedIn && !guestMode;
+
+  Map<String, dynamic> toSnapshot() => {
+        'profile': profile?.toJson(),
+        'onboardingSkipped': onboardingSkipped,
+        'weights': weights.map((e) => e.toJson()).toList(),
+        'allergies': allergies.toList(),
+        'severity': severity,
+        'traceWarning': traceWarning,
+        'kcalTarget': kcalTarget,
+        'proteinTarget': proteinTarget,
+        'carbsTarget': carbsTarget,
+        'fatTarget': fatTarget,
+        'entries': entries.map((e) => e.toJson()).toList(),
+        'water': water,
+        'workouts': workouts.map((e) => e.toJson()).toList(),
+      };
+
+  void applySnapshot(Map<String, dynamic> j, DateTime at) {
+    final prof = j['profile'];
+    profile = prof == null
+        ? null
+        : UserProfile.fromJson(Map<String, dynamic>.from(prof as Map));
+    onboardingSkipped = j['onboardingSkipped'] as bool? ?? false;
+
+    weights
+      ..clear()
+      ..addAll(((j['weights'] as List?) ?? const []).map(
+          (x) => WeightEntry.fromJson(Map<String, dynamic>.from(x as Map))));
+    allergies
+      ..clear()
+      ..addAll(((j['allergies'] as List?) ?? const []).map((x) => x.toString()));
+    severity
+      ..clear()
+      ..addAll(Map<String, String>.from((j['severity'] as Map?) ?? const {}));
+    traceWarning = j['traceWarning'] as bool? ?? true;
+
+    kcalTarget = (j['kcalTarget'] as num?)?.toInt() ?? kcalTarget;
+    proteinTarget = (j['proteinTarget'] as num?)?.toInt() ?? proteinTarget;
+    carbsTarget = (j['carbsTarget'] as num?)?.toInt() ?? carbsTarget;
+    fatTarget = (j['fatTarget'] as num?)?.toInt() ?? fatTarget;
+
+    entries
+      ..clear()
+      ..addAll(((j['entries'] as List?) ?? const []).map(
+          (x) => DiaryEntry.fromJson(Map<String, dynamic>.from(x as Map))));
+    water
+      ..clear()
+      ..addAll(Map<String, int>.from((j['water'] as Map?) ?? const {}));
+    workouts
+      ..clear()
+      ..addAll(((j['workouts'] as List?) ?? const []).map(
+          (x) => WorkoutLog.fromJson(Map<String, dynamic>.from(x as Map))));
+
+    lastModified = at;
+    notifyListeners();
+    _save();
+  }
+
+  void _schedulePush() {
+    if (!signedIn) return;
+    _pushTimer?.cancel();
+    _pushTimer = Timer(const Duration(seconds: 2), _push);
+  }
+
+  Future<void> _push() async {
+    final c = cloud;
+    if (c == null || !signedIn) return;
+    try {
+      await c.push(toSnapshot(), lastModified ?? DateTime.now());
+      syncError = null;
+    } catch (_) {
+      syncError = 'Could not back up. It will retry on your next change.';
+    }
+    notifyListeners();
+  }
+
+  /// Pulls the account's data and merges it with what is on the phone.
+  /// [preferRemote] is true right after a fresh sign-in (the account's data
+  /// wins); at app start the newer side wins so offline edits are not lost.
+  Future<void> syncAfterLogin({bool preferRemote = false}) async {
+    final c = cloud;
+    if (c == null || !signedIn) return;
+    syncing = true;
+    notifyListeners();
+    try {
+      final remote = await c.pull();
+      final local = lastModified;
+      if (remote == null) {
+        await c.push(toSnapshot(), local ?? DateTime.now());
+      } else if (preferRemote || local == null || remote.updatedAt.isAfter(local)) {
+        applySnapshot(remote.data, remote.updatedAt);
+      } else {
+        await c.push(toSnapshot(), local);
+      }
+      syncError = null;
+    } catch (_) {
+      syncError = 'Sync failed. Check your internet connection.';
+    }
+    syncing = false;
+    notifyListeners();
+  }
+
+  Future<AuthOutcome> signIn(String email, String password) async {
+    final c = cloud;
+    if (c == null) return const AuthOutcome(error: 'Cloud sync is not set up.');
+    final r = await c.signIn(email, password);
+    if (r.error == null) {
+      guestMode = false;
+      await syncAfterLogin(preferRemote: true);
+      notifyListeners();
+    }
+    return r;
+  }
+
+  Future<AuthOutcome> signUp(String email, String password) async {
+    final c = cloud;
+    if (c == null) return const AuthOutcome(error: 'Cloud sync is not set up.');
+    final r = await c.signUp(email, password);
+    if (r.error == null && !r.needsEmailConfirm) {
+      guestMode = false;
+      await syncAfterLogin(preferRemote: true);
+      notifyListeners();
+    }
+    return r;
+  }
+
+  Future<void> signOut() async {
+    await cloud?.signOut();
+    await clearAll();
+  }
+
+  void continueAsGuest() {
+    guestMode = true;
+    _save();
+    notifyListeners();
+  }
+
+  void leaveGuest() {
+    guestMode = false;
+    _save();
+    notifyListeners();
+  }
+
   Future<void> load() async {
     final p = await SharedPreferences.getInstance();
     _p = p;
@@ -50,6 +207,9 @@ class AppState extends ChangeNotifier {
         ? null
         : UserProfile.fromJson(Map<String, dynamic>.from(jsonDecode(prof) as Map));
     onboardingSkipped = p.getBool('onboardingSkipped') ?? false;
+    guestMode = p.getBool('guestMode') ?? false;
+    final lm = p.getString('lastModified');
+    lastModified = lm == null ? null : DateTime.tryParse(lm);
 
     weights.clear();
     final w = p.getString('weights');
@@ -107,6 +267,11 @@ class AppState extends ChangeNotifier {
       await p.remove('profile');
     }
     await p.setBool('onboardingSkipped', onboardingSkipped);
+    await p.setBool('guestMode', guestMode);
+    final lm = lastModified;
+    if (lm != null) {
+      await p.setString('lastModified', lm.toUtc().toIso8601String());
+    }
     await p.setString('weights', jsonEncode(weights.map((e) => e.toJson()).toList()));
     await p.setStringList('allergies', allergies.toList());
     await p.setString('severity', jsonEncode(severity));
@@ -121,8 +286,10 @@ class AppState extends ChangeNotifier {
   }
 
   void _changed() {
+    lastModified = DateTime.now();
     notifyListeners();
     _save();
+    _schedulePush();
   }
 
   // ---- Profile and targets ----
@@ -255,7 +422,16 @@ class AppState extends ChangeNotifier {
     return workouts.where((w) => !w.at.isBefore(start)).length;
   }
 
-  Future<void> clearAll() async {
+  Future<void> clearAll({bool deleteCloud = false}) async {
+    _pushTimer?.cancel();
+    if (deleteCloud && signedIn) {
+      try {
+        await cloud!.deleteRemote();
+      } catch (_) {}
+    }
+    guestMode = false;
+    lastModified = null;
+    syncError = null;
     profile = null;
     onboardingSkipped = false;
     weights.clear();

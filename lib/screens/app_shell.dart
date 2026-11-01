@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import 'allergy_screen.dart';
+import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
 import 'profile_screen.dart';
@@ -53,9 +54,9 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    if (context.watch<AppState>().needsOnboarding) {
-      return const OnboardingScreen();
-    }
+    final app = context.watch<AppState>();
+    if (app.needsAuth) return const AuthScreen();
+    if (app.needsOnboarding) return const OnboardingScreen();
 
     final pages = <Widget>[
       HomeScreen(onGoto: _goto),

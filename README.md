@@ -49,9 +49,28 @@ Theme: bright purple, font: Outfit. UI language: English.
 - Indian food search (about 27 common foods, approximate values) when adding meals
 - Workout history is saved; logging streak and workouts-this-week on Home
 
+## Accounts and cloud backup (Supabase)
+
+Each user signs in with email and password, and their data is saved to their own account.
+The app keeps working offline and syncs to the cloud a couple of seconds after each change.
+
+1. In Supabase, open SQL Editor and run `supabase/schema.sql` once (creates the `user_data` table with
+   Row Level Security, so users can only see their own row).
+2. In Supabase, Authentication, Providers: Email is on. For quick testing you can turn off
+   "Confirm email" (Authentication, Sign In / Providers, Email).
+3. In GitHub: Settings, Secrets and variables, Actions, New repository secret:
+   name `SUPABASE_ANON_KEY`, value = the anon public key from Supabase (Project Settings, API).
+   Never use or share the `service_role` key.
+4. Local run: `flutter run --dart-define=SUPABASE_ANON_KEY=your_key`
+
+The project URL is already set in `lib/config.dart`. Without the key, the app runs in
+local-only mode (no login screen).
+
+Note: the cloud copy is one JSON snapshot per user for now. Splitting it into separate tables
+(diary, workouts, weights) is a later step if you need server-side reports.
+
 ## Not built yet (next steps)
 
-- Login and cloud backup (Supabase or Firebase), so data is saved per user
 - Family profiles, label photo (OCR) for products not in the database
 - Meal plans, reminders, weekly report
 - Exercise videos, progressive overload suggestions
