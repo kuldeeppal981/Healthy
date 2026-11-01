@@ -9,6 +9,7 @@ import '../widgets/add_food_sheet.dart';
 import '../widgets/ring.dart';
 import '../widgets/voice_review.dart';
 import 'badges_screen.dart';
+import 'exercise_library_screen.dart';
 import 'health_connect_screen.dart';
 import 'report_screen.dart';
 import 'social_screen.dart';
@@ -253,6 +254,8 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 16),
+        const ExerciseLibraryCard(),
         const SizedBox(height: 16),
         const HealthConnectCard(),
         if (cloudEnabled) ...[
