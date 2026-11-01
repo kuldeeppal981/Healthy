@@ -66,7 +66,7 @@ List<AllergyHit> checkProduct(
 
     for (final tag in def.offTags) {
       if (item.allergenTags.contains(tag)) {
-        reason = 'Allergen list mein declared hai';
+        reason = 'Declared as an allergen';
         break;
       }
     }
@@ -74,7 +74,7 @@ List<AllergyHit> checkProduct(
     if (reason == null) {
       for (final k in def.keywords) {
         if (_keywordRegex(k).hasMatch(text)) {
-          reason = 'Ingredients mein "$k" mila';
+          reason = 'Found "$k" in ingredients';
           break;
         }
       }
@@ -88,7 +88,7 @@ List<AllergyHit> checkProduct(
     if (traceWarning) {
       for (final tag in def.offTags) {
         if (item.traceTags.contains(tag)) {
-          hits.add(AllergyHit(def, true, '"May contain" traces mein hai'));
+          hits.add(AllergyHit(def, true, 'Listed under "may contain" traces'));
           break;
         }
       }

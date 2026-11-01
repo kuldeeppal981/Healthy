@@ -19,19 +19,25 @@ class HomeScreen extends StatelessWidget {
   ];
   static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+  String _greeting(int hour) {
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
   String _tip(AppState s) {
     final h = DateTime.now().hour;
-    if (s.today.isEmpty) return 'Aaj ka pehla khana log karo. Barcode scan sabse tez hai.';
+    if (s.today.isEmpty) return 'Log your first meal of the day. Scanning a barcode is the fastest way.';
     if (s.kcalToday > s.kcalTarget) {
-      return 'Aaj calories target se upar hain. Agla meal halka rakho aur thoda walk karo.';
+      return 'You are over your calorie target today. Keep the next meal light and take a short walk.';
     }
     if (h >= 15 && s.proteinToday < s.proteinTarget * 0.5) {
-      return 'Protein thoda kam hai. Dinner mein dal, chana ya anda add karo.';
+      return 'Protein is a bit low. Add dal, chana, eggs or paneer to your next meal.';
     }
     if (s.waterToday < s.waterTarget ~/ 2 && h >= 14) {
-      return 'Paani kam hua hai. Abhi ek glass piyo.';
+      return 'You are behind on water. Have a glass now.';
     }
-    return 'Badhiya chal raha hai. Isi tarah log karte raho.';
+    return 'You are doing well. Keep logging.';
   }
 
   @override
@@ -40,6 +46,7 @@ class HomeScreen extends StatelessWidget {
     final now = DateTime.now();
     final remaining = (s.kcalTarget - s.kcalToday).round();
     final plan = planForWeekday(now.weekday);
+    final streak = s.foodStreak;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
@@ -54,8 +61,8 @@ class HomeScreen extends StatelessWidget {
                     '${_days[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}',
                     style: const TextStyle(color: AppColors.muted, fontSize: 14),
                   ),
-                  const Text('Namaste',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+                  Text(_greeting(now.hour),
+                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -77,8 +84,8 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       s.allergies.isEmpty
-                          ? 'Allergy add karo'
-                          : '${s.allergies.length} allergy ON',
+                          ? 'Add allergies'
+                          : '${s.allergies.length} allergy alert${s.allergies.length == 1 ? '' : 's'} on',
                       style: const TextStyle(
                         color: AppColors.chipInk,
                         fontSize: 13,
@@ -119,16 +126,27 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Aaj ka goal',
+                        const Text('Daily goal',
                             style: TextStyle(fontSize: 14, color: AppColors.muted)),
                         const SizedBox(height: 4),
                         Text(
                           remaining >= 0
-                              ? '$remaining kcal bache hain'
-                              : '${-remaining} kcal zyada',
+                              ? '$remaining kcal left'
+                              : '${-remaining} kcal over',
                           style: const TextStyle(
                               fontSize: 24, fontWeight: FontWeight.w700, height: 1.15),
                         ),
+                        if (streak > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              '$streak day logging streak',
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.link),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -160,16 +178,18 @@ class HomeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Paani',
+                          const Text('Water',
                               style: TextStyle(fontSize: 13, color: AppColors.muted)),
                           Text('${s.waterToday} / ${s.waterTarget}',
                               style: const TextStyle(
                                   fontSize: 19, fontWeight: FontWeight.w700)),
+                          const Text('glasses',
+                              style: TextStyle(fontSize: 12, color: AppColors.muted)),
                         ],
                       ),
                     ),
                     IconButton.filledTonal(
-                      tooltip: 'Ek glass paani add karo',
+                      tooltip: 'Add a glass of water',
                       onPressed: () => s.addWater(1),
                       icon: const Icon(Icons.add),
                     ),
@@ -188,13 +208,15 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Aaj ka workout',
+                      const Text("Today's workout",
                           style: TextStyle(fontSize: 13, color: AppColors.muted)),
                       Text(plan.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                               fontSize: 17, fontWeight: FontWeight.w700)),
+                      Text('${s.workoutsThisWeek} done this week',
+                          style: const TextStyle(fontSize: 12, color: AppColors.muted)),
                     ],
                   ),
                 ),
@@ -203,7 +225,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        const Text('Aaj ka khana',
+        const Text("Today's meals",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         const SizedBox(height: 10),
         for (final meal in mealOrder) _mealCard(context, s, meal),
@@ -216,7 +238,7 @@ class HomeScreen extends StatelessWidget {
           child: Text.rich(
             TextSpan(children: [
               const TextSpan(
-                text: 'Aaj ka tip: ',
+                text: 'Tip: ',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
               TextSpan(text: _tip(s)),
@@ -276,7 +298,7 @@ class HomeScreen extends StatelessWidget {
                       Text(mealLabels[meal]!,
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                       if (items.isEmpty)
-                        const Text('Kuch add nahi kiya',
+                        const Text('Nothing added yet',
                             style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     ],
                   ),
@@ -285,7 +307,7 @@ class HomeScreen extends StatelessWidget {
                   Text('$kcal kcal',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                 IconButton(
-                  tooltip: '${mealLabels[meal]} mein add karo',
+                  tooltip: 'Add to ${mealLabels[meal]}',
                   onPressed: () => showAddFoodSheet(context, meal: meal),
                   icon: const Icon(Icons.add_circle, color: AppColors.primary),
                 ),

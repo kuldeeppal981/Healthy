@@ -60,18 +60,18 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           }
           if (snap.hasError) {
             return _message(
-              'Internet ya server ki problem hai. Dobara try karo.',
-              actionLabel: 'Dobara try karo',
+              'Network or server problem. Please try again.',
+              actionLabel: 'Try again',
               onAction: _retry,
             );
           }
           final item = snap.data;
           if (item == null) {
             return _message(
-              'Ye product database mein nahi mila (${widget.barcode}). Aap khud calories add kar sakte ho.',
-              actionLabel: 'Manual add karo',
+              'This product was not found in the database (${widget.barcode}). You can add the calories yourself.',
+              actionLabel: 'Add manually',
               onAction: () async {
-                await showAddFoodSheet(context);
+                await showAddFoodSheet(context, customMode: true);
                 if (context.mounted) Navigator.of(context).pop();
               },
             );
@@ -173,7 +173,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   const Text('Quantity', style: TextStyle(fontWeight: FontWeight.w600)),
                   const Spacer(),
                   IconButton.outlined(
-                    tooltip: '25 g kam',
+                    tooltip: 'Less 25 g',
                     onPressed: _grams > 25 ? () => setState(() => _grams -= 25) : null,
                     icon: const Icon(Icons.remove),
                   ),
@@ -184,7 +184,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                   ),
                   IconButton.outlined(
-                    tooltip: '25 g zyada',
+                    tooltip: 'More 25 g',
                     onPressed: () => setState(() => _grams += 25),
                     icon: const Icon(Icons.add),
                   ),
@@ -203,7 +203,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               if (item.ingredients.trim().isEmpty)
-                const Text('Ingredient list database mein nahi hai.',
+                const Text('Ingredient list is not available in the database.',
                     style: TextStyle(color: AppColors.muted))
               else
                 Text.rich(
@@ -217,12 +217,12 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         if (contains.isNotEmpty)
           OutlinedButton(
             onPressed: () => _add(context, item, kcal, protein, carbs, fat),
-            child: const Text('Phir bhi diary mein add karo'),
+            child: const Text('Add to diary anyway'),
           )
         else
           FilledButton(
             onPressed: () => _add(context, item, kcal, protein, carbs, fat),
-            child: const Text('Diary mein add karo'),
+            child: const Text('Add to diary'),
           ),
       ],
     );
@@ -277,7 +277,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         AppColors.warnInk,
         Icons.info_outline,
         'May contain: $names',
-        'Product mein traces ho sakte hain. Severe allergy ho to avoid karo.',
+        'This product may contain traces. Avoid it if your allergy is severe.',
       );
     }
     if (noAllergiesSet) {
@@ -285,8 +285,8 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         AppColors.chipBg,
         AppColors.chipInk,
         Icons.shield_outlined,
-        'Allergy profile khali hai',
-        'Allergy tab mein apni allergies select karo, phir har scan par alert milega.',
+        'Your allergy profile is empty',
+        'Select your allergies in the Allergy tab to get an alert on every scan.',
       );
     }
     if (incomplete) {
@@ -294,16 +294,16 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         AppColors.warnBg,
         AppColors.warnInk,
         Icons.help_outline,
-        'Allergen data nahi mila',
-        'Is product ka ingredient data adhura hai, isliye safe nahi keh sakte. Label khud padho.',
+        'No allergen data found',
+        'Ingredient data for this product is incomplete, so we cannot call it safe. Please read the label yourself.',
       );
     }
     return box(
       AppColors.safeBg,
       AppColors.safe,
       Icons.check_circle_outline,
-      'Aapki allergies ke hisaab se koi match nahi',
-      'Data Open Food Facts se hai. Khane se pehle label bhi check kar lo.',
+      'No match with your allergies',
+      'Data is from Open Food Facts. Please also check the label before eating.',
     );
   }
 
@@ -372,7 +372,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           ),
         );
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Diary mein add ho gaya')),
+      const SnackBar(content: Text('Added to your diary')),
     );
     Navigator.of(context).pop();
   }

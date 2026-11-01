@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../profile_models.dart';
+import '../state/app_state.dart';
 import '../theme.dart';
 import 'workout_data.dart';
 
@@ -20,8 +23,8 @@ class _SetLog {
   }
 }
 
-/// Day-wise workout: pick a day, log sets (kg x reps), rest timer runs
-/// after every completed set. (Logs live in memory for now.)
+/// Day-wise workout: pick a day, log sets (kg x reps), rest timer runs after
+/// every completed set, and finished sessions are saved to history.
 class WorkoutScreen extends StatefulWidget {
   const WorkoutScreen({super.key});
 
@@ -60,6 +63,19 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     });
   }
 
+  void _resetDay(int weekday) {
+    final day = _logs.remove(weekday);
+    if (day == null) return;
+    // Dispose after the frame so text fields are no longer using them.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final sets in day) {
+        for (final l in sets) {
+          l.dispose();
+        }
+      }
+    });
+  }
+
   void _startRest() {
     _timer?.cancel();
     setState(() => _rest = _restSeconds);
@@ -85,13 +101,53 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   String _mmss(int s) =>
       '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
 
+  void _finish(DayPlan plan, List<List<_SetLog>> logs) {
+    var sets = 0;
+    var volume = 0.0;
+    for (var i = 0; i < plan.exercises.length; i++) {
+      final ex = plan.exercises[i];
+      for (final l in logs[i]) {
+        if (!l.done) continue;
+        sets++;
+        if (ex.unit == 'reps') {
+          final kg = double.tryParse(l.kg.text.trim()) ?? 0;
+          final reps = double.tryParse(l.reps.text.trim()) ?? 0;
+          volume += kg * reps;
+        }
+      }
+    }
+
+    context.read<AppState>().addWorkout(
+          WorkoutLog(
+            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            at: DateTime.now(),
+            title: plan.title,
+            sets: sets,
+            volumeKg: volume,
+          ),
+        );
+    _skipRest();
+    _resetDay(_weekday);
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Workout saved: $sets sets, ${volume.round()} kg lifted')),
+    );
+  }
+
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
     final plan = planForWeekday(_weekday);
     final logs = _logsFor(_weekday);
     final total = logs.fold<int>(0, (n, e) => n + e.length);
     final done = logs.fold<int>(0, (n, e) => n + e.where((l) => l.done).length);
     final today = DateTime.now().weekday;
+    final history = state.workouts.reversed.take(5).toList();
 
     return Column(
       children: [
@@ -99,7 +155,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             children: [
-              Text(_weekday == today ? 'Aaj ka workout' : 'Workout plan',
+              Text(_weekday == today ? "Today's workout" : 'Workout plan',
                   style: const TextStyle(color: AppColors.muted, fontSize: 14)),
               Text(plan.title,
                   style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
@@ -134,7 +190,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               if (plan.rest)
                 const AppCard(
                   child: Text(
-                    'Aaj rest day hai. 20 min walk aur halki stretching karo, paani zyada piyo.',
+                    'Rest day. Take a 20 minute walk, stretch lightly and drink plenty of water.',
                     style: TextStyle(fontSize: 15, height: 1.4),
                   ),
                 )
@@ -168,6 +224,39 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 for (var i = 0; i < plan.exercises.length; i++)
                   _exerciseCard(plan.exercises[i], logs[i]),
               ],
+              if (history.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text('Recent workouts',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                for (final w in history)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: AppCard(
+                      radius: 14,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(w.title,
+                                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                                Text('${w.at.day} ${_months[w.at.month - 1]}',
+                                    style: const TextStyle(
+                                        fontSize: 12, color: AppColors.muted)),
+                              ],
+                            ),
+                          ),
+                          Text('${w.sets} sets  |  ${w.volumeKg.round()} kg',
+                              style: const TextStyle(
+                                  fontSize: 13, color: AppColors.muted)),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
@@ -193,14 +282,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
             child: FilledButton(
-              onPressed: done == 0
-                  ? null
-                  : () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Shabash! $done sets complete hue.')),
-                      );
-                    },
-              child: const Text('Workout finish karo'),
+              onPressed: done == 0 ? null : () => _finish(plan, logs),
+              child: const Text('Finish workout'),
             ),
           ),
       ],
@@ -238,8 +321,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            Row(
-              children: const [
+            const Row(
+              children: [
                 SizedBox(width: 36, child: Text('Set', style: _head)),
                 Expanded(child: Text('Kg', style: _head)),
                 SizedBox(width: 8),

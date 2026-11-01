@@ -1,7 +1,7 @@
 # Healthy (working name)
 
 Calorie tracker with barcode scan, personal allergy alerts and a day-wise gym workout planner.
-Theme: bright purple, font: Outfit. UI language: Hinglish.
+Theme: bright purple, font: Outfit. UI language: English.
 
 ## What works in this first version
 
@@ -42,13 +42,19 @@ Theme: bright purple, font: Outfit. UI language: Hinglish.
    flutter run
    ```
 
+## Also built
+
+- Onboarding: sex, age, height, weight, activity, goal gives daily calorie and macro targets (Mifflin-St Jeor)
+- Weight log with BMI and a small trend chart; edit profile and recalculate targets
+- Indian food search (about 27 common foods, approximate values) when adding meals
+- Workout history is saved; logging streak and workouts-this-week on Home
+
 ## Not built yet (next steps)
 
-- Onboarding with age, height, weight, goal and auto calorie target (BMR/TDEE)
+- Login and cloud backup (Supabase or Firebase), so data is saved per user
 - Family profiles, label photo (OCR) for products not in the database
-- Indian food database, meal plans, reminders, streaks, weekly report
-- Saving workout history, exercise videos, progressive overload suggestions
-- Login and cloud backup (Firebase or Supabase)
+- Meal plans, reminders, weekly report
+- Exercise videos, progressive overload suggestions
 - Hindi language switch
 
 Note: this code was written without being compiled in the build environment, so expect to fix a few

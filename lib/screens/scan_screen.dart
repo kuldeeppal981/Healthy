@@ -54,7 +54,7 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Product scan karo')),
+      appBar: AppBar(title: const Text('Scan product')),
       body: Column(
         children: [
           Expanded(
@@ -73,7 +73,7 @@ class _ScanScreenState extends State<ScanScreen> {
                         padding: const EdgeInsets.all(24),
                         alignment: Alignment.center,
                         child: const Text(
-                          'Camera nahi khul paya. Camera permission on karo ya neeche barcode number type karo.',
+                          'Could not open the camera. Allow camera permission, or type the barcode number below.',
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -103,7 +103,7 @@ class _ScanScreenState extends State<ScanScreen> {
             child: Column(
               children: [
                 const Text(
-                  'Barcode ko box ke andar rakho',
+                  'Place the barcode inside the box',
                   style: TextStyle(color: AppColors.muted),
                 ),
                 const SizedBox(height: 12),
@@ -113,7 +113,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       child: TextField(
                         controller: _manual,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(labelText: 'Ya barcode number type karo'),
+                        decoration: const InputDecoration(labelText: 'Or type the barcode number'),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -127,7 +127,7 @@ class _ScanScreenState extends State<ScanScreen> {
                           final v = _manual.text.trim();
                           if (v.length >= 6) _open(v);
                         },
-                        child: const Text('Dekho'),
+                        child: const Text('Look up'),
                       ),
                     ),
                   ],

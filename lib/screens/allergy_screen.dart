@@ -10,7 +10,7 @@ class AllergyScreen extends StatelessWidget {
   const AllergyScreen({super.key});
 
   static const _levels = {
-    'mild': 'Halki',
+    'mild': 'Mild',
     'medium': 'Medium',
     'severe': 'Severe',
   };
@@ -26,7 +26,7 @@ class AllergyScreen extends StatelessWidget {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
         const SizedBox(height: 4),
         const Text(
-          'Jo select karoge, scan karte hi uska alert milega.',
+          'Select your allergies to get an alert whenever you scan a product.',
           style: TextStyle(color: AppColors.muted),
         ),
         const SizedBox(height: 16),
@@ -52,7 +52,7 @@ class AllergyScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${allergenById(id)!.label}: kitni serious?',
+                    Text('${allergenById(id)!.label}: how severe?',
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 10),
                     SizedBox(
@@ -71,7 +71,7 @@ class AllergyScreen extends StatelessWidget {
                       const Padding(
                         padding: EdgeInsets.only(top: 8),
                         child: Text(
-                          'Severe allergy mein "may contain" wale products bhi avoid karo.',
+                          'With a severe allergy, also avoid products that say "may contain".',
                           style: TextStyle(fontSize: 12, color: AppColors.muted),
                         ),
                       ),
@@ -86,7 +86,7 @@ class AllergyScreen extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             title: const Text('"May contain" traces warning',
                 style: TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: const Text('Cross-contamination ka alert'),
+            subtitle: const Text('Cross-contamination alert'),
             value: s.traceWarning,
             activeColor: AppColors.primary,
             onChanged: s.setTraceWarning,
@@ -94,7 +94,7 @@ class AllergyScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         const Text(
-          'Ye app sirf madad ke liye hai. Serious allergy mein hamesha product label khud padho aur doctor ki salah lo.',
+          'This app is only a helper. For serious allergies, always read the product label yourself and follow medical advice.',
           style: TextStyle(fontSize: 12, color: AppColors.muted, height: 1.4),
         ),
       ],
