@@ -7,6 +7,7 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/ring.dart';
+import '../widgets/voice_review.dart';
 import 'badges_screen.dart';
 import 'coach_screen.dart';
 import 'steps_screen.dart';
@@ -250,8 +251,19 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 16),
-        const Text("Today's meals",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+        Row(
+          children: [
+            const Expanded(
+              child: Text("Today's meals",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            ),
+            FilledButton.tonalIcon(
+              onPressed: () => logByVoice(context),
+              icon: const Icon(Icons.mic, size: 18),
+              label: const Text('Speak'),
+            ),
+          ],
+        ),
         const SizedBox(height: 10),
         for (final meal in mealOrder) _mealCard(context, s, meal),
         const SizedBox(height: 4),

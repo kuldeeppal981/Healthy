@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/voice_capture.dart';
 
 class _Msg {
   final bool user;
@@ -199,6 +200,18 @@ class _CoachScreenState extends State<CoachScreen> {
                             ),
                             onSubmitted: (_) => _send(),
                           ),
+                        ),
+                        IconButton(
+                          tooltip: 'Speak',
+                          onPressed: _busy
+                              ? null
+                              : () async {
+                                  final t = await showVoiceCapture(context,
+                                      hint: 'Ask the coach');
+                                  if (t != null) _send(t);
+                                },
+                          icon: const Icon(Icons.mic),
+                          color: AppColors.primary,
                         ),
                         IconButton(
                           onPressed: _busy ? null : _send,

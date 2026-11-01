@@ -7,6 +7,8 @@ import '../profile_models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../services/reminder_service.dart';
+import '../services/voice_parser.dart';
+import '../widgets/voice_capture.dart';
 import 'plan_editor.dart';
 import 'workout_data.dart';
 
@@ -75,6 +77,37 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         }
       }
     });
+  }
+
+  /// "bench press 40 kilo 8 reps" fills the next open set of that exercise.
+  Future<void> _voiceSet(AppState state) async {
+    final plan = state.planFor(_weekday);
+    if (plan.rest || plan.exercises.isEmpty) return;
+    final text = await showVoiceCapture(context, hint: 'Say your set');
+    if (text == null || !mounted) return;
+    final v = parseWorkoutVoice(text, [for (final e in plan.exercises) e.name]);
+    final msg = ScaffoldMessenger.of(context);
+    if (v == null) {
+      msg.showSnackBar(const SnackBar(
+          content: Text('Could not find that exercise in today\'s plan.')));
+      return;
+    }
+    final sets = _logsFor(_weekday, plan)[v.exerciseIndex];
+    final open = sets.where((l) => !l.done).toList();
+    if (open.isEmpty) {
+      msg.showSnackBar(const SnackBar(content: Text('All sets of that exercise are done.')));
+      return;
+    }
+    final l = open.first;
+    setState(() {
+      if (v.kg != null) l.kg.text = v.kg! == v.kg!.roundToDouble() ? '${v.kg!.round()}' : '${v.kg}';
+      if (v.reps != null) l.reps.text = '${v.reps}';
+      l.done = true;
+    });
+    _startRest();
+    msg.showSnackBar(SnackBar(
+      content: Text('${plan.exercises[v.exerciseIndex].name}: ${v.kg ?? 0} kg x ${v.reps ?? l.reps.text} logged'),
+    ));
   }
 
   Future<void> _edit(AppState state) async {
@@ -192,6 +225,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   Expanded(
                     child: Text(plan.title,
                         style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
+                  ),
+                  IconButton(
+                    tooltip: 'Log a set by voice',
+                    onPressed: () => _voiceSet(state),
+                    icon: const Icon(Icons.mic, color: AppColors.primary),
                   ),
                   TextButton.icon(
                     onPressed: () => _edit(state),
