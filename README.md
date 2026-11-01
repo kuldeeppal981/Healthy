@@ -1,3 +1,5 @@
+> **For developers and coding agents:** start with `CLAUDE.md`, then `docs/`.
+
 # Healthy (working name)
 
 Calorie tracker with barcode scan, personal allergy alerts and a day-wise gym workout planner.

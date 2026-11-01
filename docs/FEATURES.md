@@ -1,0 +1,74 @@
+# Features built so far
+
+Status key: **untested** = written but never compiled or run (the sandbox has no Flutter).
+Only the early core was confirmed running by the user (APK installs, Home screen shows).
+Update this file whenever a feature is added or changed.
+
+## Food and nutrition
+- Calorie diary by meal, macro targets, calorie ring (`screens/home_screen.dart`, `state/app_state.dart`)
+- Barcode scan with Open Food Facts lookup + manual barcode entry (`screens/scan_screen.dart`, `services/food_service.dart`)
+- Manual food add, Indian foods list (`data/indian_foods.dart`, `widgets/add_food_sheet.dart`)
+- Water counter and reminders
+- Voice logging: speak "2 roti aur dal", parsed by `voice_parser.dart`, nutrition estimated by the AI
+  edge function (`mode: estimate`), reviewed in `widgets/voice_review.dart` (untested)
+- Targets from profile (`services/nutrition_calc.dart`)
+
+## Allergy and health
+- Allergen matching incl. hidden ingredient names, may-contain traces, severity levels; never says "safe"
+  when ingredient data is missing (`services/allergy_checker.dart`, `screens/allergy_screen.dart`)
+- Health condition mode, e.g. diabetes/BP guidance (`services/health_conditions.dart`, `screens/health_screen.dart`) (untested)
+- Health Connect: steps, heart rate, sleep, exercise (`services/health_service.dart`, `screens/health_connect_screen.dart`) (untested)
+- Weight log
+
+## Workout
+- Day-wise plan Mon-Sun (`screens/workout_data.dart`), user can edit any day (`screens/plan_editor.dart`)
+- Set logging kg x reps, 90 s rest timer, history, best set per exercise saved in `WorkoutLog.bests`
+- Voice set logging "bench press 40 kilo 8 reps"
+- Daily gym alarm (full-screen/insistent notification) and meal/water/workout reminders
+  (`services/reminder_service.dart`, `screens/reminders_screen.dart`) (untested)
+- Personal records: a PR is a heavier set (or same weight, more reps) than anything logged before;
+  first time logging an exercise is not a PR (`findNewPrs` in `services/social_service.dart`)
+- Exercise library: 39 exercises with muscles, equipment, steps, mistakes, beginner/intermediate/advanced
+  variations, filters, YouTube search button for a video demo; "?" button in the workout screen
+  (`data/exercise_library.dart`, `screens/exercise_library_screen.dart`). No in-app images or videos.
+
+## Steps, widget
+- Phone step sensor (`services/step_service.dart`), steps screen, goal
+- Android home screen widget (`services/widget_service.dart`; native files are created by the workflow)
+
+## Habits and rewards
+- Daily check-in, daily streak (check-in OR food log OR workout), 2 streak freezes per month used
+  automatically when exactly one day is missed (`state/app_state.dart`, `screens/streak_card.dart`)
+- XP and levels (Beginner, Mover Lv3, Fit Lv5, Athlete Lv8, Beast Lv12, Legend Lv18), computed from data,
+  not stored (`services/levels.dart`). Level n needs 50*n*(n-1) XP.
+- Food-log streak and 15 badges (`services/badges.dart`, `screens/badges_screen.dart`)
+
+## Account and cloud
+- Email + password sign up with name, email code verification, sign in, guest mode, Google sign-in code
+  (Google setup not done) (`screens/auth_screen.dart`, `services/cloud_sync.dart`)
+- Per-user cloud backup/sync of all app data (Supabase `user_data`), merge on login
+- Dark mode: Auto/Light/Dark in Profile (`services/theme_service.dart`)
+
+## Social (needs account + "turn on friends")
+- Social profile with name + friend code, find people by name, "People you may know", add by code,
+  requests, discoverable switch (`services/social_service.dart`, `screens/social_screen.dart`)
+- Leaderboard: steps today / 7 days, workout streak, food streak, workouts in 30 days
+- Challenges: steps, workout days, 30-day transformation, join by code
+- **Feed**: posts for PRs, finished workouts, level-ups, streak milestones; reactions fire/clap/muscle/heart;
+  "My personal records"; "Share my achievements" switch
+- **Cheers**: reactions on your posts show in "Cheers for you", an unread badge on the Home card, and a
+  local phone notification. The app polls every 90 s **only while the app process is alive**; there is no
+  real push (needs Firebase FCM).
+- Share progress card as image (`widgets/share_card.dart`)
+
+## AI
+- AI coach chat via the `coach` edge function (Gemini), 10 free requests/day per user
+  (`screens/coach_screen.dart`). **Not usable until the `GEMINI_API_KEY` secret is added in Supabase.**
+
+## Reports
+- Monthly report with totals, protein consistency, weight change, PRs, and PDF export
+  (`services/report.dart`, `report_pdf.dart`, `screens/report_screen.dart`) (untested)
+
+## Parked or unused
+- Label scan (photo of nutrition label): `parked/label_scan_screen.dart`, `services/label_parser.dart`.
+  Removed because ML Kit broke the release build (R8 missing classes). Needs a different approach.
