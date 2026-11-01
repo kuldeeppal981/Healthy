@@ -25,6 +25,8 @@ class _LabelScanScreenState extends State<LabelScanScreen> {
   final _carbs = TextEditingController();
   final _fat = TextEditingController();
   final _sugar = TextEditingController();
+  final _satFat = TextEditingController();
+  final _sodium = TextEditingController();
 
   bool _busy = false;
   bool _read = false;
@@ -32,7 +34,7 @@ class _LabelScanScreenState extends State<LabelScanScreen> {
 
   @override
   void dispose() {
-    for (final c in [_name, _ingredients, _kcal, _protein, _carbs, _fat, _sugar]) {
+    for (final c in [_name, _ingredients, _kcal, _protein, _carbs, _fat, _sugar, _satFat, _sodium]) {
       c.dispose();
     }
     super.dispose();
@@ -63,6 +65,8 @@ class _LabelScanScreenState extends State<LabelScanScreen> {
         _carbs.text = _fmt(data.carbs);
         _fat.text = _fmt(data.fat);
         _sugar.text = _fmt(data.sugar);
+        _satFat.text = _fmt(data.satFat);
+        _sodium.text = _fmt(data.sodiumMg);
         _read = true;
         _busy = false;
         if (result.text.trim().isEmpty) {
@@ -84,6 +88,9 @@ class _LabelScanScreenState extends State<LabelScanScreen> {
   double _d(TextEditingController c) =>
       double.tryParse(c.text.trim().replaceAll(',', '.')) ?? 0;
 
+  double? _opt(TextEditingController c) =>
+      double.tryParse(c.text.trim().replaceAll(',', '.'));
+
   void _check() {
     if (_ingredients.text.trim().isEmpty) {
       setState(() => _error = 'Add the ingredients so we can check them.');
@@ -104,6 +111,8 @@ class _LabelScanScreenState extends State<LabelScanScreen> {
       nutriGrade: null,
       servingGrams: 100,
       fromLabel: true,
+      satFat100: _opt(_satFat),
+      sodiumMg100: _opt(_sodium),
     );
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(builder: (_) => ScanResultScreen(barcode: '', item: item)),
@@ -186,7 +195,9 @@ class _LabelScanScreenState extends State<LabelScanScreen> {
             const SizedBox(height: 8),
             Row(children: [_num(_carbs, 'Carbs g'), const SizedBox(width: 8), _num(_fat, 'Fat g')]),
             const SizedBox(height: 8),
-            Row(children: [_num(_sugar, 'Sugar g'), const Spacer()]),
+            Row(children: [_num(_sugar, 'Sugar g'), const SizedBox(width: 8), _num(_satFat, 'Sat. fat g')]),
+            const SizedBox(height: 8),
+            Row(children: [_num(_sodium, 'Sodium mg'), const Spacer()]),
             const SizedBox(height: 20),
             FilledButton(onPressed: _check, child: const Text('Check allergies')),
           ],

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models.dart';
 import '../services/allergy_checker.dart';
 import '../services/food_service.dart';
+import '../services/health_conditions.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
@@ -125,6 +126,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       children: [
         _banner(contains, traces, incomplete, s.allergies.isEmpty, item.fromLabel),
         const SizedBox(height: 12),
+        if (s.conditions.isNotEmpty) ...[
+          _healthCard(checkHealth(item, s.conditions, grams: _grams)),
+          const SizedBox(height: 12),
+        ],
         AppCard(
           radius: 18,
           child: Column(
@@ -318,6 +323,65 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       fromLabel
           ? 'Read from your photo. Photo reading can miss words, so please read the label yourself before eating.'
           : 'Data is from Open Food Facts. Please also check the label before eating.',
+    );
+  }
+
+  Widget _healthCard(List<HealthFlag> flags) {
+    Color color(HealthLevel l) => switch (l) {
+          HealthLevel.avoid => AppColors.danger,
+          HealthLevel.caution => AppColors.warnInk,
+          HealthLevel.good => AppColors.safe,
+          HealthLevel.info => AppColors.muted,
+        };
+    IconData icon(HealthLevel l) => switch (l) {
+          HealthLevel.avoid => Icons.error_outline,
+          HealthLevel.caution => Icons.warning_amber_rounded,
+          HealthLevel.good => Icons.check_circle_outline,
+          HealthLevel.info => Icons.info_outline,
+        };
+    return AppCard(
+      radius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('For your health',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          if (flags.isEmpty)
+            const Text(
+              'Nothing flagged from the information we have. Check the label too.',
+              style: TextStyle(color: AppColors.muted, height: 1.4),
+            ),
+          for (final f in flags)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(icon(f.level), size: 18, color: color(f.level)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(children: [
+                        TextSpan(
+                            text: f.message,
+                            style: TextStyle(
+                                color: color(f.level), fontWeight: FontWeight.w600)),
+                        TextSpan(
+                            text: '  (${f.conditions})',
+                            style: const TextStyle(
+                                color: AppColors.muted, fontSize: 12)),
+                      ]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 8),
+          const Text('General guidance, not medical advice.',
+              style: TextStyle(fontSize: 11, color: AppColors.muted)),
+        ],
+      ),
     );
   }
 

@@ -6,6 +6,7 @@ import '../services/nutrition_calc.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/sparkline.dart';
+import 'health_screen.dart';
 import 'onboarding_screen.dart';
 import 'reminders_screen.dart';
 
@@ -79,6 +80,22 @@ class ProfileScreen extends StatelessWidget {
           )
         else
           _bodyCard(context, s),
+        const SizedBox(height: 12),
+        AppCard(
+          radius: 16,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          child: ListTile(
+            leading: const Icon(Icons.monitor_heart_outlined, color: AppColors.primary),
+            title: const Text('Health conditions', style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(s.conditions.isEmpty
+                ? 'Diabetes, BP, cholesterol, PCOS'
+                : '${s.conditions.length} switched on'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const HealthScreen()),
+            ),
+          ),
+        ),
         const SizedBox(height: 12),
         AppCard(
           radius: 16,

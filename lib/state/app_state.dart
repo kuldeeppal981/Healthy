@@ -22,6 +22,7 @@ class AppState extends ChangeNotifier {
 
   // Allergies
   final Set<String> allergies = {};
+  final Set<String> conditions = {};
   final Map<String, String> severity = {}; // allergen id -> mild|medium|severe
   bool traceWarning = true;
 
@@ -66,6 +67,7 @@ class AppState extends ChangeNotifier {
         'onboardingSkipped': onboardingSkipped,
         'weights': weights.map((e) => e.toJson()).toList(),
         'allergies': allergies.toList(),
+        'conditions': conditions.toList(),
         'severity': severity,
         'traceWarning': traceWarning,
         'kcalTarget': kcalTarget,
@@ -92,6 +94,9 @@ class AppState extends ChangeNotifier {
     allergies
       ..clear()
       ..addAll(((j['allergies'] as List?) ?? const []).map((x) => x.toString()));
+    conditions
+      ..clear()
+      ..addAll(((j['conditions'] as List?) ?? const []).map((x) => x.toString()));
     severity
       ..clear()
       ..addAll(Map<String, String>.from((j['severity'] as Map?) ?? const {}));
@@ -271,6 +276,9 @@ class AppState extends ChangeNotifier {
     allergies
       ..clear()
       ..addAll(p.getStringList('allergies') ?? const []);
+    conditions
+      ..clear()
+      ..addAll(p.getStringList('conditions') ?? const []);
 
     final sev = p.getString('severity');
     severity.clear();
@@ -326,6 +334,7 @@ class AppState extends ChangeNotifier {
     }
     await p.setString('weights', jsonEncode(weights.map((e) => e.toJson()).toList()));
     await p.setStringList('allergies', allergies.toList());
+    await p.setStringList('conditions', conditions.toList());
     await p.setString('severity', jsonEncode(severity));
     await p.setBool('traceWarning', traceWarning);
     await p.setInt('kcalTarget', kcalTarget);
@@ -390,6 +399,12 @@ class AppState extends ChangeNotifier {
     weights.add(WeightEntry(DateTime.now(), kg));
     final pr = profile;
     if (pr != null) profile = pr.copyWith(weightKg: kg);
+    _changed();
+  }
+
+  // ---- Health conditions ----
+  void toggleCondition(String id) {
+    if (!conditions.remove(id)) conditions.add(id);
     _changed();
   }
 
@@ -517,6 +532,7 @@ class AppState extends ChangeNotifier {
     onboardingSkipped = false;
     weights.clear();
     allergies.clear();
+    conditions.clear();
     severity.clear();
     entries.clear();
     water.clear();

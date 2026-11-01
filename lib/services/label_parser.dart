@@ -8,6 +8,8 @@ class LabelData {
   final double? carbs;
   final double? fat;
   final double? sugar;
+  final double? satFat;
+  final double? sodiumMg;
 
   const LabelData({
     required this.ingredients,
@@ -16,6 +18,8 @@ class LabelData {
     this.carbs,
     this.fat,
     this.sugar,
+    this.satFat,
+    this.sodiumMg,
   });
 }
 
@@ -53,6 +57,14 @@ LabelData parseLabel(String raw) {
       _num(RegExp('(?<!saturated\\s)(?<!trans\\s)fat[^\\d]{0,14}$n', caseSensitive: false), flat);
   final sugar = _num(RegExp('sugars?[^\\d]{0,14}$n', caseSensitive: false), flat);
 
+  final satFat = _num(RegExp('saturated\\s*fat[^\\d]{0,14}$n', caseSensitive: false), flat);
+  double? sodiumMg;
+  final na = RegExp('sodium[^\\d]{0,12}$n\\s*(mg|g)?', caseSensitive: false).firstMatch(flat);
+  if (na != null) {
+    final v = double.tryParse(na.group(1)!.replaceAll(',', '.'));
+    if (v != null) sodiumMg = (na.group(2)?.toLowerCase() == 'g') ? v * 1000 : v;
+  }
+
   return LabelData(
     ingredients: ingredients,
     kcal: kcal,
@@ -60,5 +72,7 @@ LabelData parseLabel(String raw) {
     carbs: carbs,
     fat: fat,
     sugar: sugar,
+    satFat: satFat,
+    sodiumMg: sodiumMg,
   );
 }

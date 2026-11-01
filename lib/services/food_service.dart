@@ -37,6 +37,17 @@ class FoodService {
     List<String> tags(dynamic v) =>
         v is List ? v.map((e) => e.toString()).toList() : <String>[];
 
+    double? opt(dynamic v) {
+      if (v == null) return null;
+      if (v is num) return v.toDouble();
+      return double.tryParse('$v');
+    }
+
+    // Sodium is in grams per 100 g; salt in grams (sodium is about 0.4 of salt).
+    final sodiumG = opt(n['sodium_100g']);
+    final saltG = opt(n['salt_100g']);
+    final sodiumMg = sodiumG != null ? sodiumG * 1000 : (saltG != null ? saltG * 400 : null);
+
     final serving = num0(p['serving_quantity']);
     final grade = (p['nutrition_grades'] ?? '').toString().trim();
 
@@ -56,6 +67,9 @@ class FoodService {
       traceTags: tags(p['traces_tags']),
       nutriGrade: grade.length == 1 ? grade.toUpperCase() : null,
       servingGrams: serving > 0 ? serving : 100,
+      satFat100: opt(n['saturated-fat_100g']),
+      sodiumMg100: sodiumMg,
+      fiber100: opt(n['fiber_100g']),
     );
   }
 }

@@ -54,6 +54,8 @@ class _CoachScreenState extends State<CoachScreen> {
       'Eaten today: ${s.kcalToday.round()} kcal, protein ${s.proteinToday.round()} g, carbs ${s.carbsToday.round()} g, fat ${s.fatToday.round()} g',
       'Foods today: ${eaten.isEmpty ? 'nothing yet' : eaten}',
       'Allergies: ${s.allergies.isEmpty ? 'none' : s.allergies.join(', ')}',
+      if (s.conditions.isNotEmpty)
+        'Health conditions (be conservative, defer to their doctor): ${s.conditions.join(', ')}',
       "Today's workout: ${plan.rest ? 'rest day' : plan.title}",
     ].join('\n');
   }

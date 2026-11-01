@@ -14,6 +14,11 @@ class FoodItem {
   final String? nutriGrade;
   final double servingGrams;
 
+  /// Optional per 100 g values. Null means the product does not list them.
+  final double? satFat100;
+  final double? sodiumMg100;
+  final double? fiber100;
+
   /// True when the data was read from a photo of the label, not a database.
   final bool fromLabel;
 
@@ -32,6 +37,9 @@ class FoodItem {
     required this.nutriGrade,
     required this.servingGrams,
     this.fromLabel = false,
+    this.satFat100,
+    this.sodiumMg100,
+    this.fiber100,
   });
 
   static double scale(double per100, double grams) => per100 * grams / 100;
