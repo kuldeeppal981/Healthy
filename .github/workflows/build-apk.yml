@@ -1,0 +1,72 @@
+name: Build Android APK
+
+# Runs on every push to main, and manually from the Actions tab
+# (Actions -> Build Android APK -> Run workflow).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # The repo only holds lib/ and pubspec.yaml, so create the Android
+      # project here. Existing files (lib/, pubspec.yaml) are kept.
+      - name: Generate Android project
+        run: |
+          flutter create --platforms=android --project-name healthy_app --org com.kuldeep .
+          rm -f test/widget_test.dart
+
+      - name: Add camera and internet permissions
+        run: |
+          python3 - <<'EOF'
+          import re
+          p = 'android/app/src/main/AndroidManifest.xml'
+          s = open(p, encoding='utf-8').read()
+          perms = (
+              '\n    <uses-permission android:name="android.permission.INTERNET"/>'
+              '\n    <uses-permission android:name="android.permission.CAMERA"/>'
+          )
+          if 'android.permission.CAMERA' not in s:
+              s = re.sub(r'(<manifest[^>]*>)', r'\1' + perms, s, count=1)
+          open(p, 'w', encoding='utf-8').write(s)
+          EOF
+
+      - name: Set minSdk to 23 (needed by the barcode scanner)
+        run: |
+          for f in android/app/build.gradle android/app/build.gradle.kts; do
+            [ -f "$f" ] && sed -i -E 's/minSdk(Version)?[ =]+flutter\.minSdkVersion/minSdk = 23/' "$f" || true
+          done
+          grep -n "minSdk" android/app/build.gradle* || true
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: healthy-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
