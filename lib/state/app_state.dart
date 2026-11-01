@@ -8,6 +8,7 @@ import '../config.dart';
 import '../models.dart';
 import '../profile_models.dart';
 import '../services/cloud_sync.dart';
+import '../screens/workout_data.dart';
 import '../services/nutrition_calc.dart';
 
 /// App-wide state, saved on the phone with shared_preferences.
@@ -35,6 +36,10 @@ class AppState extends ChangeNotifier {
   final List<DiaryEntry> entries = [];
   final Map<String, int> water = {}; // yyyy-mm-dd -> glasses
   final List<WorkoutLog> workouts = [];
+
+  /// The user's own plan per weekday (Monday = 1). Days not in here use the
+  /// suggested plan.
+  final Map<int, DayPlan> customPlans = {};
 
   static String dayKey(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -70,6 +75,7 @@ class AppState extends ChangeNotifier {
         'entries': entries.map((e) => e.toJson()).toList(),
         'water': water,
         'workouts': workouts.map((e) => e.toJson()).toList(),
+        'customPlans': customPlans.map((k, v) => MapEntry('$k', v.toJson())),
       };
 
   void applySnapshot(Map<String, dynamic> j, DateTime at) {
@@ -107,6 +113,7 @@ class AppState extends ChangeNotifier {
       ..clear()
       ..addAll(((j['workouts'] as List?) ?? const []).map(
           (x) => WorkoutLog.fromJson(Map<String, dynamic>.from(x as Map))));
+    _readCustomPlans(j['customPlans']);
 
     lastModified = at;
     notifyListeners();
@@ -291,6 +298,9 @@ class AppState extends ChangeNotifier {
       water.addAll(Map<String, int>.from(jsonDecode(wt) as Map));
     }
 
+    final cp = p.getString('customPlans');
+    _readCustomPlans(cp == null ? null : jsonDecode(cp));
+
     workouts.clear();
     final wk = p.getString('workouts');
     if (wk != null) {
@@ -325,6 +335,8 @@ class AppState extends ChangeNotifier {
     await p.setString('entries', jsonEncode(entries.map((e) => e.toJson()).toList()));
     await p.setString('water', jsonEncode(water));
     await p.setString('workouts', jsonEncode(workouts.map((e) => e.toJson()).toList()));
+    await p.setString(
+        'customPlans', jsonEncode(customPlans.map((k, v) => MapEntry('$k', v.toJson()))));
   }
 
   void _changed() {
@@ -452,6 +464,33 @@ class AppState extends ChangeNotifier {
   }
 
   // ---- Workouts ----
+  void _readCustomPlans(Object? raw) {
+    customPlans.clear();
+    if (raw is! Map) return;
+    raw.forEach((k, v) {
+      final day = int.tryParse(k.toString());
+      if (day == null || day < 1 || day > 7) return;
+      try {
+        customPlans[day] = DayPlan.fromJson(Map<String, dynamic>.from(v as Map));
+      } catch (_) {}
+    });
+  }
+
+  /// The plan shown for a weekday: the user's own, else the suggested one.
+  DayPlan planFor(int weekday) => customPlans[weekday] ?? planForWeekday(weekday);
+
+  bool isCustomPlan(int weekday) => customPlans.containsKey(weekday);
+
+  void saveCustomPlan(int weekday, DayPlan plan) {
+    customPlans[weekday] = plan;
+    _changed();
+  }
+
+  void resetPlan(int weekday) {
+    customPlans.remove(weekday);
+    _changed();
+  }
+
   void addWorkout(WorkoutLog w) {
     workouts.add(w);
     _changed();
@@ -482,6 +521,7 @@ class AppState extends ChangeNotifier {
     entries.clear();
     water.clear();
     workouts.clear();
+    customPlans.clear();
     notifyListeners();
     await _p?.clear();
   }

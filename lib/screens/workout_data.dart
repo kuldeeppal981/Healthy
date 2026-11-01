@@ -8,6 +8,16 @@ class Exercise {
   const Exercise(this.name, this.sets, this.reps, {this.unit = 'reps'});
 
   String get target => '$sets sets x $reps $unit';
+
+  Map<String, dynamic> toJson() =>
+      {'name': name, 'sets': sets, 'reps': reps, 'unit': unit};
+
+  factory Exercise.fromJson(Map<String, dynamic> j) => Exercise(
+        j['name'] as String,
+        (j['sets'] as num).toInt(),
+        (j['reps'] as num).toInt(),
+        unit: j['unit'] as String? ?? 'reps',
+      );
 }
 
 class DayPlan {
@@ -16,6 +26,20 @@ class DayPlan {
   final List<Exercise> exercises;
 
   const DayPlan(this.title, this.exercises, {this.rest = false});
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'rest': rest,
+        'exercises': exercises.map((e) => e.toJson()).toList(),
+      };
+
+  factory DayPlan.fromJson(Map<String, dynamic> j) => DayPlan(
+        j['title'] as String,
+        ((j['exercises'] as List?) ?? const [])
+            .map((x) => Exercise.fromJson(Map<String, dynamic>.from(x as Map)))
+            .toList(),
+        rest: j['rest'] as bool? ?? false,
+      );
 }
 
 /// [weekday] follows DateTime: Monday = 1 ... Sunday = 7.

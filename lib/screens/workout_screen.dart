@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../profile_models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import 'plan_editor.dart';
 import 'workout_data.dart';
 
 class _SetLog {
@@ -53,9 +54,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     super.dispose();
   }
 
-  List<List<_SetLog>> _logsFor(int weekday) {
+  List<List<_SetLog>> _logsFor(int weekday, DayPlan plan) {
     return _logs.putIfAbsent(weekday, () {
-      final plan = planForWeekday(weekday);
       return [
         for (final ex in plan.exercises)
           [for (var i = 0; i < ex.sets; i++) _SetLog('${ex.reps}')],
@@ -75,6 +75,33 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       }
     });
   }
+
+  Future<void> _edit(AppState state) async {
+    final day = _weekday;
+    final result = await showModalBottomSheet<DayPlan>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => PlanEditor(
+        dayName: _dayNames[day - 1],
+        plan: state.planFor(day),
+        isCustom: state.isCustomPlan(day),
+        onReset: () {
+          _skipRest();
+          _resetDay(day);
+          state.resetPlan(day);
+        },
+      ),
+    );
+    if (result == null || !mounted) return;
+    _skipRest();
+    _resetDay(day);
+    state.saveCustomPlan(day, result);
+  }
+
+  static const _dayNames = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+  ];
 
   void _startRest() {
     _timer?.cancel();
@@ -142,8 +169,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final plan = planForWeekday(_weekday);
-    final logs = _logsFor(_weekday);
+    final plan = state.planFor(_weekday);
+    final logs = _logsFor(_weekday, plan);
     final total = logs.fold<int>(0, (n, e) => n + e.length);
     final done = logs.fold<int>(0, (n, e) => n + e.where((l) => l.done).length);
     final today = DateTime.now().weekday;
@@ -157,8 +184,22 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             children: [
               Text(_weekday == today ? "Today's workout" : 'Workout plan',
                   style: const TextStyle(color: AppColors.muted, fontSize: 14)),
-              Text(plan.title,
-                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(plan.title,
+                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _edit(state),
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: const Text('Edit'),
+                  ),
+                ],
+              ),
+              if (state.isCustomPlan(_weekday))
+                const Text('Your own plan',
+                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
               SizedBox(
                 height: 44,
@@ -190,7 +231,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               if (plan.rest)
                 const AppCard(
                   child: Text(
-                    'Rest day. Take a 20 minute walk, stretch lightly and drink plenty of water.',
+                    'Rest day. Take a 20 minute walk, stretch lightly and drink plenty of water. Tap Edit to plan a workout for this day instead.',
                     style: TextStyle(fontSize: 15, height: 1.4),
                   ),
                 )

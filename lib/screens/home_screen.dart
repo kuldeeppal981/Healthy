@@ -45,7 +45,7 @@ class HomeScreen extends StatelessWidget {
     final s = context.watch<AppState>();
     final now = DateTime.now();
     final remaining = (s.kcalTarget - s.kcalToday).round();
-    final plan = planForWeekday(now.weekday);
+    final plan = s.planFor(now.weekday);
     final streak = s.foodStreak;
 
     return ListView(
