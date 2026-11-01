@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -97,12 +96,7 @@ class ReminderService {
     if (_ready) return;
     try {
       tzdata.initializeTimeZones();
-      try {
-        final name = await FlutterTimezone.getLocalTimezone();
-        tz.setLocalLocation(tz.getLocation(name));
-      } catch (_) {
-        tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
-      }
+      _setLocalZone();
       await _plugin.initialize(const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       ));
@@ -114,6 +108,33 @@ class ReminderService {
   }
 
   bool get available => _ready;
+
+  /// Picks the time zone that matches the phone's current UTC offset.
+  void _setLocalZone() {
+    final offset = DateTime.now().timeZoneOffset;
+    const preferred = {
+      330: 'Asia/Kolkata',
+      0: 'Europe/London',
+      240: 'Asia/Dubai',
+      480: 'Asia/Singapore',
+      -300: 'America/New_York',
+      -480: 'America/Los_Angeles',
+      600: 'Australia/Sydney',
+    };
+    final pref = preferred[offset.inMinutes];
+    if (pref != null) {
+      tz.setLocalLocation(tz.getLocation(pref));
+      return;
+    }
+    for (final loc in tz.timeZoneDatabase.locations.values) {
+      if (!loc.name.contains('/')) continue;
+      if (tz.TZDateTime.now(loc).timeZoneOffset == offset) {
+        tz.setLocalLocation(loc);
+        return;
+      }
+    }
+    tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+  }
 
   Future<bool> askPermission() async {
     final android = _plugin.resolvePlatformSpecificImplementation<
