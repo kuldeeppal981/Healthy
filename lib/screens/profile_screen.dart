@@ -6,6 +6,7 @@ import '../services/nutrition_calc.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/sparkline.dart';
+import '../services/theme_service.dart';
 import 'health_screen.dart';
 import 'onboarding_screen.dart';
 import 'reminders_screen.dart';
@@ -80,6 +81,39 @@ class ProfileScreen extends StatelessWidget {
           )
         else
           _bodyCard(context, s),
+        const SizedBox(height: 12),
+        ListenableBuilder(
+          listenable: ThemeService.instance,
+          builder: (context, _) => AppCard(
+            radius: 16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.dark_mode_outlined, color: AppColors.primary),
+                    SizedBox(width: 12),
+                    Text('Appearance', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<ThemeMode>(
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment(value: ThemeMode.system, label: Text('Auto')),
+                      ButtonSegment(value: ThemeMode.light, label: Text('Light')),
+                      ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
+                    ],
+                    selected: {ThemeService.instance.mode},
+                    onSelectionChanged: (v) => ThemeService.instance.set(v.first),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 12),
         AppCard(
           radius: 16,

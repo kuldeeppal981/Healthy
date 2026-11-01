@@ -60,6 +60,7 @@ class AppState extends ChangeNotifier {
 
   bool get signedIn => cloud?.userId != null;
   String? get accountEmail => cloud?.email;
+  String? get accountName => cloud?.displayName;
   bool get needsAuth => cloudEnabled && !signedIn && !guestMode;
 
   Map<String, dynamic> toSnapshot() => {
@@ -181,10 +182,10 @@ class AppState extends ChangeNotifier {
     return r;
   }
 
-  Future<AuthOutcome> signUp(String email, String password) async {
+  Future<AuthOutcome> signUp(String email, String password, {String? name}) async {
     final c = cloud;
     if (c == null) return const AuthOutcome(error: 'Cloud sync is not set up.');
-    final r = await c.signUp(email, password);
+    final r = await c.signUp(email, password, name: name);
     if (r.error == null && !r.needsEmailConfirm) {
       guestMode = false;
       await syncAfterLogin(preferRemote: true);

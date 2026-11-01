@@ -24,6 +24,13 @@ class CloudSync {
   String? get userId => _c.auth.currentUser?.id;
   String? get email => _c.auth.currentUser?.email;
 
+  /// Name given at sign up, or the Google account name.
+  String? get displayName {
+    final m = _c.auth.currentUser?.userMetadata;
+    final n = (m?['name'] ?? m?['full_name'] ?? '').toString().trim();
+    return n.isEmpty ? null : n;
+  }
+
   /// Fires when a user completes a new sign-in (password, code or Google).
   Stream<void> get signedInEvents => _c.auth.onAuthStateChange
       .where((s) => s.event == AuthChangeEvent.signedIn)
@@ -48,9 +55,13 @@ class CloudSync {
 
   /// Creates the account. When email confirmation is on, Supabase emails a
   /// code and [AuthOutcome.needsEmailConfirm] is true.
-  Future<AuthOutcome> signUp(String email, String password) async {
+  Future<AuthOutcome> signUp(String email, String password, {String? name}) async {
     try {
-      final res = await _c.auth.signUp(email: email, password: password);
+      final res = await _c.auth.signUp(
+        email: email,
+        password: password,
+        data: (name == null || name.isEmpty) ? null : {'name': name},
+      );
       return AuthOutcome(needsEmailConfirm: res.session == null);
     } on AuthException catch (e) {
       return AuthOutcome(error: e.message);

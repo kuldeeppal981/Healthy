@@ -120,7 +120,7 @@ class _ShareDialogState extends State<_ShareDialog> {
                 onPressed: _busy ? null : _share,
                 icon: const Icon(Icons.share),
                 label: const Text('Share'),
-                style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: AppColors.primary),
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 44), backgroundColor: Colors.white, foregroundColor: AppColors.primary),
               ),
               const SizedBox(width: 8),
               TextButton(

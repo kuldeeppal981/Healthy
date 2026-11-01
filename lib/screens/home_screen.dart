@@ -284,6 +284,7 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => logByVoice(context),
               icon: const Icon(Icons.mic, size: 18),
               label: const Text('Speak'),
+              style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
             ),
           ],
         ),

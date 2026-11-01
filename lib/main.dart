@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,6 +12,7 @@ import 'services/health_service.dart';
 import 'services/reminder_service.dart';
 import 'services/social_service.dart';
 import 'services/step_service.dart';
+import 'services/theme_service.dart';
 import 'services/widget_service.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
@@ -20,6 +22,7 @@ Future<void> main() async {
 
   final state = AppState();
   await state.load();
+  await ThemeService.instance.load();
 
   if (cloudEnabled) {
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
@@ -57,11 +60,26 @@ class HealthApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Healthy',
-      debugShowCheckedModeBanner: false,
-      theme: buildTheme(),
-      home: const AppShell(),
+    return ListenableBuilder(
+      listenable: ThemeService.instance,
+      builder: (context, _) => MaterialApp(
+        title: 'Healthy',
+        debugShowCheckedModeBanner: false,
+        theme: buildTheme(),
+        builder: (context, child) {
+          final dark = ThemeService.instance.isDark(context);
+          final body = dark
+              ? ColorFiltered(colorFilter: ThemeService.darkFilter, child: child)
+              : child!;
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: dark
+                ? SystemUiOverlayStyle.light
+                : SystemUiOverlayStyle.dark,
+            child: body,
+          );
+        },
+        home: const AppShell(),
+      ),
     );
   }
 }

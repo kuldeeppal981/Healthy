@@ -28,6 +28,14 @@ class FriendRequest {
   const FriendRequest(this.userId, this.name);
 }
 
+class Person {
+  final String userId;
+  final String name;
+  final String tag;
+
+  const Person(this.userId, this.name, this.tag);
+}
+
 class Challenge {
   final String id;
   final String name;
@@ -77,6 +85,8 @@ class SocialService extends ChangeNotifier {
   List<BoardRow> board = [];
   List<FriendRequest> requests = [];
   List<Challenge> challenges = [];
+  List<Person> suggestions = [];
+  bool discoverable = true;
 
   String? _uid;
 
@@ -93,6 +103,7 @@ class SocialService extends ChangeNotifier {
     board = [];
     requests = [];
     challenges = [];
+    suggestions = [];
     loaded = false;
     error = null;
     notifyListeners();
@@ -121,7 +132,7 @@ class SocialService extends ChangeNotifier {
       }
       final me = await _c
           .from('social_profiles')
-          .select('name, code')
+          .select('name, code, discoverable')
           .eq('user_id', uid)
           .maybeSingle();
       if (me == null) {
@@ -130,9 +141,21 @@ class SocialService extends ChangeNotifier {
         board = [];
         requests = [];
         challenges = [];
+        suggestions = [];
       } else {
         name = me['name'] as String;
         code = me['code'] as String;
+        discoverable = (me['discoverable'] as bool?) ?? true;
+        try {
+          final sg = await _c.rpc('suggested_people') as List;
+          suggestions = [
+            for (final r in sg)
+              Person(r['user_id'] as String, (r['name'] as String?) ?? 'Someone',
+                  (r['tag'] as String?) ?? ''),
+          ];
+        } catch (_) {
+          suggestions = [];
+        }
         final today = dayText(DateTime.now());
         final b = await _c.rpc('friends_board', params: {'p_today': today}) as List;
         board = [
@@ -214,6 +237,41 @@ class SocialService extends ChangeNotifier {
     } catch (e) {
       return _err(e);
     }
+  }
+
+  Future<List<Person>> search(String q) async {
+    final r = await _c.rpc('search_people', params: {'p_q': q}) as List;
+    return [
+      for (final x in r)
+        Person(x['user_id'] as String, (x['name'] as String?) ?? 'Someone',
+            (x['tag'] as String?) ?? ''),
+    ];
+  }
+
+  Future<String> requestFriendById(String userId) async {
+    try {
+      final r = await _c.rpc('request_friend_id', params: {'p_user': userId}) as String;
+      await refresh();
+      return switch (r) {
+        'sent' => 'Request sent. They need to accept it.',
+        'accepted' => 'You are now friends.',
+        'exists' => 'You already sent a request to this person.',
+        'not_found' => 'This person can no longer be found.',
+        _ => 'Turn on friends first.',
+      };
+    } catch (e) {
+      return _err(e);
+    }
+  }
+
+  Future<void> setDiscoverable(bool v) async {
+    try {
+      await _c
+          .from('social_profiles')
+          .update({'discoverable': v}).eq('user_id', _c.auth.currentUser!.id);
+      discoverable = v;
+      notifyListeners();
+    } catch (_) {}
   }
 
   Future<void> respond(FriendRequest r, bool accept) async {

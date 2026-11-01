@@ -140,7 +140,8 @@ class _TurnOn extends StatefulWidget {
 }
 
 class _TurnOnState extends State<_TurnOn> {
-  final _name = TextEditingController();
+  late final TextEditingController _name =
+      TextEditingController(text: context.read<AppState>().accountName ?? '');
   bool _busy = false;
   String? _error;
 
@@ -187,7 +188,7 @@ class _TurnOnState extends State<_TurnOn> {
           borderColor: AppColors.chipBg,
           radius: 14,
           child: const Text(
-            'What friends can see: your name, daily steps, whether you worked out and whether you logged food. Never your weight, meals, allergies or health conditions. You can turn this off any time.',
+            'What friends can see: your name, daily steps, whether you worked out and whether you logged food. Never your weight, meals, allergies or health conditions. Other users can find you by name and send a friend request. You can turn this off any time.',
             style: TextStyle(color: AppColors.chipInk, height: 1.4, fontSize: 13),
           ),
         ),
@@ -325,12 +326,68 @@ class _FriendsTab extends StatefulWidget {
 
 class _FriendsTabState extends State<_FriendsTab> {
   final _code = TextEditingController();
+  final _find = TextEditingController();
   String? _msg;
   bool _busy = false;
+  List<Person>? _results;
+  bool _searching = false;
+
+  Future<void> _doSearch() async {
+    final q = _find.text.trim();
+    if (q.length < 2) {
+      setState(() => _results = null);
+      return;
+    }
+    setState(() => _searching = true);
+    try {
+      final r = await widget.svc.search(q);
+      if (mounted) setState(() => _results = r);
+    } catch (_) {
+      if (mounted) setState(() => _msg = 'Search failed. Check your internet.');
+    }
+    if (mounted) setState(() => _searching = false);
+  }
+
+  Future<void> _addPerson(Person p) async {
+    final m = await widget.svc.requestFriendById(p.userId);
+    if (!mounted) return;
+    setState(() {
+      _msg = m;
+      _results = _results?.where((x) => x.userId != p.userId).toList();
+    });
+  }
+
+  Widget _personRow(Person p) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: AppCard(
+          radius: 14,
+          padding: const EdgeInsets.fromLTRB(14, 6, 8, 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text.rich(TextSpan(children: [
+                  TextSpan(
+                      text: p.name,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  TextSpan(
+                      text: p.tag.isEmpty ? '' : '  #${p.tag}',
+                      style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                ])),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                onPressed: () => _addPerson(p),
+                child: const Text('Add'),
+              ),
+            ],
+          ),
+        ),
+      );
 
   @override
   void dispose() {
     _code.dispose();
+    _find.dispose();
     super.dispose();
   }
 
@@ -387,6 +444,7 @@ class _FriendsTabState extends State<_FriendsTab> {
               Row(
                 children: [
                   OutlinedButton(
+                    style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: svc.code ?? ''));
                       ScaffoldMessenger.of(context)
@@ -396,6 +454,7 @@ class _FriendsTabState extends State<_FriendsTab> {
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
+                    style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
                     onPressed: () => Share.share(
                         'Add me on Healthy! Open Friends and challenges, then enter my code: ${svc.code}'),
                     child: const Text('Share code'),
@@ -405,6 +464,48 @@ class _FriendsTabState extends State<_FriendsTab> {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        const Text('Find people',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _find,
+                textInputAction: TextInputAction.search,
+                onSubmitted: (_) => _doSearch(),
+                decoration: const InputDecoration(
+                  labelText: 'Search by name',
+                  prefixIcon: Icon(Icons.search),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              height: 52,
+              child: FilledButton(
+                onPressed: _searching ? null : _doSearch,
+                style: FilledButton.styleFrom(minimumSize: const Size(80, 52)),
+                child: const Text('Search'),
+              ),
+            ),
+          ],
+        ),
+        if (_results != null) ...[
+          const SizedBox(height: 10),
+          if (_results!.isEmpty)
+            const Text('No one found with that name.',
+                style: TextStyle(color: AppColors.muted)),
+          for (final p in _results!) _personRow(p),
+        ],
+        if (svc.suggestions.isNotEmpty && _results == null) ...[
+          const SizedBox(height: 16),
+          const Text('People you may know',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          for (final p in svc.suggestions) _personRow(p),
+        ],
         const SizedBox(height: 16),
         Row(
           children: [
@@ -450,7 +551,9 @@ class _FriendsTabState extends State<_FriendsTab> {
                     TextButton(
                         onPressed: () => svc.respond(r, false), child: const Text('Decline')),
                     FilledButton(
-                        onPressed: () => svc.respond(r, true), child: const Text('Accept')),
+                        style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                        onPressed: () => svc.respond(r, true),
+                        child: const Text('Accept')),
                   ],
                 ),
               ),
@@ -482,6 +585,15 @@ class _FriendsTabState extends State<_FriendsTab> {
             ),
           ),
         const SizedBox(height: 16),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Let people find me by name'),
+          subtitle: const Text('Shows you in search and suggestions',
+              style: TextStyle(fontSize: 12)),
+          value: svc.discoverable,
+          activeColor: AppColors.primary,
+          onChanged: svc.setDiscoverable,
+        ),
         TextButton(
           onPressed: _turnOff,
           child: const Text('Turn off friends and delete my shared data',
@@ -621,7 +733,11 @@ class _ChallengesTabState extends State<_ChallengesTab> {
             const SizedBox(width: 8),
             SizedBox(
               height: 52,
-              child: OutlinedButton(onPressed: _joinNow, child: const Text('Join')),
+              child: OutlinedButton(
+                onPressed: _joinNow,
+                style: OutlinedButton.styleFrom(minimumSize: const Size(80, 52)),
+                child: const Text('Join'),
+              ),
             ),
           ],
         ),
@@ -724,6 +840,7 @@ class _ChallengeScreenState extends State<ChallengeScreen> {
                                   fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 2)),
                           const Spacer(),
                           FilledButton(
+                            style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
                             onPressed: () => Share.share(
                                 'Join my challenge "${c.name}" on Healthy! Open Friends and challenges, then Join with code ${c.code}'),
                             child: const Text('Invite'),

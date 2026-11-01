@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../services/theme_service.dart';
 import '../theme.dart';
 import 'scan_result_screen.dart';
 
@@ -65,6 +66,8 @@ class _ScanScreenState extends State<ScanScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
+                    ThemeService.undoDark(
+                      context,
                     MobileScanner(
                       controller: _controller,
                       onDetect: _onDetect,
@@ -77,6 +80,7 @@ class _ScanScreenState extends State<ScanScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
+                    ),
                     ),
                     Center(
                       child: Container(

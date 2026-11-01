@@ -48,6 +48,7 @@ class StepsCard extends StatelessWidget {
                       ),
                       FilledButton(
                         onPressed: svc.requestPermission,
+                        style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
                         child: const Text('Allow'),
                       ),
                     ],

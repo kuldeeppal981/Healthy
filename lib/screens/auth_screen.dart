@@ -21,6 +21,7 @@ class _AuthScreenState extends State<AuthScreen> {
   _Mode _mode = _Mode.signIn;
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _name = TextEditingController();
   final _confirm = TextEditingController();
   final _code = TextEditingController();
 
@@ -35,6 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
     _timer?.cancel();
     _email.dispose();
     _password.dispose();
+    _name.dispose();
     _confirm.dispose();
     _code.dispose();
     super.dispose();
@@ -108,6 +110,10 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _register() async {
+    if (_name.text.trim().length < 2) {
+      _show('Enter your name (at least 2 letters).');
+      return;
+    }
     if (!_emailOk()) return;
     if (_password.text.length < 6) {
       _show('Password must be at least 6 characters.');
@@ -120,7 +126,7 @@ class _AuthScreenState extends State<AuthScreen> {
     await _run(() async {
       final r = await context
           .read<AppState>()
-          .signUp(_email.text.trim(), _password.text);
+          .signUp(_email.text.trim(), _password.text, name: _name.text.trim());
       if (!mounted) return;
       if (r.error != null) {
         _show(r.error!);
@@ -197,6 +203,15 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(height: 6),
             Text(subtitle, style: const TextStyle(color: AppColors.muted, height: 1.4)),
             const SizedBox(height: 24),
+            if (_mode == _Mode.register) ...[
+              TextField(
+                controller: _name,
+                textCapitalization: TextCapitalization.words,
+                autofillHints: const [AutofillHints.name],
+                decoration: const InputDecoration(labelText: 'Your name'),
+              ),
+              const SizedBox(height: 12),
+            ],
             if (_mode != _Mode.code) ...[
               TextField(
                 controller: _email,
