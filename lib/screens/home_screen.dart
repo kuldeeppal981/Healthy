@@ -1,0 +1,326 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models.dart';
+import '../state/app_state.dart';
+import '../theme.dart';
+import '../widgets/add_food_sheet.dart';
+import '../widgets/ring.dart';
+import 'workout_data.dart';
+
+class HomeScreen extends StatelessWidget {
+  final void Function(int tab) onGoto;
+
+  const HomeScreen({super.key, required this.onGoto});
+
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  static const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  String _tip(AppState s) {
+    final h = DateTime.now().hour;
+    if (s.today.isEmpty) return 'Aaj ka pehla khana log karo. Barcode scan sabse tez hai.';
+    if (s.kcalToday > s.kcalTarget) {
+      return 'Aaj calories target se upar hain. Agla meal halka rakho aur thoda walk karo.';
+    }
+    if (h >= 15 && s.proteinToday < s.proteinTarget * 0.5) {
+      return 'Protein thoda kam hai. Dinner mein dal, chana ya anda add karo.';
+    }
+    if (s.waterToday < s.waterTarget ~/ 2 && h >= 14) {
+      return 'Paani kam hua hai. Abhi ek glass piyo.';
+    }
+    return 'Badhiya chal raha hai. Isi tarah log karte raho.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final now = DateTime.now();
+    final remaining = (s.kcalTarget - s.kcalToday).round();
+    final plan = planForWeekday(now.weekday);
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${_days[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}',
+                    style: const TextStyle(color: AppColors.muted, fontSize: 14),
+                  ),
+                  const Text('Namaste',
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+            InkWell(
+              onTap: () => onGoto(1),
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 44),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.chipBg,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.verified_user_outlined,
+                        size: 16, color: AppColors.chipInk),
+                    const SizedBox(width: 6),
+                    Text(
+                      s.allergies.isEmpty
+                          ? 'Allergy add karo'
+                          : '${s.allergies.length} allergy ON',
+                      style: const TextStyle(
+                        color: AppColors.chipInk,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        AppCard(
+          radius: 24,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Ring(
+                    progress: s.kcalToday / s.kcalTarget,
+                    color: AppColors.ring,
+                    track: AppColors.track,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${s.kcalToday.round()}',
+                          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
+                        ),
+                        Text('of ${s.kcalTarget} kcal',
+                            style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Aaj ka goal',
+                            style: TextStyle(fontSize: 14, color: AppColors.muted)),
+                        const SizedBox(height: 4),
+                        Text(
+                          remaining >= 0
+                              ? '$remaining kcal bache hain'
+                              : '${-remaining} kcal zyada',
+                          style: const TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.w700, height: 1.15),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  _macro('Protein', s.proteinToday, s.proteinTarget, AppColors.primary),
+                  const SizedBox(width: 12),
+                  _macro('Carbs', s.carbsToday, s.carbsTarget, AppColors.ring),
+                  const SizedBox(width: 12),
+                  _macro('Fat', s.fatToday, s.fatTarget, AppColors.blue),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: AppCard(
+                radius: 18,
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Paani',
+                              style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                          Text('${s.waterToday} / ${s.waterTarget}',
+                              style: const TextStyle(
+                                  fontSize: 19, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                    IconButton.filledTonal(
+                      tooltip: 'Ek glass paani add karo',
+                      onPressed: () => s.addWater(1),
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: InkWell(
+                onTap: () => onGoto(2),
+                borderRadius: BorderRadius.circular(18),
+                child: AppCard(
+                  radius: 18,
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Aaj ka workout',
+                          style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                      Text(plan.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        const Text('Aaj ka khana',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        for (final meal in mealOrder) _mealCard(context, s, meal),
+        const SizedBox(height: 4),
+        AppCard(
+          color: AppColors.chipBg,
+          borderColor: AppColors.chipBg,
+          radius: 16,
+          padding: const EdgeInsets.all(14),
+          child: Text.rich(
+            TextSpan(children: [
+              const TextSpan(
+                text: 'Aaj ka tip: ',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              TextSpan(text: _tip(s)),
+            ]),
+            style: const TextStyle(color: AppColors.chipInk, fontSize: 14, height: 1.35),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _macro(String label, double value, int target, Color color) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              Text('${value.round()}/$target',
+                  style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: (value / target).clamp(0.0, 1.0).toDouble(),
+              minHeight: 6,
+              color: color,
+              backgroundColor: AppColors.track,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mealCard(BuildContext context, AppState s, String meal) {
+    final items = s.mealEntries(meal);
+    final kcal = items.fold(0.0, (sum, e) => sum + e.kcal).round();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: AppCard(
+        radius: 16,
+        padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(mealLabels[meal]!,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                      if (items.isEmpty)
+                        const Text('Kuch add nahi kiya',
+                            style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                    ],
+                  ),
+                ),
+                if (items.isNotEmpty)
+                  Text('$kcal kcal',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                IconButton(
+                  tooltip: '${mealLabels[meal]} mein add karo',
+                  onPressed: () => showAddFoodSheet(context, meal: meal),
+                  icon: const Icon(Icons.add_circle, color: AppColors.primary),
+                ),
+              ],
+            ),
+            for (final e in items)
+              Dismissible(
+                key: ValueKey(e.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16),
+                  color: AppColors.dangerBg,
+                  child: const Icon(Icons.delete_outline, color: AppColors.danger),
+                ),
+                onDismissed: (_) => s.removeEntry(e.id),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8, bottom: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(e.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                      ),
+                      Text('${e.kcal.round()} kcal',
+                          style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,24 @@
+name: healthy_app
+description: Calorie tracker with barcode scan, allergy alerts and a gym workout planner.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  google_fonts: ^6.2.1
+  mobile_scanner: ^5.2.3
+  http: ^1.2.2
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
