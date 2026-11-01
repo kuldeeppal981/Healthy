@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../profile_models.dart';
+import 'reminder_service.dart';
 
 import '../config.dart';
 import '../state/app_state.dart';
@@ -71,6 +72,16 @@ class ChallengeRow {
   const ChallengeRow(this.userId, this.name, this.score, this.isMe);
 }
 
+
+class Cheer {
+  final String id;
+  final String who;
+  final String emoji;
+  final String postTitle;
+  final DateTime at;
+
+  const Cheer(this.id, this.who, this.emoji, this.postTitle, this.at);
+}
 
 class FeedPost {
   final String id;
@@ -186,6 +197,8 @@ class SocialService extends ChangeNotifier {
     challenges = [];
     suggestions = [];
     feed = [];
+    cheers = [];
+    cheersSeen = null;
     loaded = false;
     error = null;
     notifyListeners();
@@ -433,6 +446,72 @@ class SocialService extends ChangeNotifier {
     ];
   }
 
+
+
+  // ---- Cheers from friends ----
+
+  static const emojiOf = {'fire': '🔥', 'clap': '👏', 'muscle': '💪', 'heart': '❤️'};
+
+  List<Cheer> cheers = [];
+  DateTime? cheersSeen;
+  DateTime? _notifiedAt;
+  Timer? _watch;
+
+  int get unreadCheers =>
+      cheersSeen == null ? 0 : cheers.where((c) => c.at.isAfter(cheersSeen!)).length;
+
+  /// Checks for new cheers now and then while the app is alive, and shows a
+  /// phone notification for any that arrive.
+  void startWatching() {
+    _watch?.cancel();
+    Future<void>.delayed(const Duration(seconds: 8), pollCheers);
+    _watch = Timer.periodic(const Duration(seconds: 90), (_) => pollCheers());
+  }
+
+  Future<void> pollCheers() async {
+    try {
+      if (!available) return;
+      if (cheersSeen == null) {
+        final p = await SharedPreferences.getInstance();
+        final t = p.getString('cheersSeen');
+        cheersSeen = t == null ? DateTime.now() : DateTime.tryParse(t) ?? DateTime.now();
+        if (t == null) await p.setString('cheersSeen', cheersSeen!.toIso8601String());
+        _notifiedAt = cheersSeen;
+      }
+      final r = await _c.rpc('get_cheers', params: {'p_limit': 40}) as List;
+      cheers = [
+        for (final x in r)
+          Cheer(
+            x['id'] as String,
+            (x['who'] as String?) ?? 'A friend',
+            emojiOf[x['emoji']] ?? '👏',
+            (x['post_title'] as String?) ?? '',
+            DateTime.parse(x['created_at'] as String).toLocal(),
+          ),
+      ];
+      final fresh = cheers.where((c) => c.at.isAfter(_notifiedAt!)).toList();
+      if (fresh.isNotEmpty) {
+        _notifiedAt = fresh.first.at;
+        final c = fresh.first;
+        final more = fresh.length > 1 ? ' and ${fresh.length - 1} more' : '';
+        await ReminderService.instance.showNow(
+          7001,
+          '${c.emoji} ${c.who} cheered you$more',
+          c.postTitle,
+        );
+      }
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> markCheersSeen() async {
+    cheersSeen = DateTime.now();
+    notifyListeners();
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setString('cheersSeen', cheersSeen!.toIso8601String());
+    } catch (_) {}
+  }
 
   // ---- Friend feed ----
 

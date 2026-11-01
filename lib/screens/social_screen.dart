@@ -19,7 +19,17 @@ class SocialCard extends StatelessWidget {
       radius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: ListTile(
-        leading: const Icon(Icons.groups_outlined, color: AppColors.primary),
+        leading: ListenableBuilder(
+          listenable: SocialService.instance,
+          builder: (context, _) {
+            final n = SocialService.instance.unreadCheers;
+            return Badge(
+              isLabelVisible: n > 0,
+              label: Text('$n'),
+              child: const Icon(Icons.groups_outlined, color: AppColors.primary),
+            );
+          },
+        ),
         title: const Text('Friends and challenges',
             style: TextStyle(fontWeight: FontWeight.w700)),
         subtitle: const Text('Leaderboards, 30-day challenge, share progress'),
@@ -235,10 +245,62 @@ class _FeedTabState extends State<_FeedTab> {
     ('heart', '❤️'),
   ];
 
+  DateTime? _seenAtOpen;
+
   @override
   void initState() {
     super.initState();
+    _seenAtOpen = widget.svc.cheersSeen;
     widget.svc.loadFeed();
+    widget.svc.pollCheers().then((_) {
+      if (!mounted) return;
+      setState(() => _seenAtOpen ??= widget.svc.cheersSeen);
+      widget.svc.markCheersSeen();
+    });
+  }
+
+  Widget _cheers() {
+    final list = widget.svc.cheers.take(5).toList();
+    if (list.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: AppCard(
+        radius: 16,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Cheers for you', style: TextStyle(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            for (final c in list)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: Row(
+                  children: [
+                    Text(c.emoji, style: const TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${c.who} on "${c.postTitle}"',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (_seenAtOpen != null && c.at.isAfter(_seenAtOpen!))
+                      const Padding(
+                        padding: EdgeInsets.only(left: 6),
+                        child: Text('NEW',
+                            style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800)),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   String _ago(DateTime t) {
@@ -363,6 +425,7 @@ class _FeedTabState extends State<_FeedTab> {
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          _cheers(),
           _myPrs(state),
           if (svc.feedLoading && svc.feed.isEmpty)
             const Padding(

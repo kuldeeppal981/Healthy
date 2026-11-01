@@ -210,6 +210,27 @@ class ReminderService {
   }
 
   /// Saves the settings and schedules everything again from scratch.
+  /// Shows a notification straight away (used for friends' cheers).
+  Future<void> showNow(int id, String title, String body) async {
+    if (!_ready) return;
+    try {
+      await _plugin.show(
+        id,
+        title,
+        body,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'cheers',
+            'Friends',
+            channelDescription: 'Cheers on your achievements',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+        ),
+      );
+    } catch (_) {}
+  }
+
   Future<void> apply(AppState state) async {
     await _store();
     await reschedule(state);

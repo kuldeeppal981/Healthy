@@ -47,6 +47,8 @@ Future<void> main() async {
   StepService.instance.addListener(refreshWidget);
   refreshWidget();
 
+  SocialService.instance.startWatching();
+
   runApp(
     ChangeNotifierProvider<AppState>.value(
       value: state,
