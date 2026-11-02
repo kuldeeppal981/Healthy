@@ -19,6 +19,7 @@ import 'health_connect_screen.dart';
 import 'health_screen.dart';
 import 'muscle_screen.dart';
 import 'onboarding_screen.dart';
+import 'pro_screen.dart';
 import 'reminders_screen.dart';
 import 'report_screen.dart';
 import 'settings_screen.dart';
@@ -144,6 +145,12 @@ class ProfileScreen extends StatelessWidget {
             subtitle:
                 '${a.currentStreak} day food streak  |  ${a.earnedCount} of ${a.badges.length} badges',
             onTap: () => _open(context, const BadgesScreen()),
+          ),
+          MenuRow(
+            icon: Icons.workspace_premium_outlined,
+            title: 'Healthy Pro',
+            subtitle: 'Free vs Pro, more AI requests',
+            onTap: () => _open(context, const ProScreen()),
           ),
           MenuRow(
             icon: Icons.pie_chart_outline,

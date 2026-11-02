@@ -45,3 +45,7 @@ Shared cache of products read from label photos, so the same product never needs
 - `label_products` (text_hash unique = sha256 of the sorted unique words of the ingredient list, name, ingredients, contains[], may_contain[], serving_grams, per100 jsonb, seen_count) and `label_product_seen` (product_id, user_id). RLS on, NO policies: access only through the functions.
 - `find_label_product(p_hash)` returns the product json (and records that this user saw it); `save_label_product(...)` inserts if new (first writer wins, no overwrite), records the user, clamps lengths. Both SECURITY DEFINER, authenticated only.
 - Known weakness: first writer wins, so a wrong or malicious first save would be served to others. Idea for later: report button, delete entries reported by several users, trust only when seen_count >= 2.
+
+## Plans (migration `user_plans`)
+`user_plans(user_id pk, plan 'free'|'pro', expires_at, source, updated_at)`. RLS: users read only their own row, nobody writes from the app. `my_plan()` returns {plan, expires_at} with expiry applied. Grant Pro by hand: `insert into user_plans(user_id, plan, expires_at) values ('<uuid>', 'pro', now() + interval '30 days') on conflict (user_id) do update set plan='pro', expires_at=excluded.expires_at;`
+Real purchases later: Google Play Billing (in_app_purchase or RevenueCat) -> an edge function verifies the purchase with the Play Developer API (or RevenueCat webhook) and writes this table. Needs a Play Console account first.

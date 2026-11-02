@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const DAILY_LIMIT = Number(Deno.env.get("COACH_DAILY_LIMIT") ?? "10");
+const FREE_LIMIT = Number(Deno.env.get("COACH_DAILY_LIMIT") ?? "10");
+const PRO_LIMIT = Number(Deno.env.get("COACH_PRO_DAILY_LIMIT") ?? "60");
 const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.8-flash";
 
 const cors = {
@@ -119,6 +120,14 @@ Deno.serve(async (req) => {
   }
 
   const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data: planRow } = await admin
+    .from("user_plans")
+    .select("plan, expires_at")
+    .eq("user_id", u.user.id)
+    .maybeSingle();
+  const isPro = planRow?.plan === "pro" &&
+    (!planRow.expires_at || new Date(planRow.expires_at).getTime() > Date.now());
+  const DAILY_LIMIT = isPro ? PRO_LIMIT : FREE_LIMIT;
   const day = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
   const { data: used, error: uerr } = await admin.rpc("bump_ai_usage", {
     p_user: u.user.id,
@@ -129,7 +138,7 @@ Deno.serve(async (req) => {
     return json({
       error: "limit",
       limit: DAILY_LIMIT,
-      message: `You have used your ${DAILY_LIMIT} free AI requests for today. They reset tomorrow. Premium with more is coming soon.`,
+      message: `You have used your ${DAILY_LIMIT} AI requests for today. They reset tomorrow.${isPro ? "" : " Healthy Pro with more requests is coming soon."}`,
     }, 429);
   }
 

@@ -52,3 +52,5 @@ Also: barcode path = our DB first, then Open Food Facts, then photo scan; offer 
 Safety: label saved data "AI-read"; treat as confirmed only when 2 different users' results match; store text only (no photos/user info); writes only through a SECURITY DEFINER RPC; allergy warning always shown.
 Risk: ML Kit broke the release build before (R8). Add it as its own commit so it can be reverted; keep image->AI path working.
 Also: ingredient -> allergen dictionary table grown from AI answers to make allergy_checker smarter.
+
+- Pro: real payments (Play Billing + server verification), Pro-only features (AI diet plan, meal photo calories, deep analytics), free trial. Pro limit 60 AI/day is only a guess, check real AI cost per user first.
