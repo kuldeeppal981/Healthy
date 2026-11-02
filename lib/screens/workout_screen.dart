@@ -547,7 +547,6 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Widget _banner(DayPlan plan, int done, int total) {
     final mins = estimateMinutes(plan);
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -563,7 +562,22 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            Positioned(
+              right: 96,
+              top: 0,
+              bottom: 0,
+              child: Opacity(
+                opacity: 0.55,
+                child: Image.asset('assets/images/hero.png', fit: BoxFit.fitHeight),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+              child: Row(
         children: [
           Expanded(
             child: Column(
@@ -596,6 +610,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           ),
         ],
       ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -610,6 +628,32 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       'Shoulders' => Icons.sports_gymnastics,
       _ => Icons.fitness_center,
     };
+  }
+
+  /// Photos exist only for a few exercises; others get a muscle-group icon.
+  static const _photos = {
+    'bench press': 'ex1',
+    'dumbbell bench press': 'ex1',
+    'incline dumbbell press': 'ex2',
+    'incline dumbbell bench press': 'ex2',
+    'triceps pushdown': 'ex3',
+    'triceps rope pushdown': 'ex3',
+    'overhead triceps extension': 'ex4',
+  };
+
+  Widget _thumb(String name) {
+    final photo = _photos[name.trim().toLowerCase()];
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: photo != null
+          ? Image.asset('assets/images/$photo.jpg', width: 72, height: 52, fit: BoxFit.cover)
+          : Container(
+              width: 72,
+              height: 52,
+              color: AppColors.chipBg,
+              child: Icon(_groupIcon(name), color: AppColors.primary, size: 26),
+            ),
+    );
   }
 
   Widget _planCard(DayPlan plan, List<List<_SetLog>> logs) {
@@ -649,16 +693,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Row(
                   children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppColors.chipBg,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(_groupIcon(plan.exercises[i].name),
-                          color: AppColors.primary, size: 26),
-                    ),
+                    _thumb(plan.exercises[i].name),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -729,6 +764,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ],
             ),
           ),
+          const SizedBox(width: 8),
+          Image.asset('assets/images/shaker.png', height: 74, fit: BoxFit.contain),
         ],
       ),
     );
@@ -799,6 +836,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   ],
                 ),
               ),
+              Image.asset('assets/images/trophy.png', width: 54, fit: BoxFit.contain),
             ],
           ),
         ],

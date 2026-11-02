@@ -87,27 +87,33 @@ class _StreakCardState extends State<StreakCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.emoji_events, color: Color(0xFFF0A020), size: 22),
-                const SizedBox(width: 6),
-                const Expanded(
-                  child: Text('Your consistency',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Your consistency',
+                          maxLines: 2,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.chipBg,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text('Level ${p.level}',
+                            style: const TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12)),
+                      ),
+                    ],
+                  ),
                 ),
+                Image.asset('assets/images/trophy.png', width: 54, fit: BoxFit.contain),
               ],
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppColors.chipBg,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text('Level ${p.level}  ${p.title}',
-                  style: const TextStyle(
-                      color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 12)),
             ),
             const SizedBox(height: 10),
             Text('🔥 ${streak == 1 ? '1 day' : '$streak days'} streak',

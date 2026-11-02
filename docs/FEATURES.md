@@ -16,6 +16,14 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
   (exercises and minutes), plan overview list (tap = exercise info, "Log sets" or Start = set logging mode),
   Pro Tip, Your Progress (workouts this week of plan days, kg lifted). The design showed exercise photos and
   a food photo; there are no image assets, so icons and gradients are used instead.
+- **Allergy tab** (`screens/allergy_screen.dart`): redesigned from the user's screenshot: food photo tiles for the
+  10 allergens, Food/Other tabs (Other = placeholder, no data model yet), one "How severe?" control that sets
+  the level for all selected allergies, trace warning switch, Save Profile (data already saves instantly).
+- **Images** (`assets/images/`, declared in pubspec): cropped and cut out from the user's design screenshots
+  (food photos, shield, bowl, shoe, glass, dumbbell photo, 4 exercise thumbnails, shaker, trophy, muscle
+  silhouette). Resolution is low (screenshot crops). Replace the files with originals of the same name to
+  improve quality. Exercise thumbnails exist only for bench press, incline press, triceps pushdown, overhead
+  triceps extension (mapping in `workout_screen.dart` `_photos`).
 - **Profile** (`screens/profile_screen.dart`): gradient account card, weight + BMI card, appearance,
   menus for everything else (health conditions, reminders, badges, report, exercise library, Health Connect,
   friends, coach). Daily targets and "Delete all data" moved to `screens/settings_screen.dart` (gear icon).

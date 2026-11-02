@@ -219,48 +219,64 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Row(
+          Stack(
+            clipBehavior: Clip.none,
             children: [
-              Ring(
-                progress: s.kcalToday / s.kcalTarget,
-                color: AppColors.primary,
-                track: AppColors.track,
-                size: 128,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_num(s.kcalToday),
-                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
-                    const Text('kcal eaten',
-                        style: TextStyle(fontSize: 13, color: AppColors.muted)),
-                  ],
+              Positioned(
+                right: -16,
+                top: -4,
+                child: IgnorePointer(
+                  child: Image.asset('assets/images/bowl.png', width: 86, fit: BoxFit.contain),
                 ),
               ),
-              const SizedBox(width: 14),
-              Container(width: 1, height: 96, color: AppColors.border),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(_num(s.kcalTarget),
-                          style: const TextStyle(
-                              fontSize: 38, fontWeight: FontWeight.w800, height: 1.1)),
+              Row(
+                children: [
+                  Ring(
+                    progress: s.kcalToday / s.kcalTarget,
+                    color: AppColors.primary,
+                    track: AppColors.track,
+                    size: 96,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_num(s.kcalToday),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+                        const Text('kcal eaten',
+                            style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                      ],
                     ),
-                    const Text('Daily calorie goal',
-                        style: TextStyle(fontSize: 15, color: AppColors.muted)),
-                    const SizedBox(height: 10),
-                    _pill(
-                      over ? '${_num(-remaining)} over' : '${_num(remaining)} left',
-                      over ? AppColors.warnBg : AppColors.safeBg,
-                      over ? AppColors.warnInk : AppColors.safe,
-                      icon: Icons.local_fire_department,
+                  ),
+                  const SizedBox(width: 10),
+                  Container(width: 1, height: 80, color: AppColors.border),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(_num(s.kcalTarget),
+                              style: const TextStyle(
+                                  fontSize: 32, fontWeight: FontWeight.w800, height: 1.1)),
+                        ),
+                        const Text('Daily calorie goal',
+                            style: TextStyle(fontSize: 13, color: AppColors.muted)),
+                        const SizedBox(height: 8),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: _pill(
+                            over ? '${_num(-remaining)} over' : '${_num(remaining)} left',
+                            over ? AppColors.warnBg : AppColors.safeBg,
+                            over ? AppColors.warnInk : AppColors.safe,
+                            icon: Icons.local_fire_department,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -370,7 +386,17 @@ class HomeScreen extends StatelessWidget {
           },
           child: AppCard(
             padding: const EdgeInsets.all(14),
-            child: Column(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  right: -14,
+                  top: -14,
+                  child: IgnorePointer(
+                    child: Image.asset('assets/images/shoe.png', width: 76, fit: BoxFit.contain),
+                  ),
+                ),
+                Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Row(
@@ -417,6 +443,8 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
+              ],
+            ),
           ),
         );
       },
@@ -428,7 +456,17 @@ class HomeScreen extends StatelessWidget {
     final shown = s.waterTarget.clamp(1, 10);
     return AppCard(
       padding: const EdgeInsets.all(14),
-      child: Column(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            right: -12,
+            top: 22,
+            child: IgnorePointer(
+              child: Image.asset('assets/images/glass.png', width: 62, fit: BoxFit.contain),
+            ),
+          ),
+          Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -490,6 +528,8 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
+        ],
+      ),
     );
   }
 
@@ -501,18 +541,10 @@ class HomeScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 104,
-            height: 120,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primaryLight, AppColors.primaryDeep],
-              ),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(Icons.fitness_center, color: Colors.white, size: 48),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Image.asset('assets/images/dumbbell.jpg',
+                width: 104, height: 120, fit: BoxFit.cover),
           ),
           const SizedBox(width: 14),
           Expanded(

@@ -198,7 +198,6 @@ class ProfileScreen extends StatelessWidget {
     final signedIn = cloudEnabled && s.signedIn;
     final name = s.accountName;
     return Container(
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -214,7 +213,22 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: Stack(
+          children: [
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: Opacity(
+                opacity: 0.5,
+                child: Image.asset('assets/images/hero.png', fit: BoxFit.fitHeight),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
         children: [
           Stack(
             clipBehavior: Clip.none,
@@ -305,6 +319,10 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+            ),
+          ],
+        ),
       ),
     );
   }
