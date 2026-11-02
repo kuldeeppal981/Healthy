@@ -5,6 +5,7 @@ import '../models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
+import '../widgets/food_art.dart';
 import '../widgets/voice_review.dart';
 
 /// One line of advice from today's numbers (no AI, plain rules).
@@ -129,6 +130,10 @@ class DiaryScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 8, bottom: 6),
                   child: Row(
                     children: [
+                      if (FoodArt.kindFor(e.name) != null) ...[
+                        FoodArt(FoodArt.kindFor(e.name)!, size: 24),
+                        const SizedBox(width: 8),
+                      ],
                       Expanded(
                         child: Text(e.name,
                             maxLines: 1,
@@ -165,6 +170,10 @@ class DiaryScreen extends StatelessWidget {
       icon = Icons.dinner_dining;
       color = const Color(0xFF6366F1);
     }
+    FoodKind? art;
+    if (m.contains('break')) art = FoodKind.bowl;
+    if (m.contains('lunch') || m.contains('dinner')) art = FoodKind.thali;
+    if (m.contains('snack')) art = FoodKind.chai;
     return Container(
       width: 42,
       height: 42,
@@ -172,7 +181,9 @@ class DiaryScreen extends StatelessWidget {
         color: color.withOpacity(0.14),
         borderRadius: BorderRadius.circular(14),
       ),
-      child: Icon(icon, color: color, size: 22),
+      child: art != null
+          ? Center(child: FoodArt(art, size: 30))
+          : Icon(icon, color: color, size: 22),
     );
   }
 }

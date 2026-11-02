@@ -120,3 +120,4 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
 - (old note) Colour picker plan: Plan: step 1 make a few accent colours non-const (primary, primaryLight, primaryDeep, link, chipBg, chipInk) and fix const errors screen by screen; step 2 Profile -> Theme colour with Green, Indigo, Orange, Pink, Blue, Teal; step 3 real dark mode.
 
 - Diary meal cards have a coloured icon tile per meal (`_mealTile` in `diary_screen.dart`).
+- Food drawings (UNTESTED): `widgets/food_art.dart` (`FoodArt`, CustomPainter: bowl, thali, chai, apple, picked by food name keywords). Used in the Diary meal tiles and next to matching food entries. More drawings can be added as new `FoodKind` values.
