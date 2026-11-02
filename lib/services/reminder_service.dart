@@ -98,7 +98,7 @@ class ReminderService {
       tzdata.initializeTimeZones();
       _setLocalZone();
       await _plugin.initialize(const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('ic_notification'),
       ));
       await _load();
       _ready = true;

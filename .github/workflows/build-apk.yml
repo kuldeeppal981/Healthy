@@ -258,6 +258,41 @@ jobs:
           EOF
           grep -n -A8 "release {" android/app/build.gradle* || true
 
+      - name: Add app icon and notification icon
+        run: |
+          set -e
+          main=android/app/src/main
+          mkdir -p $main/res/drawable $main/res/mipmap-anydpi-v26
+          cat > $main/res/drawable/ic_notification.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp"
+              android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="#FFFFFFFF"
+                  android:pathData="M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z"/>
+          </vector>
+          EOF
+          cat > $main/res/drawable/ic_launcher_fg.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <group android:translateX="27.6" android:translateY="27.6" android:scaleX="2.2" android:scaleY="2.2">
+                  <path android:fillColor="#FFFFFFFF"
+                      android:pathData="M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z"/>
+              </group>
+          </vector>
+          EOF
+          cat > $main/res/drawable/ic_launcher_bg.xml <<'EOF'
+          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+              <gradient android:startColor="#8B5CF6" android:endColor="#5B2BD8" android:angle="45"/>
+          </shape>
+          EOF
+          cat > $main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@drawable/ic_launcher_bg"/>
+              <foreground android:drawable="@drawable/ic_launcher_fg"/>
+          </adaptive-icon>
+          EOF
+
       - name: Install packages
         run: flutter pub get
 
