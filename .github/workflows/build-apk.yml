@@ -155,7 +155,7 @@ jobs:
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:text="Today"
-                  android:textColor="#D9CCFF"
+                  android:textColor="#D5F5E0"
                   android:textSize="12sp" />
               <TextView
                   android:id="@+id/w_kcal"
@@ -188,7 +188,7 @@ jobs:
           cat > $main/res/drawable/widget_bg.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-              <solid android:color="#6C3CE9" />
+              <solid android:color="#16A34A" />
               <corners android:radius="20dp" />
           </shape>
           EOF
@@ -283,7 +283,7 @@ jobs:
           EOF
           cat > $main/res/drawable/ic_launcher_bg.xml <<'EOF'
           <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-              <gradient android:startColor="#8B5CF6" android:endColor="#5B2BD8" android:angle="45"/>
+              <gradient android:startColor="#4ADE80" android:endColor="#16A34A" android:angle="45"/>
           </shape>
           EOF
           cat > $main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'

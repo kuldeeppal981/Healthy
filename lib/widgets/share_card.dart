@@ -66,7 +66,7 @@ class _ShareDialogState extends State<_ShareDialog> {
                       color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
               Text(l,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Color(0xFFD9CCFF), fontSize: 12)),
+                  style: const TextStyle(color: Color(0xFFD5F5E0), fontSize: 12)),
             ],
           ),
         );
@@ -83,7 +83,7 @@ class _ShareDialogState extends State<_ShareDialog> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6C3CE9), Color(0xFF9B6BFF)],
+                  colors: [Color(0xFF16A34A), Color(0xFF4ADE80)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

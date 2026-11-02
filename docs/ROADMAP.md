@@ -57,3 +57,5 @@ Also: ingredient -> allergen dictionary table grown from AI answers to make alle
 
 - Real dark theme (replace the filter): make AppColors theme-aware without breaking const widgets. Plan: add `AppColors.of(context)` for new/edited screens first, migrate screen by screen.
 - Still old style: parts of Friends tabs inside, Allergy sub-dialogs, Reminders, Settings, Health Connect screens. Use ui_kit helpers.
+
+- Theme colour picker (Green default, Indigo, Orange, Pink, Blue, Teal) + illustrations for food/empty states from the design canvas. Needs AppColors accent colours to become non-const; do after the green build is confirmed. Optional black-and-white premium option exists in the design canvas.

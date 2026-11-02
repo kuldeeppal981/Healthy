@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Light, dark or follow the phone. Saved on this phone.
 ///
 /// Dark mode recolours the whole app with one colour filter (colours are
-/// inverted and the hue is turned back so purple stays purple). Things that
+/// inverted and the hue is turned back so green stays green). Things that
 /// must keep their real colours, like the camera view, use [undoDark].
 class ThemeService extends ChangeNotifier {
   ThemeService._();

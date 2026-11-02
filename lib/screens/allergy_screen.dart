@@ -324,7 +324,7 @@ class _AllergenTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFEEE8FF) : Colors.white.withOpacity(0.85),
+            color: selected ? const Color(0xFFE4F7EA) : Colors.white.withOpacity(0.85),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: selected ? AppColors.primary : AppColors.border,

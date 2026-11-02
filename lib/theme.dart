@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Bright purple theme (chosen from the design options), Outfit font.
+/// Fresh green and white theme, Outfit font.
 class AppColors {
-  static const bg = Color(0xFFF4F1FF);
-  static const bgTop = Color(0xFFE6DDFF);
-  static const primaryLight = Color(0xFF8B5CF6);
-  static const primaryDeep = Color(0xFF5B2BD8);
+  static const bg = Color(0xFFF6FBF8);
+  static const bgTop = Color(0xFFE0F5E8);
+  static const primaryLight = Color(0xFF4ADE80);
+  static const primaryDeep = Color(0xFF16A34A);
   static const card = Color(0xFFFFFFFF);
-  static const ink = Color(0xFF1E1B3A);
-  static const muted = Color(0xFF5B5878);
-  static const border = Color(0xFFECE6FB);
-  static const track = Color(0xFFECE8FA);
-  static const primary = Color(0xFF6C3CE9);
-  static const link = Color(0xFF5A2BD6);
+  static const ink = Color(0xFF0F1222);
+  static const muted = Color(0xFF5C6A63);
+  static const border = Color(0xFFE1F0E6);
+  static const track = Color(0xFFE1F0E6);
+  static const primary = Color(0xFF16A34A);
+  static const link = Color(0xFF15803D);
   static const ring = Color(0xFFFF5C35);
   static const blue = Color(0xFF1E88F0);
-  static const chipBg = Color(0xFFEDE6FF);
-  static const chipInk = Color(0xFF4A22B8);
+  static const chipBg = Color(0xFFE4F7EA);
+  static const chipInk = Color(0xFF166534);
   static const danger = Color(0xFFB3261E);
   static const dangerBg = Color(0xFFFCEBE9);
   static const warnBg = Color(0xFFFFF1D6);
@@ -87,7 +87,7 @@ ThemeData buildTheme() {
   );
 }
 
-/// White rounded card used across screens, with a soft purple shadow.
+/// White rounded card used across screens, with a soft green shadow.
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -125,7 +125,7 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Big purple gradient button. Always bounded, safe to use inside a Row
+/// Big green gradient button. Always bounded, safe to use inside a Row
 /// when [expand] is false.
 class GradientButton extends StatelessWidget {
   final String label;
@@ -200,7 +200,7 @@ class GradientButton extends StatelessWidget {
   }
 }
 
-/// Soft lavender gradient behind the main tabs.
+/// Soft green gradient behind the main tabs.
 class AppBackground extends StatelessWidget {
   final Widget child;
 
@@ -213,7 +213,7 @@ class AppBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.bgTop, AppColors.bg, Color(0xFFFAF8FF)],
+          colors: [AppColors.bgTop, AppColors.bg, Color(0xFFFAFDFB)],
           stops: [0.0, 0.35, 1.0],
         ),
       ),

@@ -10,7 +10,7 @@ A HealthifyMe-style health app for India, built with Flutter (Android only for n
 calorie diary, barcode scan, allergy alerts, Indian foods, voice logging, workout planner,
 streaks/XP, friends feed and challenges, AI coach, reports. Free to use; the plan is to beat
 paid apps on free features, allergy safety and Indian food. UI language: English.
-Theme: bright purple, font Outfit.
+Theme: fresh green on white (changed from purple), font Outfit. Colour picker is planned, see ROADMAP.
 
 ## The user and how to work with them
 - Owner: kuldeeppal981 (GitHub). Repo: `kuldeeppal981/Healthy`, branch `main`. Time zone IST.

@@ -10,7 +10,7 @@ String _n(double v, [int d = 0]) => v.toStringAsFixed(d);
 /// Builds the monthly report as a one page PDF.
 Future<Uint8List> buildReportPdf(MonthReport r, {String? name}) async {
   final doc = pw.Document();
-  const purple = PdfColor.fromInt(0xFF6C3CE9);
+  const purple = PdfColor.fromInt(0xFF16A34A);
   const grey = PdfColor.fromInt(0xFF6B6785);
 
   pw.Widget stat(String value, String label) => pw.Expanded(
@@ -18,7 +18,7 @@ Future<Uint8List> buildReportPdf(MonthReport r, {String? name}) async {
           margin: const pw.EdgeInsets.only(right: 8, bottom: 8),
           padding: const pw.EdgeInsets.all(12),
           decoration: pw.BoxDecoration(
-            color: const PdfColor.fromInt(0xFFF4F1FF),
+            color: const PdfColor.fromInt(0xFFF6FBF8),
             borderRadius: pw.BorderRadius.circular(10),
           ),
           child: pw.Column(

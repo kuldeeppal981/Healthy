@@ -81,7 +81,7 @@ class AvatarCircle extends StatelessWidget {
             image: f == null ? null : DecorationImage(image: FileImage(f), fit: BoxFit.cover),
           ),
           child: f == null
-              ? Icon(Icons.person, size: size * 0.55, color: const Color(0xFF5B2BD8))
+              ? Icon(Icons.person, size: size * 0.55, color: const Color(0xFF16A34A))
               : null,
         );
         return f == null ? circle : ThemeService.undoDark(context, circle);
