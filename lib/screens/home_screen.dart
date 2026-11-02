@@ -402,10 +402,10 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 InkWell(
                   onTap: () => _open(context, const HealthConnectScreen()),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.favorite, size: 16, color: AppColors.primary),
-                      SizedBox(width: 6),
+                      const Icon(Icons.favorite, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                             svc.granted ? 'Sync with Health Connect' : 'Tap to allow step counting',
