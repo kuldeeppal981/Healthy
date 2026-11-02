@@ -257,6 +257,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     var sets = 0;
     var volume = 0.0;
     final bests = <Map<String, dynamic>>[];
+    final muscleSets = <String, int>{};
     for (var i = 0; i < plan.exercises.length; i++) {
       final ex = plan.exercises[i];
       double bestKg = 0;
@@ -264,6 +265,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       for (final l in logs[i]) {
         if (!l.done) continue;
         sets++;
+        final m = muscleOf(ex.name);
+        if (m != null) muscleSets[m] = (muscleSets[m] ?? 0) + 1;
         if (ex.unit == 'reps') {
           final kg = double.tryParse(l.kg.text.trim()) ?? 0;
           final reps = double.tryParse(l.reps.text.trim()) ?? 0;
@@ -309,6 +312,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             sets: sets,
             volumeKg: volume,
             bests: bests,
+            muscleSets: muscleSets,
           ),
         );
     _skipRest();

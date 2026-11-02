@@ -43,3 +43,5 @@ Core diary, scan, allergies, workouts (v1) -> cloud accounts + sync -> custom pl
 Health Connect -> friends, leaderboard, challenges, share card (label scan parked after build failures)
 -> name at sign up, friend search/suggestions, button-width bug fix, dark mode -> friend feed with PRs,
 cheers + notifications -> daily check-in, streak freezes, XP/levels -> exercise library.
+
+- Idea: muscle heat-map body figure (needs body artwork), weekly set targets per muscle, trends over weeks.

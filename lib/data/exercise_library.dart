@@ -39,6 +39,33 @@ ExerciseInfo? findExercise(String name) {
   return null;
 }
 
+/// The muscle groups shown in the muscle volume analyzer.
+const trackedMuscles = ['Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps', 'Legs', 'Core'];
+
+/// Which tracked muscle an exercise trains. Null for cardio and unknown
+/// custom exercises.
+String? muscleOf(String name) {
+  final n = name.trim().toLowerCase();
+  if (n.contains('curl') && !n.contains('leg')) return 'Biceps';
+  if (n.contains('triceps') || n == 'dips' || n.contains('skull') || n.contains('kickback')) {
+    return 'Triceps';
+  }
+  final info = findExercise(name);
+  if (info == null) return null;
+  switch (info.group) {
+    case 'Chest':
+    case 'Back':
+    case 'Shoulders':
+    case 'Legs':
+    case 'Core':
+      return info.group;
+    case 'Arms':
+      return 'Biceps';
+    default:
+      return null;
+  }
+}
+
 const exerciseLibrary = <ExerciseInfo>[
   ExerciseInfo(
     name: 'Bench press',

@@ -17,6 +17,7 @@ import 'coach_screen.dart';
 import 'exercise_library_screen.dart';
 import 'health_connect_screen.dart';
 import 'health_screen.dart';
+import 'muscle_screen.dart';
 import 'onboarding_screen.dart';
 import 'reminders_screen.dart';
 import 'report_screen.dart';
@@ -143,6 +144,12 @@ class ProfileScreen extends StatelessWidget {
             subtitle:
                 '${a.currentStreak} day food streak  |  ${a.earnedCount} of ${a.badges.length} badges',
             onTap: () => _open(context, const BadgesScreen()),
+          ),
+          MenuRow(
+            icon: Icons.pie_chart_outline,
+            title: 'Muscle volume',
+            subtitle: 'Sets per muscle group, weekly and monthly',
+            onTap: () => _open(context, const MuscleScreen()),
           ),
           MenuRow(
             icon: Icons.insights_outlined,

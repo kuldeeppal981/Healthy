@@ -67,6 +67,10 @@ class WorkoutLog {
   /// Best set per exercise in this workout: {name, kg, reps}.
   final List<Map<String, dynamic>> bests;
 
+  /// Completed sets per muscle group, like {'Chest': 6, 'Triceps': 3}.
+  /// Empty for workouts saved before this field existed.
+  final Map<String, int> muscleSets;
+
   const WorkoutLog({
     required this.id,
     required this.at,
@@ -74,9 +78,11 @@ class WorkoutLog {
     required this.sets,
     required this.volumeKg,
     this.bests = const [],
+    this.muscleSets = const {},
   });
 
   Map<String, dynamic> toJson() => {
+        'muscleSets': muscleSets,
         'id': id,
         'at': at.toIso8601String(),
         'title': title,
@@ -94,5 +100,7 @@ class WorkoutLog {
         bests: ((j['bests'] as List?) ?? const [])
             .map((x) => Map<String, dynamic>.from(x as Map))
             .toList(),
+        muscleSets: ((j['muscleSets'] as Map?) ?? const {})
+            .map((k, v) => MapEntry(k.toString(), (v as num).toInt())),
       );
 }
