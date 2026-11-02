@@ -28,6 +28,9 @@ const accentPalettes = <AccentPalette>[
   AccentPalette('Teal', Color(0xFF0D9488), Color(0xFF2DD4BF), Color(0xFF0D9488),
       Color(0xFF0F766E), Color(0xFFD5F5F1), Color(0xFF115E59), Color(0xFFD3F5EF),
       Color(0xFFF4FCFB), Color(0xFFDAEEEB)),
+  AccentPalette('Black', Color(0xFF14161F), Color(0xFF3A3D4A), Color(0xFF0A0B12),
+      Color(0xFF14161F), Color(0xFFF0F0F3), Color(0xFF14161F), Color(0xFFEDEDF0),
+      Color(0xFFFAFAFB), Color(0xFFE6E6EA)),
 ];
 
 /// Light, dark or follow the phone. Saved on this phone.
