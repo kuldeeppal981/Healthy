@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../state/app_state.dart';
 import '../theme.dart';
+import 'privacy_screen.dart';
 
 /// Daily targets and the delete-everything button.
 class SettingsScreen extends StatelessWidget {
@@ -69,6 +70,49 @@ class SettingsScreen extends StatelessWidget {
               },
               child: const Text('Delete all data'),
             ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const PrivacyScreen()),
+              ),
+              child: const Text('Privacy policy'),
+            ),
+            if (s.signedIn) ...[
+              const SizedBox(height: 12),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+                onPressed: () async {
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Delete your account?'),
+                      content: const Text(
+                          'This permanently deletes your account, friends, posts and all saved data. It cannot be undone.'),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel')),
+                        TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Delete account')),
+                      ],
+                    ),
+                  );
+                  if (ok != true) return;
+                  final done = await s.deleteAccount();
+                  if (!context.mounted) return;
+                  if (done) {
+                    Navigator.of(context).pop();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Could not delete the account. Try again later.')),
+                    );
+                  }
+                },
+                child: const Text('Delete account'),
+              ),
+            ],
           ],
         ),
       ),

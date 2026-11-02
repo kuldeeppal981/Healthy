@@ -123,6 +123,43 @@ class CloudSync {
 
   Future<void> signOut() => _c.auth.signOut();
 
+  /// Fires when the user opens the password reset link from the email.
+  Stream<void> get passwordRecoveryEvents => _c.auth.onAuthStateChange
+      .where((s) => s.event == AuthChangeEvent.passwordRecovery)
+      .map((_) {});
+
+  /// Emails a password reset link that opens the app (deep link [oauthRedirect]).
+  Future<AuthOutcome> sendPasswordReset(String email) async {
+    try {
+      await _c.auth.resetPasswordForEmail(email, redirectTo: oauthRedirect);
+      return const AuthOutcome();
+    } on AuthException catch (e) {
+      return AuthOutcome(error: e.message);
+    } catch (_) {
+      return const AuthOutcome(error: _networkError);
+    }
+  }
+
+  /// Sets a new password for the signed-in user. Returns an error text or null.
+  Future<String?> updatePassword(String password) async {
+    try {
+      await _c.auth.updateUser(UserAttributes(password: password));
+      return null;
+    } on AuthException catch (e) {
+      return e.message;
+    } catch (_) {
+      return _networkError;
+    }
+  }
+
+  /// Deletes the account and all its server data (rpc delete_my_account).
+  Future<void> deleteAccount() async {
+    await _c.rpc('delete_my_account');
+    try {
+      await _c.auth.signOut();
+    } catch (_) {}
+  }
+
   Future<RemoteData?> pull() async {
     final row = await _c
         .from('user_data')

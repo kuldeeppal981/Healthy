@@ -109,6 +109,20 @@ class _AuthScreenState extends State<AuthScreen> {
     });
   }
 
+  Future<void> _forgot() async {
+    if (!_emailOk()) return;
+    await _run(() async {
+      final r = await context.read<AppState>().sendPasswordReset(_email.text.trim());
+      if (!mounted) return;
+      if (r.error != null) {
+        _show(r.error!);
+      } else {
+        _show('We sent a reset link to ${_email.text.trim()}. Open it on this phone.',
+            error: false);
+      }
+    });
+  }
+
   Future<void> _register() async {
     if (_name.text.trim().length < 2) {
       _show('Enter your name (at least 2 letters).');
@@ -282,6 +296,13 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             const SizedBox(height: 20),
             if (_mode == _Mode.signIn) ...[
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _busy ? null : _forgot,
+                  child: const Text('Forgot password?'),
+                ),
+              ),
               GradientButton(
                 onPressed: _busy ? null : _signIn,
                 label: _busy ? 'Please wait...' : 'Sign in',

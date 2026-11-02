@@ -268,6 +268,25 @@ class AppState extends ChangeNotifier {
     _anyAuthSub = c.anyAuthEvents.listen((_) => notifyListeners());
   }
 
+  Future<AuthOutcome> sendPasswordReset(String email) async {
+    final c = cloud;
+    if (c == null) return const AuthOutcome(error: 'Online accounts are not set up.');
+    return c.sendPasswordReset(email);
+  }
+
+  /// Deletes the account on the server, then clears this phone. Returns false on failure.
+  Future<bool> deleteAccount() async {
+    final c = cloud;
+    if (c == null) return false;
+    try {
+      await c.deleteAccount();
+    } catch (_) {
+      return false;
+    }
+    await clearAll();
+    return true;
+  }
+
   Future<void> signOut() async {
     await cloud?.signOut();
     await clearAll();

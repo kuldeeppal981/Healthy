@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +23,82 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _index = 0;
+  StreamSubscription<void>? _recoverySub;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _recoverySub = context
+          .read<AppState>()
+          .cloud
+          ?.passwordRecoveryEvents
+          .listen((_) => _askNewPassword());
+    });
+  }
+
+  @override
+  void dispose() {
+    _recoverySub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _askNewPassword() async {
+    if (!mounted) return;
+    final cloud = context.read<AppState>().cloud;
+    final ctl = TextEditingController();
+    String? error;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: const Text('Set a new password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: ctl,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'New password (6+ characters)'),
+              ),
+              if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(error!, style: const TextStyle(color: AppColors.danger)),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Later'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (ctl.text.length < 6) {
+                  setD(() => error = 'Use at least 6 characters.');
+                  return;
+                }
+                final e = await cloud?.updatePassword(ctl.text);
+                if (e != null) {
+                  setD(() => error = e);
+                } else if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password changed')),
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+    ctl.dispose();
+  }
 
   void _goto(int i) => setState(() => _index = i);
 

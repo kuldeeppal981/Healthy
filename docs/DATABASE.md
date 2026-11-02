@@ -49,3 +49,6 @@ Shared cache of products read from label photos, so the same product never needs
 ## Plans (migration `user_plans`)
 `user_plans(user_id pk, plan 'free'|'pro', expires_at, source, updated_at)`. RLS: users read only their own row, nobody writes from the app. `my_plan()` returns {plan, expires_at} with expiry applied. Grant Pro by hand: `insert into user_plans(user_id, plan, expires_at) values ('<uuid>', 'pro', now() + interval '30 days') on conflict (user_id) do update set plan='pro', expires_at=excluded.expires_at;`
 Real purchases later: Google Play Billing (in_app_purchase or RevenueCat) -> an edge function verifies the purchase with the Play Developer API (or RevenueCat webhook) and writes this table. Needs a Play Console account first.
+
+## delete_my_account() (SQL file only, NOT yet applied)
+`supabase/migrations/delete_my_account.sql`: SECURITY DEFINER, deletes the caller from auth.users (all user tables cascade). Execute only for `authenticated`. Apply it, then remove this 'not applied' note.
