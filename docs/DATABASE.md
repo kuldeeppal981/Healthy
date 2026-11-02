@@ -36,6 +36,6 @@ get_cheers (reactions others gave to my posts), bump_ai_usage.
 
 ## Edge function `coach` (verify_jwt on)
 Source: `supabase/functions/coach/index.ts` (deployed v3). Modes: chat (`messages`, `context`), `estimate`
-(`items` -> nutrition JSON) and `label` (`image` base64 JPEG + `mime` -> `label` JSON: ingredients, contains, may_contain, per100 values). Gemini model from `GEMINI_MODEL` (default gemini-2.5-flash), daily limit from
+(`items` -> nutrition JSON) and `label` (`image` base64 JPEG + `mime` -> `label` JSON: ingredients, contains, may_contain, per100 values). Gemini model from `GEMINI_MODEL` (default gemini-3.8-flash), daily limit from
 `COACH_DAILY_LIMIT` (default 10, day boundary in IST). Secret `GEMINI_API_KEY` must be set in the
 Supabase dashboard (not yet set at the time of writing).

@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const DAILY_LIMIT = Number(Deno.env.get("COACH_DAILY_LIMIT") ?? "10");
-const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
+const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.8-flash";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
     const r = await gemini(key, {
       system_instruction: { parts: [{ text: LABEL_SYSTEM }] },
       contents: [{ role: "user", parts: [{ text: "Read this food label." }, { inline_data: { mime_type: mime, data: image } }] }],
-      generationConfig: { maxOutputTokens: 1800, temperature: 0.1, responseMimeType: "application/json" },
+      generationConfig: { maxOutputTokens: 4000, temperature: 0.1, responseMimeType: "application/json" },
     });
     if (!r.ok) {
       return json({
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
     const r = await gemini(key, {
       system_instruction: { parts: [{ text: ESTIMATE_SYSTEM }] },
       contents: [{ role: "user", parts: [{ text: lines.map((l, i) => `${i + 1}. ${l}`).join("\n") }] }],
-      generationConfig: { maxOutputTokens: 800, temperature: 0.2, responseMimeType: "application/json" },
+      generationConfig: { maxOutputTokens: 2000, temperature: 0.2, responseMimeType: "application/json" },
     });
     if (!r.ok) {
       return json({
@@ -210,7 +210,7 @@ Deno.serve(async (req) => {
   const r = await gemini(key, {
     system_instruction: { parts: [{ text: system }] },
     contents,
-    generationConfig: { maxOutputTokens: 600, temperature: 0.6 },
+    generationConfig: { maxOutputTokens: 2000, temperature: 0.6 },
   });
   if (!r.ok) {
     const busy = r.status === 429;
