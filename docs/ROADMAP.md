@@ -46,7 +46,7 @@ cheers + notifications -> daily check-in, streak freezes, XP/levels -> exercise 
 
 - Idea: muscle heat-map body figure (needs body artwork), weekly set targets per muscle, trends over weeks.
 
-## Planned: hybrid label scan (OCR -> database -> AI) — user wants this LATER, after current build is tested
+## Hybrid label scan (OCR -> database -> AI): BUILT, untested (see FEATURES). Remaining: barcode saving, report button, Hindi OCR.
 Flow: on-device OCR (google_mlkit_text_recognition, free; English first, Hindi labels fall back to image->AI) -> normalise ingredient text -> hash -> look up shared Supabase table -> hit: instant result, no AI -> miss: send TEXT (not photo) to `coach` label mode -> save result for everyone.
 Also: barcode path = our DB first, then Open Food Facts, then photo scan; offer "scan barcode too" after an AI read so the product is saved by barcode.
 Safety: label saved data "AI-read"; treat as confirmed only when 2 different users' results match; store text only (no photos/user info); writes only through a SECURITY DEFINER RPC; allergy warning always shown.

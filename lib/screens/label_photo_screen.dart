@@ -34,7 +34,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
       if (f == null) return;
       setState(() => _busy = true);
       final bytes = await f.readAsBytes();
-      final item = await LabelAi.read(bytes);
+      final item = await LabelAi.read(f.path, bytes);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(

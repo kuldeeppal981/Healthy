@@ -35,7 +35,13 @@ search_people (name search, discoverable only), suggested_people, pending_reques
 get_cheers (reactions others gave to my posts), bump_ai_usage.
 
 ## Edge function `coach` (verify_jwt on)
-Source: `supabase/functions/coach/index.ts` (deployed v3). Modes: chat (`messages`, `context`), `estimate`
+Source: `supabase/functions/coach/index.ts` (deployed v11; label mode also accepts `text` from phone OCR). Modes: chat (`messages`, `context`), `estimate`
 (`items` -> nutrition JSON) and `label` (`image` base64 JPEG + `mime` -> `label` JSON: ingredients, contains, may_contain, per100 values). Gemini model from `GEMINI_MODEL` (default gemini-3.8-flash), daily limit from
 `COACH_DAILY_LIMIT` (default 10, day boundary in IST). Secret `GEMINI_API_KEY` must be set in the
 Supabase dashboard (not yet set at the time of writing).
+
+## Label product cache (migration `label_products_cache`)
+Shared cache of products read from label photos, so the same product never needs the AI twice.
+- `label_products` (text_hash unique = sha256 of the sorted unique words of the ingredient list, name, ingredients, contains[], may_contain[], serving_grams, per100 jsonb, seen_count) and `label_product_seen` (product_id, user_id). RLS on, NO policies: access only through the functions.
+- `find_label_product(p_hash)` returns the product json (and records that this user saw it); `save_label_product(...)` inserts if new (first writer wins, no overwrite), records the user, clamps lengths. Both SECURITY DEFINER, authenticated only.
+- Known weakness: first writer wins, so a wrong or malicious first save would be served to others. Idea for later: report button, delete entries reported by several users, trust only when seen_count >= 2.
