@@ -10,7 +10,7 @@ A HealthifyMe-style health app for India, built with Flutter (Android only for n
 calorie diary, barcode scan, allergy alerts, Indian foods, voice logging, workout planner,
 streaks/XP, friends feed and challenges, AI coach, reports. Free to use; the plan is to beat
 paid apps on free features, allergy safety and Indian food. UI language: English.
-Theme: fresh green on white (changed from purple), font Outfit. Colour picker is planned, see ROADMAP.
+Theme: fresh green on white (changed from purple), font Outfit. User can pick a theme colour in Profile.
 
 ## The user and how to work with them
 - Owner: kuldeeppal981 (GitHub). Repo: `kuldeeppal981/Healthy`, branch `main`. Time zone IST.
@@ -54,7 +54,7 @@ Theme: fresh green on white (changed from purple), font Outfit. Colour picker is
 - **Buttons in a Row:** `buildTheme()` gives Filled/Outlined buttons `minimumSize: Size.fromHeight(52)`
   (infinite width). Inside a Row this breaks layout (text rendered vertically). Always pass
   `styleFrom(minimumSize: Size(0, 40))` or wrap in a bounded widget.
-- **Colors:** `AppColors` are `static const`. Dark mode is a global ColorFilter in `main.dart`
+- **Colors:** accent colours in `AppColors` (primary, primaryLight, primaryDeep, link, chipBg, chipInk, bg, bgTop, border, track) are now GETTERS (theme colour picker, `ThemeService.palette`), so they can NOT be used in `const` widgets or `const` lists; drop the `const` keyword. The other colours (ink, muted, card, danger, safe, ring...) are still `static const`. Dark mode is a global ColorFilter in `main.dart`
   (invert + hue rotate). Wrap anything that must keep real colors (camera) in `ThemeService.undoDark`.
 - **Do not add packages that need newer JVM targets or ML Kit** without testing: they broke the
   build before (flutter_timezone, google_mlkit text recognition). The time zone is derived from the

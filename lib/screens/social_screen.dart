@@ -27,7 +27,7 @@ class SocialCard extends StatelessWidget {
             return Badge(
               isLabelVisible: n > 0,
               label: Text('$n'),
-              child: const Icon(Icons.groups_outlined, color: AppColors.primary),
+              child: Icon(Icons.groups_outlined, color: AppColors.primary),
             );
           },
         ),
@@ -194,7 +194,7 @@ class _TurnOnState extends State<_TurnOn> {
           color: AppColors.chipBg,
           borderColor: AppColors.chipBg,
           radius: 14,
-          child: const Text(
+          child: Text(
             'What friends can see: your name, daily steps, whether you worked out and whether you logged food. Never your weight, meals, allergies or health conditions. Other users can find you by name and send a friend request. You can turn this off any time.',
             style: TextStyle(color: AppColors.chipInk, height: 1.4, fontSize: 13),
           ),
@@ -281,7 +281,7 @@ class _FeedTabState extends State<_FeedTab> {
                       ),
                     ),
                     if (_seenAtOpen != null && c.at.isAfter(_seenAtOpen!))
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(left: 6),
                         child: Text('NEW',
                             style: TextStyle(
@@ -361,7 +361,7 @@ class _FeedTabState extends State<_FeedTab> {
                   radius: 18,
                   backgroundColor: AppColors.primary.withOpacity(0.12),
                   child: Text(p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontWeight: FontWeight.w800, color: AppColors.primary)),
                 ),
                 const SizedBox(width: 10),

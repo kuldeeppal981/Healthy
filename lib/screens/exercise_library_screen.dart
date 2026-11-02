@@ -14,7 +14,7 @@ class ExerciseLibraryCard extends StatelessWidget {
       radius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: ListTile(
-        leading: const Icon(Icons.menu_book_outlined, color: AppColors.primary),
+        leading: Icon(Icons.menu_book_outlined, color: AppColors.primary),
         title: const Text('Exercise library',
             style: TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text('${exerciseLibrary.length} exercises: muscles, form, mistakes'),

@@ -106,7 +106,7 @@ class _StreakCardState extends State<StreakCard> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text('Level ${p.level}',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12)),

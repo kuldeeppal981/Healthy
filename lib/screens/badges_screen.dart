@@ -22,7 +22,7 @@ class BadgesCard extends StatelessWidget {
           radius: 16,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           child: ListTile(
-            leading: const Icon(Icons.emoji_events_outlined, color: AppColors.primary),
+            leading: Icon(Icons.emoji_events_outlined, color: AppColors.primary),
             title: const Text('Streaks and badges',
                 style: TextStyle(fontWeight: FontWeight.w700)),
             subtitle: Text(
@@ -86,7 +86,7 @@ class BadgesScreen extends StatelessWidget {
           children: [
             CountUp(
                 value: int.tryParse(big) ?? 0,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 34, fontWeight: FontWeight.w800, color: AppColors.primary)),
             Text(label,
                 textAlign: TextAlign.center,

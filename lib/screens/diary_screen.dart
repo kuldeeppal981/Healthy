@@ -68,7 +68,7 @@ class DiaryScreen extends StatelessWidget {
                   ),
                   TextSpan(text: dailyTip(s)),
                 ]),
-                style: const TextStyle(color: AppColors.chipInk, fontSize: 14, height: 1.35),
+                style: TextStyle(color: AppColors.chipInk, fontSize: 14, height: 1.35),
               ),
             ),
           ],
@@ -90,6 +90,8 @@ class DiaryScreen extends StatelessWidget {
           children: [
             Row(
               children: [
+                _mealTile(meal),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,7 +110,7 @@ class DiaryScreen extends StatelessWidget {
                 IconButton(
                   tooltip: 'Add to ${mealLabels[meal]}',
                   onPressed: () => showAddFoodSheet(context, meal: meal),
-                  icon: const Icon(Icons.add_circle, color: AppColors.primary),
+                  icon: Icon(Icons.add_circle, color: AppColors.primary),
                 ),
               ],
             ),
@@ -142,6 +144,35 @@ class DiaryScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// Small coloured icon tile for each meal.
+  Widget _mealTile(String meal) {
+    final m = meal.toLowerCase();
+    IconData icon = Icons.restaurant;
+    Color color = AppColors.primary;
+    if (m.contains('break')) {
+      icon = Icons.free_breakfast;
+      color = const Color(0xFFF59E0B);
+    } else if (m.contains('lunch')) {
+      icon = Icons.lunch_dining;
+      color = AppColors.primary;
+    } else if (m.contains('snack')) {
+      icon = Icons.cookie;
+      color = const Color(0xFFEA580C);
+    } else if (m.contains('dinner')) {
+      icon = Icons.dinner_dining;
+      color = const Color(0xFF6366F1);
+    }
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(icon, color: color, size: 22),
     );
   }
 }

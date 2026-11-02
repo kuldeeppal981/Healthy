@@ -74,7 +74,7 @@ class HomeScreen extends StatelessWidget {
                 minimumSize: const Size(0, 36),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('Track your day',
@@ -213,7 +213,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.restaurant, color: AppColors.primary, size: 24),
+              Icon(Icons.restaurant, color: AppColors.primary, size: 24),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text('Daily nutrition',
@@ -294,10 +294,10 @@ class HomeScreen extends StatelessWidget {
               children: [
                 _macro(Icons.fitness_center, 'Protein', s.proteinToday, s.proteinTarget,
                     AppColors.primary),
-                const VerticalDivider(width: 18, color: AppColors.border),
+                VerticalDivider(width: 18, color: AppColors.border),
                 _macro(Icons.grass, 'Carbs', s.carbsToday, s.carbsTarget,
                     const Color(0xFFF0A020)),
-                const VerticalDivider(width: 18, color: AppColors.border),
+                VerticalDivider(width: 18, color: AppColors.border),
                 _macro(Icons.water_drop, 'Fat', s.fatToday, s.fatTarget,
                     const Color(0xFF22A66A)),
               ],
@@ -438,7 +438,7 @@ class HomeScreen extends StatelessWidget {
                   onTap: () => _open(context, const HealthConnectScreen()),
                   child: Row(
                     children: [
-                      const Icon(Icons.favorite, size: 16, color: AppColors.primary),
+                      Icon(Icons.favorite, size: 16, color: AppColors.primary),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -493,7 +493,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   child: Text('${s.waterToday}/${s.waterTarget}',
                       maxLines: 1,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 11,
                           fontWeight: FontWeight.w700)),
@@ -532,7 +532,7 @@ class HomeScreen extends StatelessWidget {
                 minimumSize: const Size(0, 38),
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 foregroundColor: AppColors.primary,
-                side: const BorderSide(color: AppColors.primary, width: 1.2),
+                side: BorderSide(color: AppColors.primary, width: 1.2),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
             ),
@@ -576,7 +576,7 @@ class HomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(plan.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.w700)),
@@ -613,7 +613,7 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
               SizedBox(width: 6),
@@ -637,12 +637,12 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     cloudEnabled ? 'Ask the coach' : 'Personalized tips',
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppColors.link, fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                 ),
                 if (cloudEnabled)
-                  const Icon(Icons.arrow_forward, size: 16, color: AppColors.link),
+                  Icon(Icons.arrow_forward, size: 16, color: AppColors.link),
               ],
             ),
           ),

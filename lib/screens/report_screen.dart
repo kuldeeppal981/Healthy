@@ -113,7 +113,7 @@ class _ReportScreenState extends State<ReportScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           if (r.prs.isEmpty)
-            const AppCard(
+            AppCard(
               child: Row(
                 children: [
                   Icon(Icons.fitness_center, color: AppColors.primary),

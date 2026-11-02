@@ -1,6 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// One accent colour set (the picker in Profile chooses between these).
+class AccentPalette {
+  final String name;
+  final Color primary, light, deep, link, chipBg, chipInk, bgTop, bg, border;
+  const AccentPalette(this.name, this.primary, this.light, this.deep, this.link,
+      this.chipBg, this.chipInk, this.bgTop, this.bg, this.border);
+}
+
+const accentPalettes = <AccentPalette>[
+  AccentPalette('Green', Color(0xFF16A34A), Color(0xFF4ADE80), Color(0xFF16A34A),
+      Color(0xFF15803D), Color(0xFFE4F7EA), Color(0xFF166534), Color(0xFFE0F5E8),
+      Color(0xFFF6FBF8), Color(0xFFE1F0E6)),
+  AccentPalette('Indigo', Color(0xFF4F46E5), Color(0xFF818CF8), Color(0xFF4F46E5),
+      Color(0xFF4338CA), Color(0xFFE8E9FD), Color(0xFF3730A3), Color(0xFFE3E5FF),
+      Color(0xFFF7F7FF), Color(0xFFE4E6F7)),
+  AccentPalette('Orange', Color(0xFFEA580C), Color(0xFFFB923C), Color(0xFFEA580C),
+      Color(0xFFC2410C), Color(0xFFFFEDD9), Color(0xFF9A3412), Color(0xFFFFE8D2),
+      Color(0xFFFFF9F4), Color(0xFFF7E6D8)),
+  AccentPalette('Pink', Color(0xFFDB2777), Color(0xFFF472B6), Color(0xFFDB2777),
+      Color(0xFFBE185D), Color(0xFFFCE7F3), Color(0xFF9D174D), Color(0xFFFFE0EF),
+      Color(0xFFFFF7FB), Color(0xFFF6E3EE)),
+  AccentPalette('Blue', Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFF0284C7),
+      Color(0xFF0369A1), Color(0xFFE0F2FE), Color(0xFF075985), Color(0xFFDDF1FD),
+      Color(0xFFF5FAFE), Color(0xFFDEEBF4)),
+  AccentPalette('Teal', Color(0xFF0D9488), Color(0xFF2DD4BF), Color(0xFF0D9488),
+      Color(0xFF0F766E), Color(0xFFD5F5F1), Color(0xFF115E59), Color(0xFFD3F5EF),
+      Color(0xFFF4FCFB), Color(0xFFDAEEEB)),
+];
+
 /// Light, dark or follow the phone. Saved on this phone.
 ///
 /// Dark mode recolours the whole app with one colour filter (colours are
@@ -11,6 +40,20 @@ class ThemeService extends ChangeNotifier {
   static final instance = ThemeService._();
 
   ThemeMode mode = ThemeMode.system;
+
+  /// Index into [accentPalettes] (0 = green, the default).
+  int accentIndex = 0;
+  AccentPalette get palette => accentPalettes[accentIndex];
+
+  Future<void> setAccent(int i) async {
+    if (i < 0 || i >= accentPalettes.length) return;
+    accentIndex = i;
+    notifyListeners();
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setInt('accent', i);
+    } catch (_) {}
+  }
 
   /// Text size multiplier (1.0 normal, 1.15 large, 1.3 extra large).
   double textScale = 1.0;
@@ -24,6 +67,8 @@ class ThemeService extends ChangeNotifier {
         _ => ThemeMode.system,
       };
       textScale = p.getDouble('textScale') ?? 1.0;
+      final a = p.getInt('accent') ?? 0;
+      accentIndex = (a >= 0 && a < accentPalettes.length) ? a : 0;
     } catch (_) {}
   }
 

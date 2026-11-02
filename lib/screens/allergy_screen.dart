@@ -95,7 +95,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
             ),
           ),
         ] else
-          const AppCard(
+          AppCard(
             radius: 22,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +117,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
           borderColor: AppColors.chipBg,
           radius: 22,
           padding: const EdgeInsets.all(14),
-          child: const Row(
+          child: Row(
             children: [
               Icon(Icons.verified_user_outlined, color: AppColors.primary, size: 34),
               SizedBox(width: 14),
@@ -157,7 +157,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
             height: 52,
             decoration: BoxDecoration(
               gradient: sel
-                  ? const LinearGradient(
+                  ? LinearGradient(
                       colors: [AppColors.primaryLight, AppColors.primaryDeep],
                     )
                   : null,
@@ -217,7 +217,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
               Container(
                 width: 38,
                 height: 38,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                     color: AppColors.primary, shape: BoxShape.circle),
                 child: const Icon(Icons.priority_high, color: Colors.white, size: 22),
               ),

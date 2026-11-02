@@ -141,7 +141,7 @@ class _CoachScreenState extends State<CoachScreen> {
                       ? ListView(
                           padding: Space.pagePadding,
                           children: [
-                            const AppCard(
+                            AppCard(
                               child: Row(
                                 children: [
                                   Icon(Icons.auto_awesome, color: AppColors.primary, size: 30),

@@ -74,7 +74,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
               )
             : ListView(
                 children: [
-                  const Icon(Icons.document_scanner_outlined, size: 72, color: AppColors.primary),
+                  Icon(Icons.document_scanner_outlined, size: 72, color: AppColors.primary),
                   const SizedBox(height: 12),
                   const Text(
                     'Take a clear photo of the ingredient list and the nutrition table.',

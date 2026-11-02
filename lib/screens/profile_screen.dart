@@ -58,7 +58,7 @@ class ProfileScreen extends StatelessWidget {
             IconButton.filledTonal(
               tooltip: 'Settings',
               onPressed: () => _open(context, const SettingsScreen()),
-              icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
+              icon: Icon(Icons.settings_outlined, color: AppColors.primary),
               style: IconButton.styleFrom(
                 backgroundColor: AppColors.chipBg,
                 minimumSize: const Size(48, 48),
@@ -95,7 +95,7 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
                     Icon(Icons.dark_mode_outlined, color: AppColors.primary),
                     SizedBox(width: 12),
@@ -116,6 +116,47 @@ class ProfileScreen extends StatelessWidget {
                     selected: {ThemeService.instance.mode},
                     onSelectionChanged: (v) => ThemeService.instance.set(v.first),
                   ),
+                ),
+                const SizedBox(height: 14),
+                const Text('Theme colour', style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 14,
+                  runSpacing: 10,
+                  children: [
+                    for (var i = 0; i < accentPalettes.length; i++)
+                      GestureDetector(
+                        onTap: () => ThemeService.instance.setAccent(i),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [accentPalettes[i].light, accentPalettes[i].deep],
+                                ),
+                                border: Border.all(
+                                  color: ThemeService.instance.accentIndex == i
+                                      ? AppColors.ink
+                                      : Colors.transparent,
+                                  width: 2.5,
+                                ),
+                              ),
+                              child: ThemeService.instance.accentIndex == i
+                                  ? const Icon(Icons.check, color: Colors.white, size: 22)
+                                  : null,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(accentPalettes[i].name, style: const TextStyle(fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 14),
                 const Text('Text size', style: TextStyle(fontWeight: FontWeight.w700)),
@@ -233,7 +274,7 @@ class ProfileScreen extends StatelessWidget {
     final hasName = name.isNotEmpty;
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [AppColors.primaryLight, AppColors.primaryDeep],
@@ -378,9 +419,9 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 width: 52,
                 height: 52,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                     color: AppColors.chipBg, shape: BoxShape.circle),
-                child: const Icon(Icons.monitor_weight_outlined, color: AppColors.primary),
+                child: Icon(Icons.monitor_weight_outlined, color: AppColors.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -395,7 +436,7 @@ class ProfileScreen extends StatelessWidget {
                       change == 0
                           ? 'No change yet'
                           : '${change > 0 ? '+' : ''}${change.toStringAsFixed(1)} kg since start',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
                     ),
                   ],

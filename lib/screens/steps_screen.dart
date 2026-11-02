@@ -29,7 +29,7 @@ class StepsCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.directions_walk, color: AppColors.primary),
+                    Icon(Icons.directions_walk, color: AppColors.primary),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text('Steps',

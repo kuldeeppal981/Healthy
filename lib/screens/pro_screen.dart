@@ -71,7 +71,7 @@ class _ProScreenState extends State<ProScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Column(
               children: [
-                const Row(
+                Row(
                   children: [
                     Expanded(child: SizedBox()),
                     SizedBox(width: 64, child: Text('Free', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700))),

@@ -15,7 +15,7 @@ class HealthConnectCard extends StatelessWidget {
       radius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: ListTile(
-        leading: const Icon(Icons.watch_outlined, color: AppColors.primary),
+        leading: Icon(Icons.watch_outlined, color: AppColors.primary),
         title: const Text('Smartwatch and Health Connect',
             style: TextStyle(fontWeight: FontWeight.w700)),
         subtitle: const Text('Steps, heart rate, sleep and workouts'),
@@ -38,7 +38,7 @@ class HealthConnectScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(value,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.primary)),
               Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
             ],

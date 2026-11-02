@@ -153,7 +153,7 @@ class _MuscleScreenState extends State<MuscleScreen> {
         child: Column(
           children: [
             Text(value,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary)),
             const SizedBox(height: 2),
             Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),

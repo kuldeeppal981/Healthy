@@ -203,7 +203,7 @@ class _AuthScreenState extends State<AuthScreen> {
               width: 64,
               height: 64,
               alignment: Alignment.center,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDeep]),
                 shape: BoxShape.circle,
               ),

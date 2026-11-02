@@ -167,7 +167,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               color: AppColors.chipBg,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.alarm, color: AppColors.primary),
+            child: Icon(Icons.alarm, color: AppColors.primary),
           ),
           const SizedBox(width: 2),
           const SizedBox(width: 10),
@@ -417,11 +417,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Row(
               children: [
-                const Text('Rest timer',
+                Text('Rest timer',
                     style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.chipInk)),
                 const Spacer(),
                 Text(_mmss(_rest),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: AppColors.chipInk)),
@@ -448,7 +448,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               colors: [AppColors.primaryLight, AppColors.primaryDeep],
             ),
             borderRadius: BorderRadius.circular(18),
@@ -479,7 +479,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           IconButton(
             tooltip: 'Log a set by voice',
             onPressed: () => _voiceSet(state),
-            icon: const Icon(Icons.mic, color: AppColors.primary),
+            icon: Icon(Icons.mic, color: AppColors.primary),
           ),
         FilledButton.tonalIcon(
           onPressed: () => _edit(state),
@@ -518,7 +518,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               width: 64,
               decoration: BoxDecoration(
                 gradient: sel
-                    ? const LinearGradient(
+                    ? LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [AppColors.primaryLight, AppColors.primaryDeep],
@@ -553,7 +553,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final mins = estimateMinutes(plan);
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [AppColors.primaryLight, AppColors.primaryDeep],
@@ -668,7 +668,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.format_list_bulleted, color: AppColors.primary),
+              Icon(Icons.format_list_bulleted, color: AppColors.primary),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text('Workout Plan',
@@ -683,7 +683,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ],
           ),
           for (var i = 0; i < plan.exercises.length; i++) ...[
-            if (i > 0) const Divider(height: 1, color: AppColors.border),
+            if (i > 0) Divider(height: 1, color: AppColors.border),
             InkWell(
               borderRadius: BorderRadius.circular(14),
               onTap: () {
@@ -751,20 +751,20 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 30),
+          Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 30),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Pro Tip',
+                Text('Pro Tip',
                     style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
                         color: AppColors.primaryDeep)),
                 const SizedBox(height: 2),
                 Text(_tips[(_weekday - 1) % _tips.length],
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 14, color: AppColors.chipInk, height: 1.35)),
               ],
             ),
@@ -794,7 +794,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.bar_chart_rounded, color: AppColors.primary),
+              Icon(Icons.bar_chart_rounded, color: AppColors.primary),
               const SizedBox(width: 10),
               const Expanded(
                 child: Text('Your Progress',
@@ -806,7 +806,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   color: AppColors.chipBg,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text('This week',
+                child: Text('This week',
                     style: TextStyle(
                         color: AppColors.primary,
                         fontSize: 13,
@@ -880,7 +880,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 if (findExercise(ex.name) != null)
                   IconButton(
                     tooltip: 'How to do it',
-                    icon: const Icon(Icons.help_outline, color: AppColors.primary),
+                    icon: Icon(Icons.help_outline, color: AppColors.primary),
                     onPressed: () => openExercise(context, findExercise(ex.name)!),
                   ),
               ],

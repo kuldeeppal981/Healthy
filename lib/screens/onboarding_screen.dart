@@ -99,7 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Container(
                 width: 64,
                 height: 64,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDeep]),
                   shape: BoxShape.circle,
                 ),
@@ -176,13 +176,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Your daily targets',
+                    Text('Your daily targets',
                         style: TextStyle(
                             fontWeight: FontWeight.w700, color: AppColors.chipInk)),
                     const SizedBox(height: 6),
                     Text(
                       '${t.kcal} kcal  |  ${t.protein} g protein  |  ${t.carbs} g carbs  |  ${t.fat} g fat',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 15, height: 1.4, color: AppColors.chipInk),
                     ),
                   ],
@@ -239,7 +239,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ),
               ),
-              if (selected) const Icon(Icons.check_circle, color: AppColors.primary),
+              if (selected) Icon(Icons.check_circle, color: AppColors.primary),
             ],
           ),
         ),

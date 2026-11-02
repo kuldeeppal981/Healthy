@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'services/theme_service.dart';
+
 /// Fresh green and white theme, Outfit font.
 class AppColors {
-  static const bg = Color(0xFFF6FBF8);
-  static const bgTop = Color(0xFFE0F5E8);
-  static const primaryLight = Color(0xFF4ADE80);
-  static const primaryDeep = Color(0xFF16A34A);
+  // Accent colours: change with the theme colour picker (ThemeService).
+  static AccentPalette get _p => ThemeService.instance.palette;
+  static Color get bg => _p.bg;
+  static Color get bgTop => _p.bgTop;
+  static Color get primaryLight => _p.light;
+  static Color get primaryDeep => _p.deep;
+  static Color get border => _p.border;
+  static Color get track => _p.border;
+  static Color get primary => _p.primary;
+  static Color get link => _p.link;
+  static Color get chipBg => _p.chipBg;
+  static Color get chipInk => _p.chipInk;
+
+  // Fixed colours (never change with the accent).
   static const card = Color(0xFFFFFFFF);
   static const ink = Color(0xFF0F1222);
   static const muted = Color(0xFF5C6A63);
-  static const border = Color(0xFFE1F0E6);
-  static const track = Color(0xFFE1F0E6);
-  static const primary = Color(0xFF16A34A);
-  static const link = Color(0xFF15803D);
   static const ring = Color(0xFFFF5C35);
   static const blue = Color(0xFF1E88F0);
-  static const chipBg = Color(0xFFE4F7EA);
-  static const chipInk = Color(0xFF166534);
   static const danger = Color(0xFFB3261E);
   static const dangerBg = Color(0xFFFCEBE9);
   static const warnBg = Color(0xFFFFF1D6);
@@ -66,7 +72,7 @@ ThemeData buildTheme() {
       style: OutlinedButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
         foregroundColor: AppColors.ink,
-        side: const BorderSide(color: AppColors.border, width: 1.5),
+        side: BorderSide(color: AppColors.border, width: 1.5),
         textStyle: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -77,11 +83,11 @@ ThemeData buildTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.border),
       ),
     ),
   );
@@ -152,7 +158,7 @@ class GradientButton extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: enabled
-              ? const [AppColors.primaryLight, AppColors.primaryDeep]
+              ? [AppColors.primaryLight, AppColors.primaryDeep]
               : [AppColors.muted.withOpacity(0.35), AppColors.muted.withOpacity(0.35)],
         ),
         borderRadius: BorderRadius.circular(height / 2.6),
@@ -209,7 +215,7 @@ class AppBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -238,7 +244,7 @@ class MenuCard extends StatelessWidget {
           for (var i = 0; i < rows.length; i++) ...[
             rows[i],
             if (i != rows.length - 1)
-              const Divider(height: 1, indent: 64, endIndent: 16, color: AppColors.border),
+              Divider(height: 1, indent: 64, endIndent: 16, color: AppColors.border),
           ],
         ],
       ),

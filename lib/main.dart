@@ -67,6 +67,7 @@ class HealthApp extends StatelessWidget {
     return ListenableBuilder(
       listenable: ThemeService.instance,
       builder: (context, _) => MaterialApp(
+        key: ValueKey(ThemeService.instance.accentIndex),
         title: 'Healthy',
         debugShowCheckedModeBanner: false,
         theme: buildTheme(),
