@@ -8,6 +8,7 @@ import '../services/health_conditions.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
+import 'label_photo_screen.dart';
 
 /// Shows a scanned product, warns about the user's allergies, and lets the
 /// user add it to today's diary.
@@ -71,13 +72,34 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           }
           final item = snap.data;
           if (item == null) {
-            return _message(
-              'This product was not found in the database (${widget.barcode}). You can add the calories yourself.',
-              actionLabel: 'Add manually',
-              onAction: () async {
-                await showAddFoodSheet(context, customMode: true);
-                if (context.mounted) Navigator.of(context).pop();
-              },
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'This product was not found in the database (${widget.barcode}).',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute<void>(builder: (_) => const LabelPhotoScreen()),
+                    ),
+                    icon: const Icon(Icons.document_scanner_outlined),
+                    label: const Text('Scan ingredients (photo)'),
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton(
+                    onPressed: () async {
+                      await showAddFoodSheet(context, customMode: true);
+                      if (context.mounted) Navigator.of(context).pop();
+                    },
+                    child: const Text('Add manually'),
+                  ),
+                ],
+              ),
             );
           }
           return _content(context, item);

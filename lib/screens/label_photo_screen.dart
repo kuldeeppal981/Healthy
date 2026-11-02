@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../services/label_ai.dart';
 import '../theme.dart';
 import 'scan_result_screen.dart';
+import 'scan_screen.dart';
 
 /// Take or choose a photo of the ingredient list / nutrition table. The AI
 /// reads it, then the normal result screen shows allergy warnings and health
@@ -52,7 +53,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan ingredients')),
+      appBar: AppBar(title: const Text('Scan food')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: _busy
@@ -97,7 +98,15 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
                     icon: const Icon(Icons.photo_library_outlined),
                     label: const Text('Choose from gallery'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    onPressed: () => Navigator.of(context).pushReplacement(
+                      MaterialPageRoute<void>(builder: (_) => const BarcodeScanScreen()),
+                    ),
+                    icon: const Icon(Icons.qr_code_scanner),
+                    label: const Text('Scan barcode instead'),
+                  ),
+                  const SizedBox(height: 8),
                   const Text(
                     'AI can misread words. Always check the real label if you have a serious allergy.',
                     textAlign: TextAlign.center,

@@ -6,16 +6,25 @@ import '../theme.dart';
 import 'label_photo_screen.dart';
 import 'scan_result_screen.dart';
 
-/// Camera barcode scanner. Also has a manual barcode box for emulators or
-/// damaged barcodes.
-class ScanScreen extends StatefulWidget {
+/// Entry point of the Scan button: the ingredient photo scan comes first,
+/// the barcode scanner is a shortcut inside it.
+class ScanScreen extends StatelessWidget {
   const ScanScreen({super.key});
 
   @override
-  State<ScanScreen> createState() => _ScanScreenState();
+  Widget build(BuildContext context) => const LabelPhotoScreen();
 }
 
-class _ScanScreenState extends State<ScanScreen> {
+/// Camera barcode scanner. Also has a manual barcode box for emulators or
+/// damaged barcodes.
+class BarcodeScanScreen extends StatefulWidget {
+  const BarcodeScanScreen({super.key});
+
+  @override
+  State<BarcodeScanScreen> createState() => _BarcodeScanScreenState();
+}
+
+class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   final MobileScannerController _controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.noDuplicates,
     formats: const [
@@ -56,7 +65,7 @@ class _ScanScreenState extends State<ScanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan product')),
+      appBar: AppBar(title: const Text('Scan barcode')),
       body: Column(
         children: [
           Expanded(
@@ -117,7 +126,7 @@ class _ScanScreenState extends State<ScanScreen> {
                     MaterialPageRoute<void>(builder: (_) => const LabelPhotoScreen()),
                   ),
                   icon: const Icon(Icons.document_scanner_outlined),
-                  label: const Text('No barcode? Photo of ingredients'),
+                  label: const Text('Not found? Scan ingredients (photo)'),
                 ),
                 const SizedBox(height: 4),
                 Row(

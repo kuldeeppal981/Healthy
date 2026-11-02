@@ -102,3 +102,5 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
   Removed because ML Kit broke the release build (R8 missing classes). Needs a different approach.
 
 - Muscle Volume Analyzer (UNTESTED): `screens/muscle_screen.dart` (Profile -> Muscle volume). Donut + bars of completed sets per Chest/Back/Shoulders/Biceps/Triceps/Legs/Core for last 7 or 30 days. `WorkoutLog.muscleSets` is saved at finish (`muscleOf()` in `data/exercise_library.dart`); workouts before this change have no muscle data. Custom exercises not in the library are not counted.
+
+- Scan button now opens the ingredient PHOTO scan first (`ScanScreen` -> `LabelPhotoScreen`); barcode scanner is `BarcodeScanScreen` (button 'Scan barcode instead'). If a barcode is not found, the result screen offers photo scan or manual add. UNTESTED.
