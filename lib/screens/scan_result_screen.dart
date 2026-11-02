@@ -7,6 +7,7 @@ import '../services/food_service.dart';
 import '../services/health_conditions.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/food_art.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/ui_kit.dart';
 import 'label_photo_screen.dart';
@@ -153,6 +154,10 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
             children: [
               Row(
                 children: [
+                  if (FoodArt.kindFor(item.name) != null) ...[
+                    FoodArt(FoodArt.kindFor(item.name)!, size: 40),
+                    const SizedBox(width: 12),
+                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

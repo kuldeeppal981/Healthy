@@ -44,6 +44,12 @@ ThemeData buildTheme() {
     scaffoldBackgroundColor: AppColors.bg,
   );
   return base.copyWith(
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: ZoomPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
     textTheme: GoogleFonts.outfitTextTheme(base.textTheme).apply(
       bodyColor: AppColors.ink,
       displayColor: AppColors.ink,

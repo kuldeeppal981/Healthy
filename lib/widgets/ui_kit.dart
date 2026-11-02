@@ -27,6 +27,9 @@ class EmptyState extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
+  /// Optional drawn picture shown instead of the icon.
+  final Widget? art;
+
   const EmptyState({
     super.key,
     required this.icon,
@@ -34,6 +37,7 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.art,
   });
 
   @override
@@ -45,10 +49,20 @@ class EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(color: AppColors.chipBg, shape: BoxShape.circle),
-              child: Icon(icon, size: 36, color: AppColors.primary),
+              width: 112,
+              height: 112,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.chipBg.withOpacity(0.55),
+              ),
+              child: Container(
+                width: 82,
+                height: 82,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: AppColors.chipBg, shape: BoxShape.circle),
+                child: art ?? Icon(icon, size: 38, color: AppColors.primary),
+              ),
             ),
             const SizedBox(height: 16),
             Text(title,

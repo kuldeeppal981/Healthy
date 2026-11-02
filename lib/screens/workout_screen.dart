@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../services/reminder_service.dart';
 import '../services/social_service.dart';
 import '../services/voice_parser.dart';
+import '../widgets/muscle_art.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 import '../data/exercise_library.dart';
@@ -652,12 +653,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       borderRadius: BorderRadius.circular(14),
       child: photo != null
           ? AppImage('assets/images/$photo.jpg', width: 72, height: 52, fit: BoxFit.cover)
-          : Container(
-              width: 72,
-              height: 52,
-              color: AppColors.chipBg,
-              child: Icon(_groupIcon(name), color: AppColors.primary, size: 26),
-            ),
+          : MuscleTile(muscle: muscleOf(name), icon: _groupIcon(name)),
     );
   }
 

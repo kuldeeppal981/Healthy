@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum FoodKind { bowl, thali, chai, apple }
+enum FoodKind { bowl, thali, chai, apple, roti, egg, samosa, dosa, paneer, rice }
 
 /// Small flat food drawings (no image files needed). Drawn in a 48x48 box.
 class FoodArt extends StatelessWidget {
@@ -14,13 +14,19 @@ class FoodArt extends StatelessWidget {
     final n = name.toLowerCase();
     bool has(List<String> w) => w.any(n.contains);
     if (has(['chai', 'tea', 'coffee', 'milk', 'lassi'])) return FoodKind.chai;
+    if (has(['egg', 'omelette', 'omelet'])) return FoodKind.egg;
+    if (has(['samosa', 'pakora', 'kachori', 'pakoda'])) return FoodKind.samosa;
+    if (has(['dosa', 'uttapam', 'cheela', 'chilla'])) return FoodKind.dosa;
+    if (has(['paneer', 'tofu', 'cheese'])) return FoodKind.paneer;
+    if (has(['roti', 'chapati', 'paratha', 'naan', 'phulka'])) return FoodKind.roti;
+    if (has(['rice', 'biryani', 'khichdi', 'pulao'])) return FoodKind.rice;
     if (has(['apple', 'banana', 'fruit', 'orange', 'mango', 'papaya', 'guava'])) {
       return FoodKind.apple;
     }
-    if (has(['poha', 'upma', 'rice', 'khichdi', 'oats', 'idli', 'dosa', 'curry', 'soup', 'biryani'])) {
+    if (has(['poha', 'upma', 'oats', 'idli', 'curry', 'soup'])) {
       return FoodKind.bowl;
     }
-    if (has(['roti', 'dal', 'chapati', 'paratha', 'thali', 'sabzi', 'paneer', 'egg'])) {
+    if (has(['dal', 'thali', 'sabzi'])) {
       return FoodKind.thali;
     }
     return null;
@@ -114,6 +120,91 @@ class _FoodPainter extends CustomPainter {
         canvas.drawRRect(
             RRect.fromRectAndRadius(const Rect.fromLTWH(11, 21, 22, 6), const Radius.circular(3)),
             _fill(0xFFB45309));
+        break;
+      case FoodKind.roti:
+        canvas.drawCircle(const Offset(24, 24), 18, _fill(0xFFD6A05B));
+        canvas.drawCircle(const Offset(24, 24), 14, _fill(0xFFE9BE80));
+        for (final o in const [Offset(18, 20), Offset(29, 26), Offset(22, 31), Offset(30, 17)]) {
+          canvas.drawCircle(o, 2, _fill(0xFFB77C3A));
+        }
+        break;
+      case FoodKind.egg:
+        canvas.drawOval(
+            const Rect.fromLTWH(7, 12, 34, 26),
+            Paint()
+              ..color = const Color(0xFFE5E7EB)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2);
+        canvas.drawOval(const Rect.fromLTWH(7, 12, 34, 26), _fill(0xFFFFFFFF));
+        canvas.drawCircle(const Offset(24, 25), 7, _fill(0xFFF59E0B));
+        canvas.drawCircle(const Offset(22, 23), 2, _fill(0xFFFCD34D));
+        break;
+      case FoodKind.samosa:
+        final tri = Path()
+          ..moveTo(24, 8)
+          ..lineTo(42, 38)
+          ..lineTo(6, 38)
+          ..close();
+        canvas.drawPath(tri, _fill(0xFFE9B15C));
+        canvas.drawPath(
+            tri,
+            Paint()
+              ..color = const Color(0xFFB7791F)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..strokeJoin = StrokeJoin.round);
+        canvas.drawCircle(const Offset(24, 28), 2, _fill(0xFFB7791F));
+        canvas.drawCircle(const Offset(19, 33), 1.6, _fill(0xFFB7791F));
+        canvas.drawCircle(const Offset(29, 33), 1.6, _fill(0xFFB7791F));
+        break;
+      case FoodKind.dosa:
+        final dosa = Path()
+          ..moveTo(5, 34)
+          ..quadraticBezierTo(8, 10, 40, 12)
+          ..lineTo(40, 34)
+          ..close();
+        canvas.drawPath(dosa, _fill(0xFFF0C987));
+        canvas.drawPath(
+            dosa,
+            Paint()
+              ..color = const Color(0xFFD6A05B)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2
+              ..strokeJoin = StrokeJoin.round);
+        canvas.drawCircle(const Offset(37, 36), 6, _fill(0xFFFFFFFF));
+        canvas.drawCircle(const Offset(37, 36), 4, _fill(0xFF22C55E));
+        break;
+      case FoodKind.paneer:
+        for (final r in const [
+          Rect.fromLTWH(7, 22, 16, 16),
+          Rect.fromLTWH(24, 22, 16, 16),
+          Rect.fromLTWH(15, 9, 16, 16),
+        ]) {
+          final rr = RRect.fromRectAndRadius(r, const Radius.circular(3));
+          canvas.drawRRect(rr, _fill(0xFFFFF7E0));
+          canvas.drawRRect(
+              rr,
+              Paint()
+                ..color = const Color(0xFFE5C98A)
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.8);
+        }
+        break;
+      case FoodKind.rice:
+        canvas.drawOval(const Rect.fromLTWH(9, 13, 30, 18), _fill(0xFFFFFFFF));
+        canvas.drawOval(
+            const Rect.fromLTWH(9, 13, 30, 18),
+            Paint()
+              ..color = const Color(0xFFE5E7EB)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.5);
+        final rbowl = Path()
+          ..moveTo(7, 25)
+          ..lineTo(41, 25)
+          ..arcToPoint(const Offset(7, 25),
+              radius: const Radius.elliptical(17, 14), clockwise: true)
+          ..close();
+        canvas.drawPath(rbowl, _fill(0xFF38BDF8));
         break;
       case FoodKind.apple:
         final apple = Path()
