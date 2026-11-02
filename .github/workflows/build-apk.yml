@@ -1,10 +1,8 @@
 name: Build Android APK
 
-# Runs on every push to main, and manually from the Actions tab
-# (Actions -> Build Android APK -> Run workflow).
+# Runs ONLY when started by hand from the Actions tab
+# (Actions -> Build Android APK -> Run workflow). Not on push.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
