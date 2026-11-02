@@ -7,6 +7,7 @@ import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/food_art.dart';
 import '../widgets/voice_review.dart';
+import 'scan_screen.dart';
 
 /// One line of advice from today's numbers (no AI, plain rules).
 String dailyTip(AppState s) {
@@ -26,60 +27,190 @@ String dailyTip(AppState s) {
   return 'You are doing well. Keep logging.';
 }
 
-/// Today's meals: add, speak and swipe to delete.
-class DiaryScreen extends StatelessWidget {
+/// Diary tab: pick a day, see meals, add, scan, speak and swipe to delete.
+class DiaryScreen extends StatefulWidget {
   const DiaryScreen({super.key});
+
+  @override
+  State<DiaryScreen> createState() => _DiaryScreenState();
+}
+
+class _DiaryScreenState extends State<DiaryScreen> {
+  static const _dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  DateTime? _selected;
 
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text("Today's meals"),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: FilledButton.tonalIcon(
-              onPressed: () => logByVoice(context),
-              icon: const Icon(Icons.mic, size: 18),
-              label: const Text('Speak'),
-              style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+    final now = DateTime.now();
+    final day = _selected ?? now;
+    final isToday = AppState.sameDay(day, now);
+    final items = s.entriesOn(day);
+    double sum(double Function(DiaryEntry e) f) => items.fold(0.0, (a, e) => a + f(e));
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text('Diary',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+            ),
+            if (isToday) ...[
+              _roundIcon(Icons.qr_code_scanner, 'Scan product', () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const ScanScreen()),
+                );
+              }),
+              const SizedBox(width: 8),
+              _roundIcon(Icons.mic, 'Speak', () => logByVoice(context)),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => showAddFoodSheet(context),
+                borderRadius: BorderRadius.circular(24),
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColors.primaryLight, AppColors.primaryDeep],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 26),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (var i = 6; i >= 0; i--) _dayChip(now.subtract(Duration(days: i)), day),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.chipBg.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _sumCell('Eaten', '${sum((e) => e.kcal).round()}'),
+              _sumCell('Protein', '${sum((e) => e.protein).round()} g'),
+              _sumCell('Carbs', '${sum((e) => e.carbs).round()} g'),
+              _sumCell('Fat', '${sum((e) => e.fat).round()} g'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        for (final meal in mealOrder)
+          _mealCard(context, s, meal, items.where((e) => e.meal == meal).toList(), isToday),
+        if (isToday) ...[
+          const SizedBox(height: 4),
+          AppCard(
+            color: AppColors.chipBg,
+            borderColor: AppColors.chipBg,
+            radius: 18,
+            padding: const EdgeInsets.all(14),
+            child: Text.rich(
+              TextSpan(children: [
+                const TextSpan(
+                  text: 'Tip: ',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                TextSpan(text: dailyTip(s)),
+              ]),
+              style: TextStyle(color: AppColors.chipInk, fontSize: 14, height: 1.35),
             ),
           ),
         ],
+      ],
+    );
+  }
+
+  Widget _roundIcon(IconData icon, String tip, VoidCallback onTap) {
+    return Tooltip(
+      message: tip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.border, width: 1.5),
+            color: AppColors.card,
+          ),
+          child: Icon(icon, color: AppColors.primary, size: 22),
+        ),
       ),
-      body: AppBackground(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+    );
+  }
+
+  Widget _dayChip(DateTime d, DateTime selected) {
+    final on = AppState.sameDay(d, selected);
+    return InkWell(
+      onTap: () => setState(() => _selected = d),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 42,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: on
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primaryLight, AppColors.primaryDeep],
+                )
+              : null,
+        ),
+        child: Column(
           children: [
-            for (final meal in mealOrder) _mealCard(context, s, meal),
-            const SizedBox(height: 4),
-            AppCard(
-              color: AppColors.chipBg,
-              borderColor: AppColors.chipBg,
-              radius: 18,
-              padding: const EdgeInsets.all(14),
-              child: Text.rich(
-                TextSpan(children: [
-                  const TextSpan(
-                    text: 'Tip: ',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  TextSpan(text: dailyTip(s)),
-                ]),
-                style: TextStyle(color: AppColors.chipInk, fontSize: 14, height: 1.35),
-              ),
-            ),
+            Text(_dayNames[d.weekday - 1],
+                style: TextStyle(
+                    fontSize: 12, color: on ? Colors.white : AppColors.muted)),
+            const SizedBox(height: 2),
+            Text('${d.day}',
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: on ? Colors.white : AppColors.ink)),
           ],
         ),
       ),
     );
   }
 
-  Widget _mealCard(BuildContext context, AppState s, String meal) {
-    final items = s.mealEntries(meal);
+  Widget _sumCell(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+        const SizedBox(height: 2),
+        Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+      ],
+    );
+  }
+
+  Widget _mealCard(BuildContext context, AppState s, String meal,
+      List<DiaryEntry> items, bool canAdd) {
     final kcal = items.fold(0.0, (sum, e) => sum + e.kcal).round();
 
     return Padding(
@@ -108,11 +239,12 @@ class DiaryScreen extends StatelessWidget {
                 if (items.isNotEmpty)
                   Text('$kcal kcal',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                IconButton(
-                  tooltip: 'Add to ${mealLabels[meal]}',
-                  onPressed: () => showAddFoodSheet(context, meal: meal),
-                  icon: Icon(Icons.add_circle, color: AppColors.primary),
-                ),
+                if (canAdd)
+                  IconButton(
+                    tooltip: 'Add to ${mealLabels[meal]}',
+                    onPressed: () => showAddFoodSheet(context, meal: meal),
+                    icon: Icon(Icons.add_circle, color: AppColors.primary),
+                  ),
               ],
             ),
             for (final e in items)

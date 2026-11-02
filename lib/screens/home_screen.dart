@@ -70,7 +70,7 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             ),
             TextButton(
-              onPressed: () => _open(context, const DiaryScreen()),
+              onPressed: () => onGoto(1),
               style: TextButton.styleFrom(
                 minimumSize: const Size(0, 36),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -140,6 +140,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _header(BuildContext context, DateTime now, String? name) {
+    final first = (name ?? '').trim().split(' ').first;
     return Row(
       children: [
         Expanded(
@@ -147,41 +148,31 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${_days[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}',
-                style: const TextStyle(color: AppColors.muted, fontSize: 15),
+                '${_greeting(now.hour)}  \u00B7  ${_days[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}',
+                style: const TextStyle(color: AppColors.muted, fontSize: 13),
               ),
               const SizedBox(height: 2),
-              Text('${_greeting(now.hour)} \u{1F44B}',
-                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
-              Text(
-                  name == null
-                      ? "Let's make today count."
-                      : "Hi ${name.split(' ').first}, let's make today count.",
-                  maxLines: 2,
-                  style: const TextStyle(color: AppColors.muted, fontSize: 16)),
+              Text(first.isEmpty ? 'Welcome' : first,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
             ],
           ),
         ),
         InkWell(
-          onTap: () => onGoto(3),
+          onTap: () => onGoto(4),
           borderRadius: BorderRadius.circular(40),
           child: Container(
-            width: 56,
-            height: 56,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.border, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.10),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              border: Border.all(color: AppColors.border, width: 1.5),
             ),
             padding: const EdgeInsets.all(3),
-            child: const AvatarCircle(size: 50),
+            child: const AvatarCircle(size: 46),
           ),
         ),
       ],
@@ -209,109 +200,90 @@ class HomeScreen extends StatelessWidget {
   Widget _nutritionCard(BuildContext context, AppState s) {
     final remaining = (s.kcalTarget - s.kcalToday).round();
     final over = remaining < 0;
+    final pct = s.kcalTarget <= 0 ? 0 : (s.kcalToday / s.kcalTarget * 100).round();
     return AppCard(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
           Row(
             children: [
-              Icon(Icons.restaurant, color: AppColors.primary, size: 24),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text('Daily nutrition',
-                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
-              ),
-              over
-                  ? _pill('Over goal', AppColors.warnBg, AppColors.warnInk,
-                      icon: Icons.warning_amber_rounded)
-                  : _pill('On track', AppColors.safeBg, AppColors.safe,
-                      icon: Icons.check_circle),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                right: -16,
-                top: -4,
-                child: IgnorePointer(
-                  child: AppImage('assets/images/bowl.png', width: 86, fit: BoxFit.contain),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(over ? 'Calories over' : 'Calories left',
+                        style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(_num(over ? -remaining : remaining),
+                          style: TextStyle(
+                              fontSize: 42,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1.5,
+                              color: over ? AppColors.warnInk : AppColors.ink)),
+                    ),
+                    Text('of ${_num(s.kcalTarget)} kcal goal',
+                        style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                  ],
                 ),
               ),
-              Row(
-                children: [
-                  Ring(
-                    progress: s.kcalToday / s.kcalTarget,
-                    color: AppColors.primary,
-                    track: AppColors.track,
-                    size: 96,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_num(s.kcalToday),
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
-                        const Text('kcal eaten',
-                            style: TextStyle(fontSize: 12, color: AppColors.muted)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(width: 1, height: 80, color: AppColors.border),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(_num(s.kcalTarget),
-                              style: const TextStyle(
-                                  fontSize: 32, fontWeight: FontWeight.w800, height: 1.1)),
-                        ),
-                        const Text('Daily calorie goal',
-                            style: TextStyle(fontSize: 13, color: AppColors.muted)),
-                        const SizedBox(height: 8),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: _pill(
-                            over ? '${_num(-remaining)} over' : '${_num(remaining)} left',
-                            over ? AppColors.warnBg : AppColors.safeBg,
-                            over ? AppColors.warnInk : AppColors.safe,
-                            icon: Icons.local_fire_department,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              Ring(
+                progress: s.kcalTarget <= 0 ? 0 : s.kcalToday / s.kcalTarget,
+                color: over ? AppColors.ring : AppColors.primary,
+                track: AppColors.track,
+                size: 104,
+                child: Text('$pct%',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          IntrinsicHeight(
-            child: Row(
-              children: [
-                _macro(Icons.fitness_center, 'Protein', s.proteinToday, s.proteinTarget,
-                    AppColors.primary),
-                VerticalDivider(width: 18, color: AppColors.border),
-                _macro(Icons.grass, 'Carbs', s.carbsToday, s.carbsTarget,
-                    const Color(0xFFF0A020)),
-                VerticalDivider(width: 18, color: AppColors.border),
-                _macro(Icons.water_drop, 'Fat', s.fatToday, s.fatTarget,
-                    const Color(0xFF22A66A)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          GradientButton(
-            label: 'Log food',
-            icon: Icons.add,
-            onPressed: () => showAddFoodSheet(context),
+          Row(
+            children: [
+              _macroChip('Protein', s.proteinToday, s.proteinTarget),
+              const SizedBox(width: 8),
+              _macroChip('Carbs', s.carbsToday, s.carbsTarget),
+              const SizedBox(width: 8),
+              _macroChip('Fat', s.fatToday, s.fatTarget),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _macroChip(String label, double value, int target) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: AppColors.chipBg.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+            const SizedBox(height: 2),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text.rich(
+                TextSpan(children: [
+                  TextSpan(
+                      text: '${value.round()}',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                  TextSpan(
+                      text: ' / $target g',
+                      style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+                ]),
+                maxLines: 1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

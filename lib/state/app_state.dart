@@ -504,6 +504,8 @@ class AppState extends ChangeNotifier {
     return entries.where((e) => sameDay(e.at, now)).toList();
   }
 
+  List<DiaryEntry> entriesOn(DateTime d) => entries.where((e) => sameDay(e.at, d)).toList();
+
   double get kcalToday => today.fold(0.0, (s, e) => s + e.kcal);
   double get proteinToday => today.fold(0.0, (s, e) => s + e.protein);
   double get carbsToday => today.fold(0.0, (s, e) => s + e.carbs);

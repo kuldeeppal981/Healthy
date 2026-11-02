@@ -6,11 +6,11 @@ import 'package:provider/provider.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import 'allergy_screen.dart';
+import 'diary_screen.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
 import 'profile_screen.dart';
-import 'scan_screen.dart';
 import 'workout_screen.dart';
 
 /// Bottom navigation: Home, Allergy | Scan | Workout, Profile.
@@ -148,45 +148,33 @@ class _AppShellState extends State<AppShell> {
 
     final pages = <Widget>[
       HomeScreen(onGoto: _goto),
-      const AllergyScreen(),
+      const DiaryScreen(),
       const WorkoutScreen(),
+      const AllergyScreen(),
       const ProfileScreen(),
     ];
 
     return Scaffold(
       backgroundColor: AppColors.bg,
-      extendBody: false,
       body: AppBackground(
         child: SafeArea(child: IndexedStack(index: _index, children: pages)),
       ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Scan product',
-        elevation: 6,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const ScanScreen()),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          border: Border(top: BorderSide(color: AppColors.border)),
         ),
-        child: const Icon(Icons.qr_code_scanner, size: 28),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: AppColors.card,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        padding: EdgeInsets.zero,
-        height: 68,
-        elevation: 12,
-        shadowColor: AppColors.primary.withOpacity(0.25),
-        child: Row(
-          children: [
-            _navItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
-            _navItem(1, Icons.shield_outlined, Icons.shield, 'Allergy'),
-            const SizedBox(width: 72),
-            _navItem(2, Icons.fitness_center, Icons.fitness_center, 'Workout'),
-            _navItem(3, Icons.person_outline, Icons.person, 'Profile'),
-          ],
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              _navItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
+              _navItem(1, Icons.menu_book_outlined, Icons.menu_book, 'Diary'),
+              _navItem(2, Icons.fitness_center, Icons.fitness_center, 'Workout'),
+              _navItem(3, Icons.shield_outlined, Icons.shield, 'Allergy'),
+              _navItem(4, Icons.person_outline, Icons.person, 'Profile'),
+            ],
+          ),
         ),
       ),
     );
