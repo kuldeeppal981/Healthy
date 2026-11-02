@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../config.dart';
+import '../services/avatar_service.dart';
 import '../services/step_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -56,7 +57,7 @@ class HomeScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
-        _header(context, now),
+        _header(context, now, s.displayName),
         const SizedBox(height: 18),
         _nutritionCard(context, s),
         const SizedBox(height: 22),
@@ -134,7 +135,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _header(BuildContext context, DateTime now) {
+  Widget _header(BuildContext context, DateTime now, String? name) {
     return Row(
       children: [
         Expanded(
@@ -148,8 +149,12 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 2),
               Text('${_greeting(now.hour)} \u{1F44B}',
                   style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
-              const Text("Let's make today count.",
-                  style: TextStyle(color: AppColors.muted, fontSize: 16)),
+              Text(
+                  name == null
+                      ? "Let's make today count."
+                      : "Hi ${name.split(' ').first}, let's make today count.",
+                  maxLines: 2,
+                  style: const TextStyle(color: AppColors.muted, fontSize: 16)),
             ],
           ),
         ),
@@ -171,7 +176,8 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.person, color: AppColors.primaryDeep, size: 30),
+            padding: const EdgeInsets.all(3),
+            child: const AvatarCircle(size: 50),
           ),
         ),
       ],

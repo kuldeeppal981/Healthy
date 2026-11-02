@@ -292,6 +292,16 @@ class SocialService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Keeps the friends name in step with the name in Profile.
+  Future<void> rename(String newName) async {
+    if (!enabled || !available) return;
+    try {
+      await _c.rpc('create_social_profile', params: {'p_name': newName.trim()});
+      name = newName.trim();
+      notifyListeners();
+    } catch (_) {}
+  }
+
   Future<String?> enable(String displayName) async {
     try {
       await _c.rpc('create_social_profile', params: {'p_name': displayName.trim()});

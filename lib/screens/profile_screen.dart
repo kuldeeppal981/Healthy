@@ -9,6 +9,8 @@ import '../services/social_service.dart';
 import '../services/theme_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../services/avatar_service.dart';
+import '../widgets/edit_identity.dart';
 import '../widgets/sparkline.dart';
 import 'badges_screen.dart';
 import 'coach_screen.dart';
@@ -196,7 +198,8 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _headerCard(BuildContext context, AppState s, bool hasProfile) {
     final signedIn = cloudEnabled && s.signedIn;
-    final name = s.accountName;
+    final name = s.displayName ?? '';
+    final hasName = name.isNotEmpty;
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -230,59 +233,57 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               child: Row(
         children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 78,
-                height: 78,
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: const Icon(Icons.person, size: 44, color: AppColors.primaryDeep),
-              ),
-              if (hasProfile)
+          InkWell(
+            onTap: () => showEditIdentity(context, s),
+            borderRadius: BorderRadius.circular(60),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const AvatarCircle(size: 78),
                 Positioned(
                   right: -2,
                   bottom: -2,
-                  child: InkWell(
-                    onTap: () => _open(
-                      context,
-                      OnboardingScreen(initial: s.profile, editing: true),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(Icons.edit, size: 15, color: Colors.white),
-                    ),
+                    child: const Icon(Icons.edit, size: 15, color: Colors.white),
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (signedIn && name != null && name.isNotEmpty)
-                  Text(name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
-                Text(
-                  signedIn ? (s.accountEmail ?? 'Signed in') : 'Guest',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(signedIn && (name?.isNotEmpty ?? false) ? 0.85 : 1),
-                    fontSize: (signedIn && (name?.isNotEmpty ?? false)) ? 14 : 18,
-                    fontWeight: FontWeight.w700,
+                InkWell(
+                  onTap: () => showEditIdentity(context, s),
+                  child: Text(
+                    hasName ? name : 'Add your name',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        decoration: hasName ? null : TextDecoration.underline,
+                        decorationColor: Colors.white70),
                   ),
                 ),
+                if (signedIn)
+                  Text(
+                    s.accountEmail ?? 'Signed in',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
                 const SizedBox(height: 4),
                 Row(
                   children: [

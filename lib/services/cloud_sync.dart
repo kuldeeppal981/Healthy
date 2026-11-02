@@ -55,6 +55,11 @@ class CloudSync {
 
   /// Creates the account. When email confirmation is on, Supabase emails a
   /// code and [AuthOutcome.needsEmailConfirm] is true.
+  /// Saves the display name on the account (shown to friends).
+  Future<void> updateName(String name) async {
+    await _c.auth.updateUser(UserAttributes(data: {'name': name}));
+  }
+
   Future<AuthOutcome> signUp(String email, String password, {String? name}) async {
     try {
       final res = await _c.auth.signUp(

@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config.dart';
 import 'screens/app_shell.dart';
+import 'services/avatar_service.dart';
 import 'services/cloud_sync.dart';
 import 'services/health_service.dart';
 import 'services/reminder_service.dart';
@@ -23,6 +24,7 @@ Future<void> main() async {
   final state = AppState();
   await state.load();
   await ThemeService.instance.load();
+  await AvatarService.instance.load();
 
   if (cloudEnabled) {
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);

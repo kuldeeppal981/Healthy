@@ -70,6 +70,9 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
 ## Account and cloud
 - Email + password sign up with name, email code verification, sign in, guest mode, Google sign-in code
   (Google setup not done) (`screens/auth_screen.dart`, `services/cloud_sync.dart`)
+- Profile photo (picked from gallery, stored on this phone only, `services/avatar_service.dart`) and editable
+  display name (`AppState.profileName`, synced; also updates the account name and the friends name),
+  edited from the avatar/pencil in Profile (`widgets/edit_identity.dart`). Photo is not shared with friends yet.
 - Per-user cloud backup/sync of all app data (Supabase `user_data`), merge on login
 - Dark mode: Auto/Light/Dark in Profile (`services/theme_service.dart`)
 

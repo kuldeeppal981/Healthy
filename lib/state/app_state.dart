@@ -18,6 +18,7 @@ class AppState extends ChangeNotifier {
   // Profile and onboarding
   UserProfile? profile;
   bool onboardingSkipped = false;
+  String? profileName; // name the user typed in Profile
   final List<WeightEntry> weights = [];
 
   // Allergies
@@ -65,11 +66,29 @@ class AppState extends ChangeNotifier {
   bool get signedIn => cloud?.userId != null;
   String? get accountEmail => cloud?.email;
   String? get accountName => cloud?.displayName;
+
+  /// Name shown in the app: the one typed in Profile, else the account name.
+  String? get displayName {
+    final n = profileName?.trim();
+    if (n != null && n.isNotEmpty) return n;
+    final a = accountName?.trim();
+    return (a != null && a.isNotEmpty) ? a : null;
+  }
+
+  void setProfileName(String name) {
+    profileName = name.trim().isEmpty ? null : name.trim();
+    _changed();
+    final n = profileName;
+    if (n != null && signedIn) {
+      cloud?.updateName(n).catchError((_) {});
+    }
+  }
   bool get needsAuth => cloudEnabled && !signedIn && !guestMode;
 
   Map<String, dynamic> toSnapshot() => {
         'profile': profile?.toJson(),
         'onboardingSkipped': onboardingSkipped,
+        'profileName': profileName,
         'weights': weights.map((e) => e.toJson()).toList(),
         'allergies': allergies.toList(),
         'conditions': conditions.toList(),
@@ -93,6 +112,7 @@ class AppState extends ChangeNotifier {
         ? null
         : UserProfile.fromJson(Map<String, dynamic>.from(prof as Map));
     onboardingSkipped = j['onboardingSkipped'] as bool? ?? false;
+    profileName = j['profileName'] as String?;
 
     weights
       ..clear()
@@ -274,6 +294,7 @@ class AppState extends ChangeNotifier {
         ? null
         : UserProfile.fromJson(Map<String, dynamic>.from(jsonDecode(prof) as Map));
     onboardingSkipped = p.getBool('onboardingSkipped') ?? false;
+    profileName = p.getString('profileName');
     guestMode = p.getBool('guestMode') ?? false;
     final lm = p.getString('lastModified');
     lastModified = lm == null ? null : DateTime.tryParse(lm);
@@ -347,6 +368,11 @@ class AppState extends ChangeNotifier {
       await p.remove('profile');
     }
     await p.setBool('onboardingSkipped', onboardingSkipped);
+    if (profileName != null) {
+      await p.setString('profileName', profileName!);
+    } else {
+      await p.remove('profileName');
+    }
     await p.setBool('guestMode', guestMode);
     final lm = lastModified;
     if (lm != null) {
@@ -613,6 +639,7 @@ class AppState extends ChangeNotifier {
     syncError = null;
     profile = null;
     onboardingSkipped = false;
+    profileName = null;
     weights.clear();
     allergies.clear();
     conditions.clear();

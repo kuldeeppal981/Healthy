@@ -153,7 +153,7 @@ class _TurnOn extends StatefulWidget {
 
 class _TurnOnState extends State<_TurnOn> {
   late final TextEditingController _name =
-      TextEditingController(text: context.read<AppState>().accountName ?? '');
+      TextEditingController(text: context.read<AppState>().displayName ?? '');
   bool _busy = false;
   String? _error;
 
