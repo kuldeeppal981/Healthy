@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../services/theme_service.dart';
 import '../theme.dart';
+import 'label_photo_screen.dart';
 import 'scan_result_screen.dart';
 
 /// Camera barcode scanner. Also has a manual barcode box for emulators or
@@ -110,7 +111,15 @@ class _ScanScreenState extends State<ScanScreen> {
                   'Place the barcode inside the box',
                   style: TextStyle(color: AppColors.muted),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 4),
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).pushReplacement(
+                    MaterialPageRoute<void>(builder: (_) => const LabelPhotoScreen()),
+                  ),
+                  icon: const Icon(Icons.document_scanner_outlined),
+                  label: const Text('No barcode? Photo of ingredients'),
+                ),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     Expanded(

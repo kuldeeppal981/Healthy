@@ -31,6 +31,7 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
 ## Food and nutrition
 - Calorie diary by meal, macro targets, calorie ring (`screens/home_screen.dart`, `state/app_state.dart`)
 - Barcode scan with Open Food Facts lookup + manual barcode entry (`screens/scan_screen.dart`, `services/food_service.dart`)
+- Ingredient/label PHOTO scan (UNTESTED): `screens/label_photo_screen.dart` + `services/label_ai.dart` send the photo to edge function `coach` (mode `label`, Gemini vision, counts as 1 daily AI request), build a FoodItem(fromLabel) and open ScanResultScreen (allergy warnings, health flags, add to diary). Needs GEMINI_API_KEY secret.
 - Manual food add, Indian foods list (`data/indian_foods.dart`, `widgets/add_food_sheet.dart`)
 - Water counter and reminders
 - Voice logging: speak "2 roti aur dal", parsed by `voice_parser.dart`, nutrition estimated by the AI

@@ -22,7 +22,7 @@ Beat HealthifyMe by being free where they charge, safe for allergies, great for 
 8. **Ship:** app name and icon, Play Store listing.
 
 ## Backlog
-- Photo to calories (AI), restore label scan with a build-safe approach
+- Photo to calories of a meal (AI). Label photo scan is DONE via Gemini (see FEATURES), old ML Kit version stays parked
 - Recipes, family profiles, premium plan (AI limit raise), tips/journey
 - In-app exercise images or videos (needs licensed assets or the user's own files)
 - Real push notifications via Firebase FCM (cheers, friend requests, reminders when app is closed)
