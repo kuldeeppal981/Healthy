@@ -30,28 +30,37 @@ class _AllergyScreenState extends State<AllergyScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
-        Stack(
-          clipBehavior: Clip.none,
+        Row(
           children: [
-            Positioned(
-              right: -10,
-              top: -6,
-              child: IgnorePointer(
-                child: AppImage('assets/images/shield.png', width: 150, fit: BoxFit.contain),
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primaryLight, AppColors.primaryDeep],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
+              child: const Icon(Icons.verified_user_outlined, color: Colors.white, size: 28),
             ),
-            const Padding(
-              padding: EdgeInsets.only(right: 110, top: 4, bottom: 8),
+            const SizedBox(width: 14),
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Allergy Profile',
-                      style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
-                  SizedBox(height: 6),
-                  Text(
-                    'Select your allergies to get personalized recommendations and alerts.',
-                    style: TextStyle(color: AppColors.muted, fontSize: 15, height: 1.35),
-                  ),
+                  Text('Allergy',
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+                  Text('Every scan is checked against these',
+                      style: TextStyle(color: AppColors.muted, fontSize: 13)),
                 ],
               ),
             ),
@@ -62,12 +71,12 @@ class _AllergyScreenState extends State<AllergyScreen> {
         const SizedBox(height: 16),
         if (_food) ...[
           GridView.count(
-            crossAxisCount: 2,
+            crossAxisCount: 3,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 2.25,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 0.88,
             children: [
               for (final a in allergenDefs)
                 _AllergenTile(
@@ -322,55 +331,50 @@ class _AllergenTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Container(
-          padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
+          padding: const EdgeInsets.fromLTRB(6, 10, 6, 8),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFE4F7EA) : Colors.white.withOpacity(0.85),
-            borderRadius: BorderRadius.circular(22),
+            color: selected ? AppColors.chipBg : AppColors.card,
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected ? AppColors.primary : AppColors.border,
-              width: selected ? 1.6 : 1,
+              width: selected ? 2 : 1.5,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
-          child: Row(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 58,
-                child: AppImage('assets/images/allergy_$id.png', fit: BoxFit.contain),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-              ),
-              const SizedBox(width: 6),
-              Align(
-                alignment: Alignment.topCenter,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: selected ? AppColors.primary : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: selected ? AppColors.primary : AppColors.border,
-                      width: 1.6,
-                    ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: AppImage('assets/images/allergy_$id.png', fit: BoxFit.contain),
                   ),
-                  child: selected
-                      ? const Icon(Icons.check, size: 16, color: Colors.white)
-                      : null,
-                ),
+                  if (selected)
+                    Positioned(
+                      right: -8,
+                      top: -6,
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Icon(Icons.check, size: 13, color: Colors.white),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               ),
             ],
           ),

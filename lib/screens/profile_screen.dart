@@ -68,6 +68,16 @@ class ProfileScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         _headerCard(context, s, p != null),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _statTile('${a.currentStreak}', 'Day streak'),
+            const SizedBox(width: 8),
+            _statTile('${a.bestStreak}', 'Best streak'),
+            const SizedBox(width: 8),
+            _statTile('${a.earnedCount}', 'Badges'),
+          ],
+        ),
         const SizedBox(height: 14),
         if (p == null)
           AppCard(
@@ -394,6 +404,27 @@ class ProfileScreen extends StatelessWidget {
         ],
       ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statTile(String value, String label) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.chipBg.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          children: [
+            Text(value,
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.primary)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
           ],
         ),
       ),

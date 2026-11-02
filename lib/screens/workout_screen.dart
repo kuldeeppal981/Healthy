@@ -445,33 +445,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Widget _header(AppState state, DayPlan plan, int today) {
     return Row(
       children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primaryLight, AppColors.primaryDeep],
-            ),
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: const Icon(Icons.fitness_center, color: Colors.white, size: 28),
-        ),
-        const SizedBox(width: 14),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_weekday == today ? "Today's workout" : 'Workout plan',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 14)),
-              Text(plan.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+              const Text('Workout',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
               Text(
                 state.isCustomPlan(_weekday)
                     ? 'Your own plan'
                     : (plan.rest ? 'Recover well' : 'Build stronger today'),
-                style: const TextStyle(color: AppColors.muted, fontSize: 14),
+                style: const TextStyle(color: AppColors.muted, fontSize: 13),
               ),
             ],
           ),
@@ -485,7 +469,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         FilledButton.tonalIcon(
           onPressed: () => _edit(state),
           icon: const Icon(Icons.edit_outlined, size: 18),
-          label: const Text('Edit'),
+          label: const Text('Edit plan'),
           style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
         ),
       ],
@@ -525,9 +509,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         colors: [AppColors.primaryLight, AppColors.primaryDeep],
                       )
                     : null,
-                color: sel ? null : Colors.white,
+                color: sel ? null : AppColors.chipBg.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: sel ? Colors.transparent : AppColors.border),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -589,9 +572,16 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(_weekday == DateTime.now().weekday ? 'Today' : 'Plan',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(plan.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
                 Text('${plan.exercises.length} exercises \u2022 $mins min',
                     style: const TextStyle(
-                        color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
+                        color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text(
                   _logging
