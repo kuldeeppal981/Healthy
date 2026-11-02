@@ -9,6 +9,7 @@ import '../services/social_service.dart';
 import '../services/theme_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 import '../services/avatar_service.dart';
 import '../widgets/edit_identity.dart';
 import '../widgets/sparkline.dart';
@@ -114,6 +115,22 @@ class ProfileScreen extends StatelessWidget {
                     ],
                     selected: {ThemeService.instance.mode},
                     onSelectionChanged: (v) => ThemeService.instance.set(v.first),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text('Text size', style: TextStyle(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<double>(
+                    showSelectedIcon: false,
+                    segments: const [
+                      ButtonSegment(value: 1.0, label: Text('Normal')),
+                      ButtonSegment(value: 1.15, label: Text('Large')),
+                      ButtonSegment(value: 1.3, label: Text('Extra')),
+                    ],
+                    selected: {ThemeService.instance.textScale},
+                    onSelectionChanged: (v) => ThemeService.instance.setTextScale(v.first),
                   ),
                 ),
               ],
@@ -240,7 +257,7 @@ class ProfileScreen extends StatelessWidget {
               bottom: 0,
               child: Opacity(
                 opacity: 0.5,
-                child: Image.asset('assets/images/hero.png', fit: BoxFit.fitHeight),
+                child: AppImage('assets/images/hero.png', fit: BoxFit.fitHeight),
               ),
             ),
             Padding(

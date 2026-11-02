@@ -12,6 +12,9 @@ class ThemeService extends ChangeNotifier {
 
   ThemeMode mode = ThemeMode.system;
 
+  /// Text size multiplier (1.0 normal, 1.15 large, 1.3 extra large).
+  double textScale = 1.0;
+
   Future<void> load() async {
     try {
       final p = await SharedPreferences.getInstance();
@@ -20,6 +23,16 @@ class ThemeService extends ChangeNotifier {
         'light' => ThemeMode.light,
         _ => ThemeMode.system,
       };
+      textScale = p.getDouble('textScale') ?? 1.0;
+    } catch (_) {}
+  }
+
+  Future<void> setTextScale(double v) async {
+    textScale = v;
+    notifyListeners();
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setDouble('textScale', v);
     } catch (_) {}
   }
 

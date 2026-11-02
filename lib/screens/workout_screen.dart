@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../services/reminder_service.dart';
 import '../services/social_service.dart';
 import '../services/voice_parser.dart';
+import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 import '../data/exercise_library.dart';
 import 'exercise_library_screen.dart';
@@ -576,7 +577,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               bottom: 0,
               child: Opacity(
                 opacity: 0.55,
-                child: Image.asset('assets/images/hero.png', fit: BoxFit.fitHeight),
+                child: AppImage('assets/images/hero.png', fit: BoxFit.fitHeight),
               ),
             ),
             Padding(
@@ -650,7 +651,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: photo != null
-          ? Image.asset('assets/images/$photo.jpg', width: 72, height: 52, fit: BoxFit.cover)
+          ? AppImage('assets/images/$photo.jpg', width: 72, height: 52, fit: BoxFit.cover)
           : Container(
               width: 72,
               height: 52,
@@ -769,7 +770,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          Image.asset('assets/images/shaker.png', height: 74, fit: BoxFit.contain),
+          AppImage('assets/images/shaker.png', height: 74, fit: BoxFit.contain),
         ],
       ),
     );
@@ -840,7 +841,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   ],
                 ),
               ),
-              Image.asset('assets/images/trophy.png', width: 54, fit: BoxFit.contain),
+              AppImage('assets/images/trophy.png', width: 54, fit: BoxFit.contain),
             ],
           ),
         ],
@@ -915,7 +916,10 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                         activeColor: AppColors.primary,
                         onChanged: (v) {
                           setState(() => sets[i].done = v ?? false);
-                          if (v == true) _startRest();
+                          if (v == true) {
+                            Haptic.done();
+                            _startRest();
+                          }
                         },
                       ),
                     ),

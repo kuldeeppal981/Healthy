@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+
+import 'theme_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,7 +72,7 @@ class AvatarCircle extends StatelessWidget {
       listenable: AvatarService.instance,
       builder: (context, _) {
         final f = AvatarService.instance.file;
-        return Container(
+        final circle = Container(
           width: size,
           height: size,
           decoration: BoxDecoration(
@@ -82,6 +84,7 @@ class AvatarCircle extends StatelessWidget {
               ? Icon(Icons.person, size: size * 0.55, color: const Color(0xFF5B2BD8))
               : null,
         );
+        return f == null ? circle : ThemeService.undoDark(context, circle);
       },
     );
   }

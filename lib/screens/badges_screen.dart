@@ -5,6 +5,7 @@ import '../services/badges.dart' as b;
 import '../services/step_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 
 /// Home row that opens the badges screen.
 class BadgesCard extends StatelessWidget {
@@ -46,8 +47,9 @@ class BadgesScreen extends StatelessWidget {
     final a = b.Achievements.of(s);
     return Scaffold(
       appBar: AppBar(title: const Text('Streaks and badges')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: AppBackground(
+       child: ListView(
+        padding: Space.pagePadding,
         children: [
           Row(
             children: [
@@ -73,6 +75,7 @@ class BadgesScreen extends StatelessWidget {
             children: [for (final x in a.badges) _badge(x)],
           ),
         ],
+       ),
       ),
     );
   }
@@ -81,7 +84,8 @@ class BadgesScreen extends StatelessWidget {
         radius: 16,
         child: Column(
           children: [
-            Text(big,
+            CountUp(
+                value: int.tryParse(big) ?? 0,
                 style: const TextStyle(
                     fontSize: 34, fontWeight: FontWeight.w800, color: AppColors.primary)),
             Text(label,
@@ -92,6 +96,18 @@ class BadgesScreen extends StatelessWidget {
       );
 
   Widget _badge(b.AppBadge x) {
+    final card = _badgeCard(x);
+    if (!x.earned) return card;
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.85, end: 1),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.elasticOut,
+      builder: (context, v, child) => Transform.scale(scale: v, child: child),
+      child: card,
+    );
+  }
+
+  Widget _badgeCard(b.AppBadge x) {
     return AppCard(
       radius: 16,
       color: x.earned ? AppColors.chipBg : Colors.white,

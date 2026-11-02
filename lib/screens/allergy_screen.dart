@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/allergy_checker.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 
 /// Pick allergies, set severity, and control "may contain" warnings.
 class AllergyScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
               right: -10,
               top: -6,
               child: IgnorePointer(
-                child: Image.asset('assets/images/shield.png', width: 150, fit: BoxFit.contain),
+                child: AppImage('assets/images/shield.png', width: 150, fit: BoxFit.contain),
               ),
             ),
             const Padding(
@@ -341,7 +342,7 @@ class _AllergenTile extends StatelessWidget {
             children: [
               SizedBox(
                 width: 58,
-                child: Image.asset('assets/images/allergy_$id.png', fit: BoxFit.contain),
+                child: AppImage('assets/images/allergy_$id.png', fit: BoxFit.contain),
               ),
               const SizedBox(width: 6),
               Expanded(

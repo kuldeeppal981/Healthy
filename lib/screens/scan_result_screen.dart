@@ -8,6 +8,7 @@ import '../services/health_conditions.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
+import '../widgets/ui_kit.dart';
 import 'label_photo_screen.dart';
 
 /// Shows a scanned product, warns about the user's allergies, and lets the
@@ -57,17 +58,17 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Scan result')),
-      body: FutureBuilder<FoodItem?>(
+      body: AppBackground(
+       child: FutureBuilder<FoodItem?>(
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonList(count: 3);
           }
           if (snap.hasError) {
-            return _message(
-              'Network or server problem. Please try again.',
-              actionLabel: 'Try again',
-              onAction: _retry,
+            return ErrorCard(
+              message: 'Network or server problem. Please try again.',
+              onRetry: _retry,
             );
           }
           final item = snap.data;
@@ -104,6 +105,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
           }
           return _content(context, item);
         },
+       ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import '../services/report_pdf.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/share_card.dart';
+import '../widgets/ui_kit.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -68,8 +69,9 @@ class _ReportScreenState extends State<ReportScreen> {
     final wc = r.weightChange;
     return Scaffold(
       appBar: AppBar(title: const Text('Monthly report')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: AppBackground(
+       child: ListView(
+        padding: Space.pagePadding,
         children: [
           Row(
             children: [
@@ -111,8 +113,20 @@ class _ReportScreenState extends State<ReportScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           if (r.prs.isEmpty)
-            const Text('No lifts logged this month. Log kg in your workouts to track records.',
-                style: TextStyle(color: AppColors.muted, height: 1.4))
+            const AppCard(
+              child: Row(
+                children: [
+                  Icon(Icons.fitness_center, color: AppColors.primary),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'No lifts logged this month. Log kg in your workouts to track records.',
+                      style: TextStyle(color: AppColors.muted, height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            )
           else
             for (final p in r.prs)
               Padding(
@@ -147,10 +161,10 @@ class _ReportScreenState extends State<ReportScreen> {
                 ),
               ),
           const SizedBox(height: 16),
-          FilledButton.icon(
+          GradientButton(
             onPressed: _busy ? null : () => _pdf(r),
-            icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: Text(_busy ? 'Making PDF...' : 'Download PDF report'),
+            icon: Icons.picture_as_pdf_outlined,
+            label: _busy ? 'Making PDF...' : 'Download PDF report',
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -159,6 +173,7 @@ class _ReportScreenState extends State<ReportScreen> {
             label: const Text('Share progress card'),
           ),
         ],
+       ),
       ),
     );
   }

@@ -72,9 +72,17 @@ class HealthApp extends StatelessWidget {
         theme: buildTheme(),
         builder: (context, child) {
           final dark = ThemeService.instance.isDark(context);
+          final scaled = MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(
+                MediaQuery.textScalerOf(context).scale(1.0) * ThemeService.instance.textScale,
+              ),
+            ),
+            child: child!,
+          );
           final body = dark
-              ? ColorFiltered(colorFilter: ThemeService.darkFilter, child: child)
-              : child!;
+              ? ColorFiltered(colorFilter: ThemeService.darkFilter, child: scaled)
+              : scaled;
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: dark
                 ? SystemUiOverlayStyle.light

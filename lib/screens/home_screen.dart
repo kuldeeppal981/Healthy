@@ -8,6 +8,7 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/ring.dart';
+import '../widgets/ui_kit.dart';
 import '../widgets/voice_review.dart';
 import '../widgets/weight_dialog.dart';
 import 'coach_screen.dart';
@@ -94,6 +95,7 @@ class HomeScreen extends StatelessWidget {
             _quick(Icons.mic, 'Voice', () => logByVoice(context)),
             const SizedBox(width: 10),
             _quick(Icons.water_drop, 'Water', () {
+              Haptic.tap();
               s.addWater(1);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Water: ${s.waterToday} of ${s.waterTarget} glasses')),
@@ -232,7 +234,7 @@ class HomeScreen extends StatelessWidget {
                 right: -16,
                 top: -4,
                 child: IgnorePointer(
-                  child: Image.asset('assets/images/bowl.png', width: 86, fit: BoxFit.contain),
+                  child: AppImage('assets/images/bowl.png', width: 86, fit: BoxFit.contain),
                 ),
               ),
               Row(
@@ -399,7 +401,7 @@ class HomeScreen extends StatelessWidget {
                   right: -14,
                   top: -14,
                   child: IgnorePointer(
-                    child: Image.asset('assets/images/shoe.png', width: 76, fit: BoxFit.contain),
+                    child: AppImage('assets/images/shoe.png', width: 76, fit: BoxFit.contain),
                   ),
                 ),
                 Column(
@@ -469,7 +471,7 @@ class HomeScreen extends StatelessWidget {
             right: -12,
             top: 22,
             child: IgnorePointer(
-              child: Image.asset('assets/images/glass.png', width: 62, fit: BoxFit.contain),
+              child: AppImage('assets/images/glass.png', width: 62, fit: BoxFit.contain),
             ),
           ),
           Column(
@@ -520,7 +522,10 @@ class HomeScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => s.addWater(1),
+              onPressed: () {
+                Haptic.tap();
+                s.addWater(1);
+              },
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Add water'),
               style: OutlinedButton.styleFrom(
@@ -549,7 +554,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(18),
-            child: Image.asset('assets/images/dumbbell.jpg',
+            child: AppImage('assets/images/dumbbell.jpg',
                 width: 104, height: 120, fit: BoxFit.cover),
           ),
           const SizedBox(width: 14),

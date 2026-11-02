@@ -6,6 +6,7 @@ import '../config.dart';
 import '../services/health_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 
 class _Msg {
@@ -126,26 +127,33 @@ class _CoachScreenState extends State<CoachScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ask the coach')),
-      body: !ready
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Sign in to your account to use the coach.',
-                  textAlign: TextAlign.center,
-                ),
-              ),
+      body: AppBackground(
+       child: !ready
+          ? const EmptyState(
+              icon: Icons.lock_outline,
+              title: 'Sign in to use the coach',
+              message: 'Your coach needs your account to see your targets and allergies.',
             )
           : Column(
               children: [
                 Expanded(
                   child: _msgs.isEmpty
                       ? ListView(
-                          padding: const EdgeInsets.all(20),
+                          padding: Space.pagePadding,
                           children: [
-                            const Text(
-                              'Ask about food, protein, workouts or habits. The coach sees your targets, what you ate today and your allergies.',
-                              style: TextStyle(color: AppColors.muted, height: 1.4),
+                            const AppCard(
+                              child: Row(
+                                children: [
+                                  Icon(Icons.auto_awesome, color: AppColors.primary, size: 30),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Ask about food, protein, workouts or habits. The coach sees your targets, what you ate today and your allergies.',
+                                      style: TextStyle(color: AppColors.muted, height: 1.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Wrap(
@@ -165,14 +173,10 @@ class _CoachScreenState extends State<CoachScreen> {
                           itemBuilder: (_, i) {
                             if (i == _msgs.length) {
                               return const Padding(
-                                padding: EdgeInsets.all(8),
+                                padding: EdgeInsets.symmetric(vertical: 6),
                                 child: Align(
                                   alignment: Alignment.centerLeft,
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
+                                  child: Skeleton(height: 38, width: 140, radius: 16),
                                 ),
                               );
                             }
@@ -229,6 +233,7 @@ class _CoachScreenState extends State<CoachScreen> {
                 ),
               ],
             ),
+      ),
     );
   }
 
@@ -242,7 +247,7 @@ class _CoachScreenState extends State<CoachScreen> {
         decoration: BoxDecoration(
           color: m.user
               ? AppColors.primary
-              : (m.error ? const Color(0xFFFDECEA) : AppColors.chipBg),
+              : (m.error ? AppColors.dangerBg : AppColors.chipBg),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(

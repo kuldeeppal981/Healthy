@@ -194,15 +194,31 @@ class _AuthScreenState extends State<AuthScreen> {
     };
 
     return Scaffold(
-      body: SafeArea(
+      body: AppBackground(
+       child: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
           children: [
+            Container(
+              width: 64,
+              height: 64,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDeep]),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.favorite, color: Colors.white, size: 30),
+            ),
+            const SizedBox(height: 16),
             Text(title,
                 style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
             Text(subtitle, style: const TextStyle(color: AppColors.muted, height: 1.4)),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
             if (_mode == _Mode.register) ...[
               TextField(
                 controller: _name,
@@ -261,11 +277,14 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
             ],
+                ],
+              ),
+            ),
             const SizedBox(height: 20),
             if (_mode == _Mode.signIn) ...[
-              FilledButton(
+              GradientButton(
                 onPressed: _busy ? null : _signIn,
-                child: _busy ? _spinner() : const Text('Sign in'),
+                label: _busy ? 'Please wait...' : 'Sign in',
               ),
               const SizedBox(height: 16),
               _orDivider(),
@@ -282,9 +301,9 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ],
             if (_mode == _Mode.register) ...[
-              FilledButton(
+              GradientButton(
                 onPressed: _busy ? null : _register,
-                child: _busy ? _spinner() : const Text('Send code'),
+                label: _busy ? 'Please wait...' : 'Send code',
               ),
               const SizedBox(height: 16),
               _orDivider(),
@@ -301,9 +320,9 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ],
             if (_mode == _Mode.code) ...[
-              FilledButton(
+              GradientButton(
                 onPressed: _busy ? null : _verify,
-                child: _busy ? _spinner() : const Text('Verify and continue'),
+                label: _busy ? 'Please wait...' : 'Verify and continue',
               ),
               const SizedBox(height: 8),
               TextButton(
@@ -331,6 +350,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
           ],
         ),
+       ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import '../services/levels.dart';
 import '../services/social_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 import 'badges_screen.dart';
 
 /// Compact home card: daily streak, level and XP, streak freezes, check-in.
@@ -59,6 +60,7 @@ class _StreakCardState extends State<StreakCard> {
 
   void _checkIn(AppState s) {
     final before = Progress.of(s);
+    Haptic.win();
     s.checkIn();
     final after = Progress.of(s);
     final up = after.level > before.level;
@@ -112,7 +114,7 @@ class _StreakCardState extends State<StreakCard> {
                     ],
                   ),
                 ),
-                Image.asset('assets/images/trophy.png', width: 54, fit: BoxFit.contain),
+                AppImage('assets/images/trophy.png', width: 54, fit: BoxFit.contain),
               ],
             ),
             const SizedBox(height: 10),

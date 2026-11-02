@@ -8,6 +8,7 @@ import '../services/social_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/share_card.dart';
+import '../widgets/ui_kit.dart';
 
 /// Home row that opens friends and challenges.
 class SocialCard extends StatelessWidget {
@@ -85,10 +86,15 @@ class _SocialScreenState extends State<SocialScreen> {
                     ])
                   : null,
             ),
-            body: !signedIn
-                ? const _Note('Sign in to your account to use friends and challenges.')
+            body: AppBackground(
+             child: !signedIn
+                ? const EmptyState(
+                    icon: Icons.group_outlined,
+                    title: 'Sign in to join in',
+                    message: 'Friends, feed and challenges need your account.',
+                  )
                 : !_svc.loaded && _svc.loading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const SkeletonList()
                     : !_svc.loaded && _svc.error != null
                         ? _Retry(message: _svc.error!, onRetry: _svc.refresh)
                         : !_svc.enabled
@@ -99,6 +105,7 @@ class _SocialScreenState extends State<SocialScreen> {
                                 _FriendsTab(svc: _svc),
                                 _ChallengesTab(svc: _svc),
                               ]),
+            ),
           ),
         );
       },
@@ -127,19 +134,7 @@ class _Retry extends StatelessWidget {
   const _Retry({required this.message, required this.onRetry});
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(message, textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              FilledButton(onPressed: onRetry, child: const Text('Try again')),
-            ],
-          ),
-        ),
-      );
+  Widget build(BuildContext context) => ErrorCard(message: message, onRetry: onRetry);
 }
 
 class _TurnOn extends StatefulWidget {
@@ -429,19 +424,17 @@ class _FeedTabState extends State<_FeedTab> {
           _myPrs(state),
           if (svc.feedLoading && svc.feed.isEmpty)
             const Padding(
-              padding: EdgeInsets.all(32),
-              child: Center(child: CircularProgressIndicator()),
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Skeleton(height: 90, radius: 20),
             )
           else if (svc.feedError != null && svc.feed.isEmpty)
             _Retry(message: svc.feedError!, onRetry: svc.loadFeed)
           else if (svc.feed.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Text(
-                'Nothing here yet. Finish a workout or beat a personal record and it shows up here for you and your friends. Add friends to see theirs.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.muted, height: 1.4),
-              ),
+            const EmptyState(
+              icon: Icons.local_fire_department_outlined,
+              title: 'Nothing here yet',
+              message:
+                  'Finish a workout or beat a personal record and it shows up here for you and your friends. Add friends to see theirs.',
             )
           else
             for (final p in svc.feed) _post(p),
@@ -516,13 +509,10 @@ class _LeaderboardTabState extends State<_LeaderboardTab> {
           ),
           const SizedBox(height: 12),
           if (rows.length <= 1)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                'No friends yet. Open the Friends tab, share your code and add a friend.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.muted, height: 1.4),
-              ),
+            const EmptyState(
+              icon: Icons.emoji_events_outlined,
+              title: 'No friends yet',
+              message: 'Open the Friends tab, share your code and add a friend.',
             ),
           for (var i = 0; i < rows.length; i++)
             Padding(
@@ -806,7 +796,11 @@ class _FriendsTabState extends State<_FriendsTab> {
         const Text('Friends', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         if (friends.isEmpty)
-          const Text('No friends yet.', style: TextStyle(color: AppColors.muted)),
+          const EmptyState(
+            icon: Icons.group_add_outlined,
+            title: 'No friends yet',
+            message: 'Search by name above or share your code.',
+          ),
         for (final f in friends)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -991,8 +985,11 @@ class _ChallengesTabState extends State<_ChallengesTab> {
           ),
         const SizedBox(height: 20),
         if (svc.challenges.isEmpty)
-          const Text('No challenges yet. Start one, or join with a code.',
-              style: TextStyle(color: AppColors.muted)),
+          const EmptyState(
+            icon: Icons.flag_outlined,
+            title: 'No challenges yet',
+            message: 'Start one, or join with a code.',
+          ),
         for (final c in svc.challenges)
           Padding(
             padding: const EdgeInsets.only(bottom: 10),

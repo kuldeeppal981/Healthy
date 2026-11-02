@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../services/label_ai.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 import 'scan_result_screen.dart';
 import 'scan_screen.dart';
 
@@ -54,7 +55,8 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Scan food')),
-      body: Padding(
+      body: AppBackground(
+       child: Padding(
         padding: const EdgeInsets.all(20),
         child: _busy
             ? const Center(
@@ -64,6 +66,9 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
                     CircularProgressIndicator(),
                     SizedBox(height: 16),
                     Text('Reading the label...'),
+                    SizedBox(height: 4),
+                    Text('This can take up to 30 seconds.',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12)),
                   ],
                 ),
               )
@@ -84,13 +89,19 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 16),
-                    Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+                    AppCard(
+                      color: AppColors.dangerBg,
+                      borderColor: AppColors.dangerBg,
+                      child: Text(_error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
+                    ),
                   ],
                   const SizedBox(height: 24),
-                  FilledButton.icon(
+                  GradientButton(
                     onPressed: () => _go(ImageSource.camera),
-                    icon: const Icon(Icons.photo_camera_outlined),
-                    label: const Text('Take photo'),
+                    icon: Icons.photo_camera_outlined,
+                    label: 'Take photo',
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
@@ -114,6 +125,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
                   ),
                 ],
               ),
+       ),
       ),
     );
   }

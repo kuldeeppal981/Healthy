@@ -54,3 +54,6 @@ Risk: ML Kit broke the release build before (R8). Add it as its own commit so it
 Also: ingredient -> allergen dictionary table grown from AI answers to make allergy_checker smarter.
 
 - Pro: real payments (Play Billing + server verification), Pro-only features (AI diet plan, meal photo calories, deep analytics), free trial. Pro limit 60 AI/day is only a guess, check real AI cost per user first.
+
+- Real dark theme (replace the filter): make AppColors theme-aware without breaking const widgets. Plan: add `AppColors.of(context)` for new/edited screens first, migrate screen by screen.
+- Still old style: parts of Friends tabs inside, Allergy sub-dialogs, Reminders, Settings, Health Connect screens. Use ui_kit helpers.

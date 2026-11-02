@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../services/theme_service.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 import 'label_photo_screen.dart';
 import 'scan_result_screen.dart';
 
@@ -66,7 +67,8 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Scan barcode')),
-      body: Column(
+      body: AppBackground(
+       child: Column(
         children: [
           Expanded(
             child: Padding(
@@ -158,6 +160,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
             ),
           ),
         ],
+       ),
       ),
     );
   }

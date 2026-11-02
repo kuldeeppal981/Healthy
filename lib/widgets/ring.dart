@@ -24,9 +24,14 @@ class Ring extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(
-        painter: _RingPainter(progress.clamp(0.0, 1.0).toDouble(), color, track),
-        child: Center(child: child),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0, end: progress.clamp(0.0, 1.0).toDouble()),
+        duration: const Duration(milliseconds: 900),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, _) => CustomPaint(
+          painter: _RingPainter(value, color, track),
+          child: Center(child: child),
+        ),
       ),
     );
   }

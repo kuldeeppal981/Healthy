@@ -5,6 +5,7 @@ import '../profile_models.dart';
 import '../services/nutrition_calc.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 
 /// First-run setup (also used to edit the profile later). Works out daily
 /// calorie and macro targets from age, height, weight, activity and goal.
@@ -69,7 +70,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(top: 18, bottom: 8),
+        padding: const EdgeInsets.only(top: 4, bottom: 8),
         child: Text(text, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
       );
 
@@ -89,11 +90,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return Scaffold(
       appBar: widget.editing ? AppBar(title: const Text('Edit profile')) : null,
-      body: SafeArea(
+      body: AppBackground(
+       child: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
           children: [
             if (!widget.editing) ...[
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDeep]),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.favorite, color: Colors.white, size: 30),
+              ),
+              const SizedBox(height: 16),
               const Text('Welcome',
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
               const SizedBox(height: 4),
@@ -101,7 +113,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 'Tell us a little about you and we will set your daily calorie and protein targets.',
                 style: TextStyle(color: AppColors.muted, height: 1.4),
               ),
+              const SizedBox(height: 16),
             ],
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             _label('Sex'),
             SizedBox(
               width: double.infinity,
@@ -125,13 +142,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Expanded(child: _field('Weight', _weight, 'kg')),
               ],
             ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Space.gap),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             _label('How active are you?'),
             for (final e in activityLabels.entries)
               _choice(e.value, _activity == e.key, () => setState(() => _activity = e.key)),
+                ],
+              ),
+            ),
+            const SizedBox(height: Space.gap),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
             _label('Your goal'),
             for (final e in goalLabels.entries)
               _choice(e.value, _goal == e.key, () => setState(() => _goal = e.key)),
-            const SizedBox(height: 16),
+                ],
+              ),
+            ),
+            const SizedBox(height: Space.gap),
             if (t != null)
               AppCard(
                 color: AppColors.chipBg,
@@ -158,9 +194,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               style: TextStyle(fontSize: 12, color: AppColors.muted, height: 1.4),
             ),
             const SizedBox(height: 16),
-            FilledButton(
+            GradientButton(
               onPressed: _save,
-              child: Text(widget.editing ? 'Save' : 'Get started'),
+              label: widget.editing ? 'Save' : 'Get started',
             ),
             if (!widget.editing)
               TextButton(
@@ -169,6 +205,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
           ],
         ),
+       ),
       ),
     );
   }
