@@ -47,7 +47,6 @@ ThemeData buildTheme() {
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
         TargetPlatform.android: ZoomPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       },
     ),
     textTheme: GoogleFonts.outfitTextTheme(base.textTheme).apply(
