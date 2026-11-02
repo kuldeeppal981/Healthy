@@ -111,11 +111,11 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? AppColors.card,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: borderColor ?? AppColors.border),
+        border: Border.all(color: borderColor ?? AppColors.border, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.07),
-            blurRadius: 18,
+            color: AppColors.primary.withOpacity(0.05),
+            blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
@@ -213,8 +213,8 @@ class AppBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.bgTop, AppColors.bg, Color(0xFFFAFDFB)],
-          stops: [0.0, 0.35, 1.0],
+          colors: [AppColors.bgTop, Colors.white, Colors.white],
+          stops: [0.0, 0.28, 1.0],
         ),
       ),
       child: child,
