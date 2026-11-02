@@ -7,6 +7,7 @@ import '../services/step_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
+import '../widgets/food_art.dart';
 import '../widgets/ring.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_review.dart';
@@ -116,6 +117,7 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
+        _proteinTip(s, now),
         const SizedBox(height: 16),
         _workoutCard(context, s, now),
         const SizedBox(height: 16),
@@ -356,22 +358,72 @@ class HomeScreen extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
-        child: Container(
-          height: 88,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.65),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.border),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: AppColors.primary, size: 30),
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.primaryLight, AppColors.primaryDeep],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.28),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 25),
+              ),
               const SizedBox(height: 8),
               Text(label,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Amber tip card with a drawn apple, only when protein is low in the afternoon.
+  Widget _proteinTip(AppState s, DateTime now) {
+    if (now.hour < 12 || s.proteinTarget <= 0 || s.proteinToday >= s.proteinTarget * 0.5) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [Color(0xFFFFF4D6), Color(0xFFFFE7B8)]),
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Row(
+          children: [
+            const FoodArt(FoodKind.apple, size: 44),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Protein is a bit low',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF7A4A06))),
+                  SizedBox(height: 2),
+                  Text('Try paneer, sprouts, dal or a boiled egg',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF9A6A1F))),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

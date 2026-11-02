@@ -121,3 +121,4 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
 
 - Diary meal cards have a coloured icon tile per meal (`_mealTile` in `diary_screen.dart`).
 - Food drawings (UNTESTED): `widgets/food_art.dart` (`FoodArt`, CustomPainter: bowl, thali, chai, apple, picked by food name keywords). Used in the Diary meal tiles and next to matching food entries. More drawings can be added as new `FoodKind` values.
+- Redesign round 2 (UNTESTED, after the green build was confirmed by the user): Home quick actions are round gradient icon buttons; amber protein tip card with drawn apple (`_proteinTip`, shows after 12:00 when protein is under 50% of target); photo scan screen has the `ScanFrame` viewfinder illustration (`widgets/scan_frame.dart`). Allergy keeps its food photo tiles, Workout keeps its photos. Remaining differences from the design canvas are layout details; ask the user for screenshots of screens that look off.

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../services/label_ai.dart';
 import '../theme.dart';
+import '../widgets/scan_frame.dart';
 import '../widgets/ui_kit.dart';
 import 'scan_result_screen.dart';
 import 'scan_screen.dart';
@@ -74,8 +75,8 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
               )
             : ListView(
                 children: [
-                  Icon(Icons.document_scanner_outlined, size: 72, color: AppColors.primary),
-                  const SizedBox(height: 12),
+                  const ScanFrame(),
+                  const SizedBox(height: 20),
                   const Text(
                     'Take a clear photo of the ingredient list and the nutrition table.',
                     textAlign: TextAlign.center,
