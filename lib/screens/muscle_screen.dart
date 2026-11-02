@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../data/exercise_library.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 
 const _muscleColors = <String, Color>{
   'Chest': Color(0xFF7C3AED),
@@ -84,8 +85,15 @@ class _MuscleScreenState extends State<MuscleScreen> {
                 SizedBox(
                   height: 200,
                   width: 200,
-                  child: CustomPaint(
-                    painter: _DonutPainter(sets, total),
+                  child: TweenAnimationBuilder<double>(
+                    key: ValueKey('$_days-$total'),
+                    tween: Tween<double>(begin: 0, end: 1),
+                    duration: const Duration(milliseconds: 900),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, t, child) => CustomPaint(
+                      painter: _DonutPainter(sets, total, t),
+                      child: child,
+                    ),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -175,14 +183,13 @@ class _MuscleScreenState extends State<MuscleScreen> {
           const SizedBox(width: 8),
           SizedBox(width: 78, child: Text(m, style: const TextStyle(fontWeight: FontWeight.w600))),
           Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: maxSets == 0 ? 0 : v / maxSets,
-                minHeight: 8,
-                color: _muscleColors[m],
-                backgroundColor: AppColors.primary.withOpacity(0.08),
-              ),
+            child: GradientBar(
+              value: maxSets == 0 ? 0.0 : v / maxSets,
+              height: 10,
+              colors: [
+                (_muscleColors[m] ?? AppColors.primary).withOpacity(0.55),
+                _muscleColors[m] ?? AppColors.primary,
+              ],
             ),
           ),
           SizedBox(
@@ -200,20 +207,23 @@ class _MuscleScreenState extends State<MuscleScreen> {
 class _DonutPainter extends CustomPainter {
   final Map<String, int> sets;
   final int total;
+  final double t; // 0..1 growth
 
-  _DonutPainter(this.sets, this.total);
+  _DonutPainter(this.sets, this.total, this.t);
 
   @override
   void paint(Canvas canvas, Size size) {
-    const stroke = 26.0;
+    const stroke = 30.0;
     final rect = Rect.fromLTWH(stroke / 2, stroke / 2, size.width - stroke, size.height - stroke);
     final base = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
-      ..color = AppColors.primary.withOpacity(0.08);
+      ..color = AppColors.chipBg;
     canvas.drawArc(rect, 0, math.pi * 2, false, base);
     if (total == 0) return;
     var start = -math.pi / 2;
+    const gap = 0.16; // radians left between pieces (round caps fill part of it)
+    final active = sets.values.where((v) => v > 0).length;
     for (final m in trackedMuscles) {
       final v = sets[m] ?? 0;
       if (v == 0) continue;
@@ -221,8 +231,11 @@ class _DonutPainter extends CustomPainter {
       final paint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.round
         ..color = _muscleColors[m] ?? AppColors.primary;
-      canvas.drawArc(rect, start, math.max(sweep - 0.03, 0.01), false, paint);
+      final drawn = active == 1 ? sweep : math.max(sweep - gap, 0.02);
+      final offset = active == 1 ? 0.0 : gap / 2;
+      canvas.drawArc(rect, start + offset, drawn * t, false, paint);
       start += sweep;
     }
   }

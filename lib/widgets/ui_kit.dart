@@ -226,3 +226,48 @@ class AppImage extends StatelessWidget {
     );
   }
 }
+
+/// Rounded progress bar with a gradient fill that grows when it appears.
+class GradientBar extends StatelessWidget {
+  final double value; // 0..1
+  final double height;
+  final List<Color>? colors;
+  final Color? track;
+
+  const GradientBar({
+    super.key,
+    required this.value,
+    this.height = 8,
+    this.colors,
+    this.track,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final v = value.isNaN ? 0.0 : value.clamp(0.0, 1.0).toDouble();
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: v),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, _) => ClipRRect(
+        borderRadius: BorderRadius.circular(height),
+        child: Container(
+          height: height,
+          alignment: Alignment.centerLeft,
+          color: track ?? AppColors.track,
+          child: FractionallySizedBox(
+            widthFactor: t,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(height),
+                gradient: LinearGradient(
+                  colors: colors ?? [AppColors.primaryLight, AppColors.primaryDeep],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -447,15 +447,7 @@ class HomeScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
                 ),
                 const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: pct,
-                    minHeight: 8,
-                    color: AppColors.primary,
-                    backgroundColor: AppColors.track,
-                  ),
-                ),
+                GradientBar(value: pct),
                 const Spacer(),
                 const SizedBox(height: 12),
                 InkWell(

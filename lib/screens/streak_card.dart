@@ -121,15 +121,7 @@ class _StreakCardState extends State<StreakCard> {
             Text('🔥 ${streak == 1 ? '1 day' : '$streak days'} streak',
                 style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: p.fraction,
-                minHeight: 6,
-                color: AppColors.primary,
-                backgroundColor: AppColors.track,
-              ),
-            ),
+            GradientBar(value: p.fraction, height: 7),
             const SizedBox(height: 4),
             Text('${p.xp} XP  |  ❄️ ${s.freezesLeft} freezes',
                 maxLines: 1,

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/step_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ui_kit.dart';
 
 /// Home card with today's steps.
 class StepsCard extends StatelessWidget {
@@ -57,13 +58,7 @@ class StepsCard extends StatelessWidget {
                   Text('${svc.steps} / ${svc.goal}',
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: pct,
-                    minHeight: 8,
-                    borderRadius: BorderRadius.circular(8),
-                    color: AppColors.primary,
-                    backgroundColor: AppColors.chipBg,
-                  ),
+                  GradientBar(value: pct, height: 10),
                   const SizedBox(height: 6),
                   Text('About ${StepService.kcalFor(svc.steps, weight)} kcal burned walking',
                       style: const TextStyle(color: AppColors.muted, fontSize: 12)),
