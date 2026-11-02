@@ -7,6 +7,9 @@ Beat HealthifyMe by being free where they charge, safe for allergies, great for 
 (friends feed, cheers, challenges). Weak spots to fix first: Indian food accuracy, progress visibility.
 
 ## Next up (suggested order)
+0. **UI redesign follow-ups:** user's design screenshots were applied to Home, Workout, Profile, bottom nav
+   (untested). Still old style: Allergy tab, Scan screen, Onboarding, Auth, Coach, Social, Report, Badges
+   screens. Photos from the design (food bowl, dumbbells, exercise thumbnails) need real image assets.
 1. **Test everything on a real phone.** Voice logging, social with two accounts, feed + cheers,
    dark mode, check-in/freeze, exercise library, widget, alarm, Health Connect. Fix what breaks.
 2. **Progress screen:** graphs of weight, waist, calories, PRs over time (retention booster).

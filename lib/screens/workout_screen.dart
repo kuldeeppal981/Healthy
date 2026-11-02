@@ -44,6 +44,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   final Map<int, List<List<_SetLog>>> _logs = {};
   Timer? _timer;
   int _rest = 0;
+  bool _logging = false; // false: plan overview, true: logging sets
 
   static const _restSeconds = 90;
 
@@ -103,6 +104,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     }
     final l = open.first;
     setState(() {
+      _logging = true;
       if (v.kg != null) l.kg.text = v.kg! == v.kg!.roundToDouble() ? '${v.kg!.round()}' : '${v.kg}';
       if (v.reps != null) l.reps.text = '${v.reps}';
       l.done = true;
@@ -153,11 +155,20 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   Widget _alarmCard(AppState state) {
     final w = ReminderService.instance.workout;
     return AppCard(
-      radius: 16,
-      padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+      radius: 22,
+      padding: const EdgeInsets.fromLTRB(14, 8, 10, 8),
       child: Row(
         children: [
-          const Icon(Icons.alarm, color: AppColors.primary),
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.chipBg,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.alarm, color: AppColors.primary),
+          ),
+          const SizedBox(width: 2),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -302,7 +313,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         );
     _skipRest();
     _resetDay(_weekday);
-    setState(() {});
+    setState(() => _logging = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(prs.isEmpty
@@ -333,59 +344,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             children: [
-              Text(_weekday == today ? "Today's workout" : 'Workout plan',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 14)),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(plan.title,
-                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
-                  ),
-                  IconButton(
-                    tooltip: 'Log a set by voice',
-                    onPressed: () => _voiceSet(state),
-                    icon: const Icon(Icons.mic, color: AppColors.primary),
-                  ),
-                  TextButton.icon(
-                    onPressed: () => _edit(state),
-                    icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: const Text('Edit'),
-                  ),
-                ],
-              ),
-              if (state.isCustomPlan(_weekday))
-                const Text('Your own plan',
-                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 44,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 7,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) {
-                    final wd = i + 1;
-                    final sel = wd == _weekday;
-                    return ChoiceChip(
-                      label: Text(weekdayShort[i]),
-                      selected: sel,
-                      showCheckmark: false,
-                      selectedColor: AppColors.primary,
-                      labelStyle: TextStyle(
-                        color: sel ? Colors.white : AppColors.ink,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      onSelected: (_) {
-                        _skipRest();
-                        setState(() => _weekday = wd);
-                      },
-                    );
-                  },
-                ),
-              ),
+              _header(state, plan, today),
               const SizedBox(height: 16),
+              _dayChips(),
+              const SizedBox(height: 14),
               _alarmCard(state),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               if (plan.rest)
                 const AppCard(
                   child: Text(
@@ -394,34 +358,17 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   ),
                 )
               else ...[
-                AppCard(
-                  color: AppColors.ink,
-                  borderColor: AppColors.ink,
-                  radius: 18,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text('${plan.exercises.length} exercises',
-                            style: const TextStyle(
-                                color: Colors.white, fontWeight: FontWeight.w700)),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text('$done / $total sets',
-                            style: const TextStyle(
-                                color: Colors.white, fontWeight: FontWeight.w700)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                for (var i = 0; i < plan.exercises.length; i++)
-                  _exerciseCard(plan.exercises[i], logs[i]),
+                _banner(plan, done, total),
+                const SizedBox(height: 14),
+                if (_logging)
+                  for (var i = 0; i < plan.exercises.length; i++)
+                    _exerciseCard(plan.exercises[i], logs[i])
+                else
+                  _planCard(plan, logs),
+                const SizedBox(height: 14),
+                _tipCard(),
+                const SizedBox(height: 14),
+                _progressCard(state),
               ],
               if (history.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -477,7 +424,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ],
             ),
           ),
-        if (!plan.rest)
+        if (!plan.rest && _logging)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
             child: FilledButton(
@@ -486,6 +433,376 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _header(AppState state, DayPlan plan, int today) {
+    return Row(
+      children: [
+        Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primaryLight, AppColors.primaryDeep],
+            ),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: const Icon(Icons.fitness_center, color: Colors.white, size: 28),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(_weekday == today ? "Today's workout" : 'Workout plan',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 14)),
+              Text(plan.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+              Text(
+                state.isCustomPlan(_weekday)
+                    ? 'Your own plan'
+                    : (plan.rest ? 'Recover well' : 'Build stronger today'),
+                style: const TextStyle(color: AppColors.muted, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+        if (_logging)
+          IconButton(
+            tooltip: 'Log a set by voice',
+            onPressed: () => _voiceSet(state),
+            icon: const Icon(Icons.mic, color: AppColors.primary),
+          ),
+        FilledButton.tonalIcon(
+          onPressed: () => _edit(state),
+          icon: const Icon(Icons.edit_outlined, size: 18),
+          label: const Text('Edit'),
+          style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+        ),
+      ],
+    );
+  }
+
+  Widget _dayChips() {
+    final now = DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
+    return SizedBox(
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: 7,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          final wd = i + 1;
+          final sel = wd == _weekday;
+          final d = monday.add(Duration(days: i));
+          return InkWell(
+            borderRadius: BorderRadius.circular(22),
+            onTap: () {
+              _skipRest();
+              setState(() {
+                _weekday = wd;
+                _logging = false;
+              });
+            },
+            child: Container(
+              width: 64,
+              decoration: BoxDecoration(
+                gradient: sel
+                    ? const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [AppColors.primaryLight, AppColors.primaryDeep],
+                      )
+                    : null,
+                color: sel ? null : Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: sel ? Colors.transparent : AppColors.border),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(weekdayShort[i],
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: sel ? Colors.white : AppColors.ink)),
+                  const SizedBox(height: 2),
+                  Text('${_months[d.month - 1]} ${d.day}',
+                      style: TextStyle(
+                          fontSize: 12, color: sel ? Colors.white70 : AppColors.muted)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _banner(DayPlan plan, int done, int total) {
+    final mins = estimateMinutes(plan);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primaryLight, AppColors.primaryDeep],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.28),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${plan.exercises.length} exercises \u2022 $mins min',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text(
+                  _logging
+                      ? '$done of $total sets done'
+                      : 'Complete your workout today',
+                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
+            onPressed: () => setState(() => _logging = !_logging),
+            icon: Icon(_logging ? Icons.list_alt : Icons.play_arrow, size: 20),
+            label: Text(_logging ? 'Plan' : (done > 0 ? 'Continue' : 'Start')),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 46),
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primaryDeep,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _groupIcon(String name) {
+    final g = findExercise(name)?.group;
+    return switch (g) {
+      'Legs' => Icons.directions_run,
+      'Core' => Icons.self_improvement,
+      'Cardio' => Icons.favorite_outline,
+      'Back' => Icons.accessibility_new,
+      'Arms' => Icons.sports_martial_arts,
+      'Shoulders' => Icons.sports_gymnastics,
+      _ => Icons.fitness_center,
+    };
+  }
+
+  Widget _planCard(DayPlan plan, List<List<_SetLog>> logs) {
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.format_list_bulleted, color: AppColors.primary),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text('Workout Plan',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              ),
+              TextButton(
+                onPressed: () => setState(() => _logging = true),
+                style: TextButton.styleFrom(minimumSize: const Size(0, 36)),
+                child: const Text('Log sets  \u2192',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+          for (var i = 0; i < plan.exercises.length; i++) ...[
+            if (i > 0) const Divider(height: 1, color: AppColors.border),
+            InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () {
+                final info = findExercise(plan.exercises[i].name);
+                if (info != null) {
+                  openExercise(context, info);
+                } else {
+                  setState(() => _logging = true);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: AppColors.chipBg,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(_groupIcon(plan.exercises[i].name),
+                          color: AppColors.primary, size: 26),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(plan.exercises[i].name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700)),
+                          Text(plan.exercises[i].target,
+                              style: const TextStyle(
+                                  fontSize: 13, color: AppColors.muted)),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      logs[i].every((l) => l.done)
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      color: logs[i].every((l) => l.done)
+                          ? AppColors.safe
+                          : AppColors.muted,
+                      size: 28,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static const _tips = [
+    'Focus on good form and controlled reps for better muscle growth.',
+    'Warm up for 5 minutes before your first set.',
+    'Drink water between sets and rest 60 to 90 seconds.',
+    'Add a little weight or one more rep each week.',
+    'Sleep 7 to 8 hours. Muscles grow while you rest.',
+    'Eat protein within a couple of hours after training.',
+    'Stop a set if your form breaks down or something hurts.',
+  ];
+
+  Widget _tipCard() {
+    return AppCard(
+      color: AppColors.chipBg,
+      borderColor: AppColors.chipBg,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 30),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Pro Tip',
+                    style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryDeep)),
+                const SizedBox(height: 2),
+                Text(_tips[(_weekday - 1) % _tips.length],
+                    style: const TextStyle(
+                        fontSize: 14, color: AppColors.chipInk, height: 1.35)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _progressCard(AppState state) {
+    final goal = [
+      for (var d = 1; d <= 7; d++)
+        if (!state.planFor(d).rest) d,
+    ].length;
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
+    final kg = state.workouts
+        .where((w) => !w.at.isBefore(start))
+        .fold<double>(0, (n, w) => n + w.volumeKg);
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.bar_chart_rounded, color: AppColors.primary),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text('Your Progress',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.chipBg,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('This week',
+                    style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${state.workoutsThisWeek} / $goal',
+                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+                    const Text('Workouts completed',
+                        style: TextStyle(color: AppColors.muted, fontSize: 14)),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 52, color: AppColors.border),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${kg.round()} kg',
+                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+                    const Text('Total lifted',
+                        style: TextStyle(color: AppColors.muted, fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

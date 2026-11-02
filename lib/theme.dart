@@ -4,10 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 /// Bright purple theme (chosen from the design options), Outfit font.
 class AppColors {
   static const bg = Color(0xFFF4F1FF);
+  static const bgTop = Color(0xFFE6DDFF);
+  static const primaryLight = Color(0xFF8B5CF6);
+  static const primaryDeep = Color(0xFF5B2BD8);
   static const card = Color(0xFFFFFFFF);
   static const ink = Color(0xFF1E1B3A);
   static const muted = Color(0xFF5B5878);
-  static const border = Color(0xFFE3DDF8);
+  static const border = Color(0xFFECE6FB);
   static const track = Color(0xFFECE8FA);
   static const primary = Color(0xFF6C3CE9);
   static const link = Color(0xFF5A2BD6);
@@ -84,7 +87,7 @@ ThemeData buildTheme() {
   );
 }
 
-/// White rounded card used across screens.
+/// White rounded card used across screens, with a soft purple shadow.
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -98,7 +101,7 @@ class AppCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.color,
     this.borderColor,
-    this.radius = 20,
+    this.radius = 24,
   });
 
   @override
@@ -109,8 +112,193 @@ class AppCard extends StatelessWidget {
         color: color ?? AppColors.card,
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: borderColor ?? AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: child,
+    );
+  }
+}
+
+/// Big purple gradient button. Always bounded, safe to use inside a Row
+/// when [expand] is false.
+class GradientButton extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final VoidCallback? onPressed;
+  final double height;
+  final bool expand;
+
+  const GradientButton({
+    super.key,
+    required this.label,
+    this.icon,
+    required this.onPressed,
+    this.height = 54,
+    this.expand = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    final body = Container(
+      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: enabled
+              ? const [AppColors.primaryLight, AppColors.primaryDeep]
+              : [AppColors.muted.withOpacity(0.35), AppColors.muted.withOpacity(0.35)],
+        ),
+        borderRadius: BorderRadius.circular(height / 2.6),
+        boxShadow: enabled
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.28),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
+      ),
+      child: Row(
+        mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, color: Colors.white, size: 22),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(height / 2.6),
+        onTap: onPressed,
+        child: body,
+      ),
+    );
+  }
+}
+
+/// Soft lavender gradient behind the main tabs.
+class AppBackground extends StatelessWidget {
+  final Widget child;
+
+  const AppBackground({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.bgTop, AppColors.bg, Color(0xFFFAF8FF)],
+          stops: [0.0, 0.35, 1.0],
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// A list of tappable rows inside one card (used for menus).
+class MenuCard extends StatelessWidget {
+  final List<MenuRow> rows;
+
+  const MenuCard({super.key, required this.rows});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      radius: 22,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        children: [
+          for (var i = 0; i < rows.length; i++) ...[
+            rows[i],
+            if (i != rows.length - 1)
+              const Divider(height: 1, indent: 64, endIndent: 16, color: AppColors.border),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class MenuRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Widget? trailing;
+
+  const MenuRow({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppColors.chipBg,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 2),
+                  Text(subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                ],
+              ),
+            ),
+            trailing ?? const Icon(Icons.chevron_right, color: AppColors.muted),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -4,6 +4,22 @@ Status key: **untested** = written but never compiled or run (the sandbox has no
 Only the early core was confirmed running by the user (APK installs, Home screen shows).
 Update this file whenever a feature is added or changed.
 
+## UI (redesigned Nov 2026, untested)
+New look from the user's design screenshots: lavender gradient background, soft-shadow rounded cards,
+purple gradient buttons (`GradientButton`), `MenuCard`/`MenuRow` lists, floating scan button in the middle
+of the bottom bar with an underline on the active tab (`theme.dart`, `screens/app_shell.dart`).
+- **Home** (`screens/home_screen.dart`): greeting + avatar, Daily nutrition card (ring, goal, macros, Log food),
+  Quick actions (Scan, Voice, Water, Weight), Steps + Water cards, Today's workout card, AI daily insight
+  (rule-based tip, links to coach) + Your consistency card (`screens/streak_card.dart`: streak, level, XP,
+  check-in), friends card. "Track your day" opens `screens/diary_screen.dart` (Today's meals list, Speak, tip).
+- **Workout** (`screens/workout_screen.dart`): header, day chips with dates, gym alarm, purple banner
+  (exercises and minutes), plan overview list (tap = exercise info, "Log sets" or Start = set logging mode),
+  Pro Tip, Your Progress (workouts this week of plan days, kg lifted). The design showed exercise photos and
+  a food photo; there are no image assets, so icons and gradients are used instead.
+- **Profile** (`screens/profile_screen.dart`): gradient account card, weight + BMI card, appearance,
+  menus for everything else (health conditions, reminders, badges, report, exercise library, Health Connect,
+  friends, coach). Daily targets and "Delete all data" moved to `screens/settings_screen.dart` (gear icon).
+
 ## Food and nutrition
 - Calorie diary by meal, macro targets, calorie ring (`screens/home_screen.dart`, `state/app_state.dart`)
 - Barcode scan with Open Food Facts lookup + manual barcode entry (`screens/scan_screen.dart`, `services/food_service.dart`)

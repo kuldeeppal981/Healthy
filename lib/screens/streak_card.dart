@@ -5,8 +5,9 @@ import '../services/levels.dart';
 import '../services/social_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import 'badges_screen.dart';
 
-/// Home card: daily streak, check-in button, streak freezes, level and XP.
+/// Compact home card: daily streak, level and XP, streak freezes, check-in.
 class StreakCard extends StatefulWidget {
   const StreakCard({super.key});
 
@@ -75,66 +76,71 @@ class _StreakCardState extends State<StreakCard> {
     final p = Progress.of(s);
     final streak = s.dailyStreak;
     final done = s.checkedInToday;
-    return AppCard(
-      radius: 16,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text('🔥', style: TextStyle(fontSize: 30)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(streak == 1 ? '1 day streak' : '$streak day streak',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                    Text(
-                      done ? 'Checked in today' : 'Check in, log food or workout to keep it',
-                      style: const TextStyle(color: AppColors.muted, fontSize: 12),
-                    ),
-                  ],
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const BadgesScreen()),
+      ),
+      child: AppCard(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.emoji_events, color: Color(0xFFF0A020), size: 22),
+                const SizedBox(width: 6),
+                const Expanded(
+                  child: Text('Your consistency',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(
+                color: AppColors.chipBg,
+                borderRadius: BorderRadius.circular(20),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
+              child: Text('Level ${p.level}  ${p.title}',
+                  style: const TextStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 12)),
+            ),
+            const SizedBox(height: 10),
+            Text('🔥 ${streak == 1 ? '1 day' : '$streak days'} streak',
+                style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: p.fraction,
+                minHeight: 6,
+                color: AppColors.primary,
+                backgroundColor: AppColors.track,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text('${p.xp} XP  |  ❄️ ${s.freezesLeft} freezes',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 38),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
-                child: Text('Lv ${p.level}  ${p.title}',
-                    style: const TextStyle(
-                        color: AppColors.primary, fontWeight: FontWeight.w800, fontSize: 12)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(value: p.fraction, minHeight: 8),
-          ),
-          const SizedBox(height: 6),
-          Text('${p.xp} / ${p.xpAtNext} XP to level ${p.level + 1}',
-              style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '❄️ ${s.freezesLeft} of ${AppState.freezesPerMonth} streak freezes left this month',
-                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
-                ),
-              ),
-              const SizedBox(width: 8),
-              FilledButton(
-                style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
                 onPressed: done ? null : () => _checkIn(s),
-                child: Text(done ? 'Done' : 'Check in'),
+                child: Text(done ? 'Checked in' : 'Check in'),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

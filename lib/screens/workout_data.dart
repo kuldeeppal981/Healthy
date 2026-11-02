@@ -92,3 +92,11 @@ const weeklyPlan = <int, DayPlan>{
 };
 
 const weekdayShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+/// Rough length of a workout: about 2.25 minutes per set, to the nearest 5.
+int estimateMinutes(DayPlan plan) {
+  if (plan.rest) return 0;
+  final sets = plan.exercises.fold<int>(0, (n, e) => n + e.sets);
+  final m = (sets * 2.25 / 5).round() * 5;
+  return m < 10 ? 10 : m;
+}

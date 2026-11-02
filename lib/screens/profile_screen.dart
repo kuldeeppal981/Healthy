@@ -2,90 +2,91 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../config.dart';
+import '../data/exercise_library.dart';
+import '../services/badges.dart' as b;
 import '../services/nutrition_calc.dart';
+import '../services/social_service.dart';
+import '../services/theme_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/sparkline.dart';
-import '../services/theme_service.dart';
+import 'badges_screen.dart';
+import 'coach_screen.dart';
+import 'exercise_library_screen.dart';
+import 'health_connect_screen.dart';
 import 'health_screen.dart';
 import 'onboarding_screen.dart';
 import 'reminders_screen.dart';
+import 'report_screen.dart';
+import 'settings_screen.dart';
+import 'social_screen.dart';
 
-/// Body stats, weight tracking and daily targets.
+/// Account, body stats and the menu for everything else.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _logWeight(BuildContext context, AppState s) async {
-    final c = TextEditingController(
-      text: s.weights.isEmpty ? '' : s.weights.last.kg.toString(),
-    );
-    final kg = await showDialog<double>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Log weight'),
-        content: TextField(
-          controller: c,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(labelText: 'Weight', suffixText: 'kg'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(
-            style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
-            onPressed: () {
-              final v = double.tryParse(c.text.trim());
-              if (v != null && v >= 30 && v <= 250) Navigator.pop(ctx, v);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-    c.dispose();
-    if (kg != null) s.logWeight(kg);
-  }
+  void _open(BuildContext context, Widget page) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
 
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final p = s.profile;
+    final a = b.Achievements.of(s);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
-        const Text('Profile',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+        Row(
+          children: [
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Profile',
+                      style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
+                  Text('Manage your account & preferences',
+                      style: TextStyle(color: AppColors.muted, fontSize: 15)),
+                ],
+              ),
+            ),
+            IconButton.filledTonal(
+              tooltip: 'Settings',
+              onPressed: () => _open(context, const SettingsScreen()),
+              icon: const Icon(Icons.settings_outlined, color: AppColors.primary),
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.chipBg,
+                minimumSize: const Size(48, 48),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
-        if (cloudEnabled) ...[
-          _accountCard(s),
-          const SizedBox(height: 16),
-        ],
+        _headerCard(context, s, p != null),
+        const SizedBox(height: 14),
         if (p == null)
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Set up your profile to get calorie and protein targets worked out for you.'),
+                const Text(
+                    'Set up your profile to get calorie and protein targets worked out for you.'),
                 const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const OnboardingScreen(editing: true),
-                    ),
-                  ),
-                  child: const Text('Set up profile'),
+                GradientButton(
+                  label: 'Set up profile',
+                  onPressed: () => _open(context, const OnboardingScreen(editing: true)),
                 ),
               ],
             ),
           )
         else
           _bodyCard(context, s),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         ListenableBuilder(
           listenable: ThemeService.instance,
           builder: (context, _) => AppCard(
-            radius: 16,
+            radius: 22,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -93,7 +94,8 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Icon(Icons.dark_mode_outlined, color: AppColors.primary),
                     SizedBox(width: 12),
-                    Text('Appearance', style: TextStyle(fontWeight: FontWeight.w700)),
+                    Text('Appearance',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -114,135 +116,193 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 12),
-        AppCard(
-          radius: 16,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: ListTile(
-            leading: const Icon(Icons.monitor_heart_outlined, color: AppColors.primary),
-            title: const Text('Health conditions', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(s.conditions.isEmpty
+        const SizedBox(height: 14),
+        MenuCard(rows: [
+          MenuRow(
+            icon: Icons.monitor_heart_outlined,
+            title: 'Health conditions',
+            subtitle: s.conditions.isEmpty
                 ? 'Diabetes, BP, cholesterol, PCOS'
-                : '${s.conditions.length} switched on'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const HealthScreen()),
-            ),
+                : '${s.conditions.length} switched on',
+            onTap: () => _open(context, const HealthScreen()),
           ),
-        ),
-        const SizedBox(height: 12),
-        AppCard(
-          radius: 16,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          child: ListTile(
-            leading: const Icon(Icons.notifications_active_outlined, color: AppColors.primary),
-            title: const Text('Reminders', style: TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: const Text('Meals, water and workouts'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const RemindersScreen()),
-            ),
+          MenuRow(
+            icon: Icons.notifications_active_outlined,
+            title: 'Reminders',
+            subtitle: 'Meals, water and workouts',
+            onTap: () => _open(context, const RemindersScreen()),
           ),
-        ),
-        const SizedBox(height: 20),
-        const Text('Daily targets',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 10),
-        _stepper(context, 'Calories', '${s.kcalTarget} kcal', 50,
-            (d) => s.setTargets(kcal: (s.kcalTarget + d).clamp(1000, 5000))),
-        _stepper(context, 'Protein', '${s.proteinTarget} g', 5,
-            (d) => s.setTargets(protein: (s.proteinTarget + d).clamp(20, 300))),
-        _stepper(context, 'Carbs', '${s.carbsTarget} g', 10,
-            (d) => s.setTargets(carbs: (s.carbsTarget + d).clamp(20, 600))),
-        _stepper(context, 'Fat', '${s.fatTarget} g', 5,
-            (d) => s.setTargets(fat: (s.fatTarget + d).clamp(10, 200))),
-        if (p != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: OutlinedButton(
-              onPressed: () {
-                s.recalculateTargets();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Targets recalculated from your profile')),
-                );
-              },
-              child: const Text('Recalculate targets from profile'),
-            ),
+        ]),
+        const SizedBox(height: 14),
+        MenuCard(rows: [
+          MenuRow(
+            icon: Icons.emoji_events_outlined,
+            title: 'Streaks and badges',
+            subtitle:
+                '${a.currentStreak} day food streak  |  ${a.earnedCount} of ${a.badges.length} badges',
+            onTap: () => _open(context, const BadgesScreen()),
           ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-          style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
-          onPressed: () async {
-            final ok = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Delete all data?'),
-                content: const Text('Your profile, allergies, diary and workouts will be removed from this phone.'),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text('Cancel')),
-                  TextButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Delete')),
-                ],
+          MenuRow(
+            icon: Icons.insights_outlined,
+            title: 'Monthly report',
+            subtitle: 'Workouts, calories, protein, records, PDF',
+            onTap: () => _open(context, const ReportScreen()),
+          ),
+          MenuRow(
+            icon: Icons.menu_book_outlined,
+            title: 'Exercise library',
+            subtitle: '${exerciseLibrary.length} exercises: muscles, form, mistakes',
+            onTap: () => _open(context, const ExerciseLibraryScreen()),
+          ),
+          MenuRow(
+            icon: Icons.watch_outlined,
+            title: 'Smartwatch and Health Connect',
+            subtitle: 'Steps, heart rate, sleep and workouts',
+            onTap: () => _open(context, const HealthConnectScreen()),
+          ),
+          if (cloudEnabled)
+            MenuRow(
+              icon: Icons.groups_outlined,
+              title: 'Friends and challenges',
+              subtitle: 'Feed, leaderboards, 30-day challenge',
+              onTap: () => _open(context, const SocialScreen()),
+              trailing: ListenableBuilder(
+                listenable: SocialService.instance,
+                builder: (context, _) {
+                  final n = SocialService.instance.unreadCheers;
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (n > 0)
+                        Badge(label: Text('$n'), child: const SizedBox(width: 8, height: 8)),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.chevron_right, color: AppColors.muted),
+                    ],
+                  );
+                },
               ),
-            );
-            if (ok == true) await s.clearAll(deleteCloud: true);
-          },
-          child: const Text('Delete all data'),
-        ),
+            ),
+          if (cloudEnabled)
+            MenuRow(
+              icon: Icons.auto_awesome,
+              title: 'Ask the coach',
+              subtitle: 'Food, protein and workout questions',
+              onTap: () => _open(context, const CoachScreen()),
+            ),
+        ]),
       ],
     );
   }
 
-  Widget _accountCard(AppState s) {
-    if (!s.signedIn) {
-      return AppCard(
-        radius: 18,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Your data is only on this phone.',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            const Text('Sign in to back it up to your account.',
-                style: TextStyle(color: AppColors.muted)),
-            const SizedBox(height: 12),
-            FilledButton(
-              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-              onPressed: s.leaveGuest,
-              child: const Text('Sign in or create account'),
-            ),
-          ],
+  Widget _headerCard(BuildContext context, AppState s, bool hasProfile) {
+    final signedIn = cloudEnabled && s.signedIn;
+    final name = s.accountName;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primaryLight, AppColors.primaryDeep],
         ),
-      );
-    }
-
-    final status = s.syncing
-        ? 'Syncing...'
-        : (s.syncError ?? 'Backed up to your account');
-
-    return AppCard(
-      radius: 18,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(s.accountEmail ?? 'Signed in',
-              style: const TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 2),
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 13,
-              color: s.syncError == null ? AppColors.muted : AppColors.danger,
-            ),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.28),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton(
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            onPressed: s.signOut,
-            child: const Text('Sign out'),
+        ],
+      ),
+      child: Row(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 78,
+                height: 78,
+                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                child: const Icon(Icons.person, size: 44, color: AppColors.primaryDeep),
+              ),
+              if (hasProfile)
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: InkWell(
+                    onTap: () => _open(
+                      context,
+                      OnboardingScreen(initial: s.profile, editing: true),
+                    ),
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(Icons.edit, size: 15, color: Colors.white),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (signedIn && name != null && name.isNotEmpty)
+                  Text(name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
+                Text(
+                  signedIn ? (s.accountEmail ?? 'Signed in') : 'Guest',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(signedIn && (name?.isNotEmpty ?? false) ? 0.85 : 1),
+                    fontSize: (signedIn && (name?.isNotEmpty ?? false)) ? 14 : 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.verified_user, size: 16, color: Colors.white70),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        !signedIn
+                            ? 'Data is only on this phone'
+                            : s.syncing
+                                ? 'Syncing...'
+                                : (s.syncError ?? 'Backed up to your account'),
+                        maxLines: 2,
+                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+                if (cloudEnabled) ...[
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: signedIn ? s.signOut : s.leaveGuest,
+                    icon: Icon(signedIn ? Icons.logout : Icons.login, size: 18),
+                    label: Text(signedIn ? 'Sign out' : 'Sign in'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 40),
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white70, width: 1.4),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -258,12 +318,21 @@ class ProfileScreen extends StatelessWidget {
     final recent = values.length > 12 ? values.sublist(values.length - 12) : values;
 
     return AppCard(
-      radius: 22,
+      radius: 24,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: const BoxDecoration(
+                    color: AppColors.chipBg, shape: BoxShape.circle),
+                child: const Icon(Icons.monitor_weight_outlined, color: AppColors.primary),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,25 +340,38 @@ class ProfileScreen extends StatelessWidget {
                     const Text('Current weight',
                         style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     Text('${p.weightKg.toStringAsFixed(1)} kg',
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
                     Text(
                       change == 0
                           ? 'No change yet'
                           : '${change > 0 ? '+' : ''}${change.toStringAsFixed(1)} kg since start',
-                      style: const TextStyle(fontSize: 13, color: AppColors.muted),
+                      style: const TextStyle(
+                          fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
               ),
+              Container(width: 1, height: 64, color: AppColors.border),
+              const SizedBox(width: 14),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('BMI',
                       style: TextStyle(fontSize: 13, color: AppColors.muted)),
                   Text(bmi.toStringAsFixed(1),
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
-                  Text(bmiLabel(bmi),
-                      style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.safeBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(bmiLabel(bmi),
+                        style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.safe,
+                            fontWeight: FontWeight.w700)),
+                  ),
                 ],
               ),
             ],
@@ -301,70 +383,18 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '${p.heightCm.round()} cm  |  ${p.age} yrs  |  ${goalLabels[p.goal] ?? ''}',
-            style: const TextStyle(fontSize: 13, color: AppColors.muted),
+            style: const TextStyle(fontSize: 14, color: AppColors.muted),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton(
-                  style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-                  onPressed: () => _logWeight(context, s),
-                  child: const Text('Log weight'),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => OnboardingScreen(initial: p, editing: true),
-                    ),
-                  ),
-                  child: const Text('Edit profile'),
-                ),
-              ),
-            ],
+          const SizedBox(height: 14),
+          GradientButton(
+            label: 'Edit profile',
+            icon: Icons.edit,
+            onPressed: () => _open(
+              context,
+              OnboardingScreen(initial: p, editing: true),
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _stepper(BuildContext context, String label, String value, int step,
-      void Function(int delta) onChange) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: AppCard(
-        radius: 16,
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label,
-                      style: const TextStyle(fontSize: 13, color: AppColors.muted)),
-                  Text(value,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                ],
-              ),
-            ),
-            IconButton.outlined(
-              tooltip: 'Decrease $label',
-              onPressed: () => onChange(-step),
-              icon: const Icon(Icons.remove),
-            ),
-            const SizedBox(width: 4),
-            IconButton.outlined(
-              tooltip: 'Increase $label',
-              onPressed: () => onChange(step),
-              icon: const Icon(Icons.add),
-            ),
-          ],
-        ),
       ),
     );
   }
