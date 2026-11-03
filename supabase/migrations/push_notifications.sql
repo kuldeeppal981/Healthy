@@ -1,6 +1,6 @@
 -- Push notifications (Firebase Cloud Messaging). Run once in the Supabase SQL editor.
--- BEFORE running: replace CHOOSE_A_LONG_RANDOM_SECRET below (same value as the
--- PUSH_SECRET edge function secret).
+-- Nothing to edit: the shared password is generated here and stored in the vault;
+-- the edge function reads it through get_push_secret() (service role only).
 
 create extension if not exists pg_net with schema extensions;
 
@@ -27,9 +27,16 @@ $$;
 revoke all on function public.register_device_token(text), public.unregister_device_token(text) from public, anon;
 grant execute on function public.register_device_token(text), public.unregister_device_token(text) to authenticated;
 
--- Secret shared with the edge function (kept in the vault, not in code).
-select vault.create_secret('CHOOSE_A_LONG_RANDOM_SECRET', 'push_secret')
+-- Secret shared with the edge function (generated here, kept in the vault, not in code).
+select vault.create_secret(replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''), 'push_secret')
 where not exists (select 1 from vault.secrets where name = 'push_secret');
+
+create or replace function public.get_push_secret()
+returns text language sql security definer set search_path = public as $$
+  select decrypted_secret from vault.decrypted_secrets where name = 'push_secret' limit 1;
+$$;
+revoke all on function public.get_push_secret() from public, anon, authenticated;
+grant execute on function public.get_push_secret() to service_role;
 
 create or replace function public.notify_push(p_user uuid, p_title text, p_body text)
 returns void language plpgsql security definer set search_path = public, extensions as $$

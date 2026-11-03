@@ -28,7 +28,7 @@ Beat HealthifyMe by being free where they charge, safe for allergies, great for 
 - Real push notifications via Firebase FCM (cheers, friend requests, reminders when app is closed)
 
 ## Needs the user (cannot be done from the sandbox)
-- Push setup: Firebase project + Android app `com.kuldeep.healthy_app`; GitHub secrets FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_SENDER_ID, FIREBASE_PROJECT_ID; Supabase secrets FIREBASE_SERVICE_ACCOUNT and PUSH_SECRET; run `supabase/migrations/push_notifications.sql` (replace the secret placeholder with the same PUSH_SECRET).
+- Push setup: Firebase project + Android app `com.kuldeep.healthy_app`; GitHub secrets FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_SENDER_ID, FIREBASE_PROJECT_ID; Supabase secrets FIREBASE_SERVICE_ACCOUNT; run `supabase/migrations/push_notifications.sql` (nothing to edit).
 - Supabase dashboard: add Edge Function secret `GEMINI_API_KEY` (key from aistudio.google.com/apikey);
   optional `GEMINI_MODEL`, `COACH_DAILY_LIMIT`
 - Supabase: custom SMTP + edit the "Confirm sign up" email template to send the code (templates cannot

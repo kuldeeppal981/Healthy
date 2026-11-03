@@ -1,7 +1,7 @@
 // Sends a push notification to every phone of one user through Firebase Cloud
 // Messaging (HTTP v1). Called only by the database (notify_push) with the
-// x-push-secret header. Secrets: FIREBASE_SERVICE_ACCOUNT (service account JSON),
-// PUSH_SECRET. Deploy with JWT verification OFF (the secret header protects it).
+// x-push-secret header. Secret: FIREBASE_SERVICE_ACCOUNT (service account JSON);
+// the shared password lives in the database vault (get_push_secret). Deploy with JWT verification OFF (the secret header protects it).
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const b64url = (d: ArrayBuffer | string) => {
@@ -39,7 +39,10 @@ async function accessToken(sa: { client_email: string; private_key: string }) {
 }
 
 Deno.serve(async (req) => {
-  if (req.headers.get("x-push-secret") !== Deno.env.get("PUSH_SECRET") || !Deno.env.get("PUSH_SECRET")) {
+  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const { data: expected } = await sb.rpc("get_push_secret");
+  const given = req.headers.get("x-push-secret");
+  if (!expected || !given || given !== expected) {
     return new Response("forbidden", { status: 403 });
   }
   const saRaw = Deno.env.get("FIREBASE_SERVICE_ACCOUNT");
@@ -47,7 +50,6 @@ Deno.serve(async (req) => {
   const { user_id, title, body } = await req.json();
   if (!user_id || !title) return new Response("bad request", { status: 400 });
 
-  const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const { data: rows } = await sb.from("device_tokens").select("token").eq("user_id", user_id);
   if (!rows || rows.length === 0) return new Response("no devices", { status: 200 });
 
