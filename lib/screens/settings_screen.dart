@@ -170,6 +170,14 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: const Text('Privacy policy'),
             ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => showLicensePage(
+                context: context,
+                applicationName: 'Healthy',
+              ),
+              child: const Text('Open source licences'),
+            ),
             if (s.signedIn) ...[
               const SizedBox(height: 12),
               OutlinedButton(

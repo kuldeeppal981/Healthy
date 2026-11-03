@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/body_paths.dart';
 import '../data/exercise_library.dart';
 import '../services/muscle_stats.dart';
 import '../theme.dart';
@@ -38,85 +39,65 @@ const _statusAdvice = <String, String>{
 };
 
 // ---------------------------------------------------------------------------
-// Body drawing. Everything is painted in code on a 100 x 230 canvas, so it
-// follows the theme and needs no picture files.
+// Body figure. The shapes live in lib/data/body_paths.dart (open-source
+// artwork, MIT licence) and are drawn here with the colour of each muscle's
+// training status. Front view uses x 0..724, back view x 724..1448, y 0..1448.
 // ---------------------------------------------------------------------------
 
-Path _smooth(List<Offset> p) {
-  final path = Path();
-  final n = p.length;
-  Offset mid(Offset a, Offset b) => Offset((a.dx + b.dx) / 2, (a.dy + b.dy) / 2);
-  final start = mid(p[n - 1], p[0]);
-  path.moveTo(start.dx, start.dy);
-  for (var i = 0; i < n; i++) {
-    final c = p[i];
-    final m = mid(c, p[(i + 1) % n]);
-    path.quadraticBezierTo(c.dx, c.dy, m.dx, m.dy);
-  }
-  path.close();
-  return path;
-}
+const _slugGroup = <String, String>{
+  'chest': 'Chest',
+  'deltoids': 'Shoulders',
+  'biceps': 'Biceps',
+  'triceps': 'Triceps',
+  'abs': 'Core',
+  'obliques': 'Core',
+  'trapezius': 'Back',
+  'upper-back': 'Back',
+  'lower-back': 'Back',
+  'quadriceps': 'Legs',
+  'hamstring': 'Legs',
+  'gluteal': 'Legs',
+  'calves': 'Legs',
+  'adductors': 'Legs',
+  'tibialis': 'Legs',
+};
 
-List<Offset> _pts(List<double> xy) =>
-    [for (var i = 0; i + 1 < xy.length; i += 2) Offset(xy[i], xy[i + 1])];
-
-Offset _mir(Offset o) => Offset(100 - o.dx, o.dy);
-
-/// A left-side shape and its mirror image on the right.
-List<Path> _pair(List<double> xy) {
-  final a = _pts(xy);
-  return [_smooth(a), _smooth([for (final o in a) _mir(o)])];
-}
-
-/// One centred shape. [xy] runs down the left edge, first and last point on x = 50.
-Path _sym(List<double> xy) {
-  final a = _pts(xy);
-  final inner = a.sublist(1, a.length - 1);
-  return _smooth([...a, for (final o in inner.reversed) _mir(o)]);
-}
-
-List<(String, Path)> _regions(bool front) {
-  final r = <(String, Path)>[];
-  final delts = _pair(const [30, 39, 21, 40, 14, 48, 14, 58, 21, 60, 27, 52]);
-  final arm = _pair(const [22, 60, 15, 63, 11, 75, 13, 85, 19, 85, 22, 73]);
-  final calves = _pair(const [34, 172, 45, 172, 44, 196, 41, 212, 36, 206, 34, 190]);
-  if (front) {
-    for (final p in _pair(const [35, 124, 48, 124, 48, 146, 46, 168, 36, 168, 34, 146])) {
-      r.add(('Legs', p));
-    }
-    for (final p in calves) {
-      r.add(('Legs', p));
-    }
-    r.add(('Core', _sym(const [50, 68, 43, 68, 40, 80, 40, 96, 44, 112, 50, 114])));
-    for (final p in _pair(const [50, 41, 40, 40, 31, 43, 28, 52, 33, 62, 42, 66, 50, 64])) {
-      r.add(('Chest', p));
-    }
-    for (final p in delts) {
-      r.add(('Shoulders', p));
-    }
-    for (final p in arm) {
-      r.add(('Biceps', p));
-    }
-  } else {
-    for (final p in _pair(const [34, 112, 50, 110, 50, 130, 40, 136, 33, 126])) {
-      r.add(('Legs', p));
-    }
-    for (final p in _pair(const [35, 140, 48, 140, 48, 150, 46, 168, 36, 168, 34, 152])) {
-      r.add(('Legs', p));
-    }
-    for (final p in calves) {
-      r.add(('Legs', p));
-    }
-    r.add(('Back', _sym(const [50, 36, 40, 38, 30, 43, 30, 60, 34, 82, 42, 98, 50, 102])));
-    for (final p in delts) {
-      r.add(('Shoulders', p));
-    }
-    for (final p in arm) {
-      r.add(('Triceps', p));
+Path _buildPath(List<double> d) {
+  final p = Path();
+  var i = 0;
+  while (i < d.length) {
+    final op = d[i].toInt();
+    i++;
+    if (op == 0) {
+      p.moveTo(d[i], d[i + 1]);
+      i += 2;
+    } else if (op == 1) {
+      p.lineTo(d[i], d[i + 1]);
+      i += 2;
+    } else if (op == 2) {
+      p.cubicTo(d[i], d[i + 1], d[i + 2], d[i + 3], d[i + 4], d[i + 5]);
+      i += 6;
+    } else {
+      p.close();
     }
   }
-  return r;
+  return p;
 }
+
+class _Shape {
+  final String slug;
+  final String? group; // one of our tracked muscle groups, or null
+  final Path path;
+
+  _Shape(this.slug, this.group, this.path);
+}
+
+List<_Shape> _shapesOf(List<BodyPart> parts) => [
+      for (final b in parts) _Shape(b.slug, _slugGroup[b.slug], _buildPath(b.d)),
+    ];
+
+final List<_Shape> _frontShapes = _shapesOf(bodyFrontParts);
+final List<_Shape> _backShapes = _shapesOf(bodyBackParts);
 
 class _BodyPainter extends CustomPainter {
   final bool front;
@@ -127,69 +108,31 @@ class _BodyPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.scale(size.width / 100, size.height / 230);
-    const fillColor = Color(0xFFE3E8EC);
-    const lineColor = Color(0xFFC3CBD3);
-
-    // Limbs: (from, to, width), left side, mirrored for the right side.
-    const limbs = <(Offset, Offset, double)>[
-      (Offset(22, 46), Offset(15, 82), 12),
-      (Offset(15, 84), Offset(11, 116), 9),
-      (Offset(42, 124), Offset(40, 168), 17),
-      (Offset(40, 172), Offset(39, 212), 12),
-    ];
-    final torso = _sym(const [50, 38, 36, 38, 26, 41, 28, 60, 34, 84, 35, 104, 33, 120, 50, 124]);
-    final shapes = <Path>[
-      torso,
-      Path()..addOval(Rect.fromCircle(center: const Offset(50, 16), radius: 11)),
-      Path()..addRect(const Rect.fromLTRB(45, 24, 55, 38)),
-      Path()..addOval(Rect.fromCircle(center: const Offset(10, 122), radius: 5)),
-      Path()..addOval(Rect.fromCircle(center: const Offset(90, 122), radius: 5)),
-      Path()..addOval(const Rect.fromLTRB(29, 216, 47, 225)),
-      Path()..addOval(const Rect.fromLTRB(53, 216, 71, 225)),
-    ];
-
-    for (final pass in [0, 1]) {
-      final lineP = Paint()
-        ..color = pass == 0 ? lineColor : fillColor
-        ..strokeCap = StrokeCap.round;
-      for (final l in limbs) {
-        lineP.strokeWidth = l.$3 + (pass == 0 ? 2 : 0);
-        canvas.drawLine(l.$1, l.$2, lineP);
-        canvas.drawLine(_mir(l.$1), _mir(l.$2), lineP);
-      }
-      for (final s in shapes) {
-        if (pass == 0) {
-          canvas.drawPath(
-              s,
-              Paint()
-                ..style = PaintingStyle.stroke
-                ..strokeWidth = 2
-                ..color = lineColor);
-        } else {
-          canvas.drawPath(s, Paint()..color = fillColor);
-        }
-      }
+    canvas.scale(size.width / 724, size.height / 1448);
+    if (!front) canvas.translate(-724, 0);
+    final shapes = front ? _frontShapes : _backShapes;
+    const base = Color(0xFFE3E8EC);
+    const hair = Color(0xFFCBD2D9);
+    final edge = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.4
+      ..strokeJoin = StrokeJoin.round
+      ..color = Colors.white;
+    for (final sh in shapes) {
+      final color = sh.group != null
+          ? (colors[sh.group] ?? _statusColors['none']!)
+          : (sh.slug == 'hair' ? hair : base);
+      canvas.drawPath(sh.path, Paint()..color = color);
+      canvas.drawPath(sh.path, edge);
     }
-
-    for (final reg in _regions(front)) {
-      final color = colors[reg.$1] ?? _statusColors['none']!;
-      canvas.drawPath(reg.$2, Paint()..color = color);
-      canvas.drawPath(
-        reg.$2,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.9
-          ..color = Colors.white.withOpacity(0.85),
-      );
-      if (reg.$1 == selected) {
-        canvas.drawPath(
-          reg.$2,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.8
-            ..color = AppColors.ink,
-        );
+    if (selected != null) {
+      final hi = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeJoin = StrokeJoin.round
+        ..color = AppColors.ink;
+      for (final sh in shapes) {
+        if (sh.group == selected) canvas.drawPath(sh.path, hi);
       }
     }
   }
@@ -216,14 +159,18 @@ class _Figure extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth;
-        final h = w * 2.3;
+        final h = w * 2;
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapUp: (d) {
-            final p = Offset(d.localPosition.dx * 100 / w, d.localPosition.dy * 230 / h);
-            for (final reg in _regions(front).reversed) {
-              if (reg.$2.contains(p)) {
-                onPick(reg.$1);
+            final p = Offset(
+              d.localPosition.dx * 724 / w + (front ? 0 : 724),
+              d.localPosition.dy * 1448 / h,
+            );
+            final shapes = front ? _frontShapes : _backShapes;
+            for (final sh in shapes.reversed) {
+              if (sh.group != null && sh.path.contains(p)) {
+                onPick(sh.group!);
                 return;
               }
             }
