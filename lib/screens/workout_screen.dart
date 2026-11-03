@@ -870,13 +870,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            const Row(
+            Row(
               children: [
                 SizedBox(width: 36, child: Text('Set', style: _head)),
                 Expanded(child: Text('Kg', style: _head)),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Expanded(child: Text('Reps / sec', style: _head)),
-                SizedBox(width: 56),
+                const SizedBox(width: 56),
               ],
             ),
             const SizedBox(height: 4),
