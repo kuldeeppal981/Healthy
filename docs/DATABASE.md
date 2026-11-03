@@ -55,3 +55,6 @@ Real purchases later: Google Play Billing (in_app_purchase or RevenueCat) -> an 
 
 ## Push notifications (SQL file only, NOT yet applied)
 `supabase/migrations/push_notifications.sql`: table `device_tokens(token pk, user_id, updated_at)` with RLS and no policies; RPCs `register_device_token`, `unregister_device_token` (authenticated); `notify_push(user, title, body)` (pg_net POST to edge function `push` with vault secret `push_secret`, read by the function via `get_push_secret()`, service_role only); triggers `push_friendship` on friendships and `push_cheer` on feed_reactions. Edge function `push` source: `supabase/functions/push/index.ts` (deployed v2, verify_jwt off).
+
+## Friend nudge
+`supabase/migrations/friend_nudge.sql` (user pastes in SQL editor): table `nudges` (RLS, no policies), RPC `send_nudge(p_user)` (authenticated; checks accepted friendship, 1 per friend per day, 10 per day, then `notify_push`). Returns ok / already_today / limit / not_friends.

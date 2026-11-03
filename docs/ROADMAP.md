@@ -15,7 +15,7 @@ Beat HealthifyMe by being free where they charge, safe for allergies, great for 
 2. **Progress screen:** graphs of weight, waist, calories, PRs over time (retention booster).
 3. **Indian food database depth:** more dishes, katori/roti/glass portions, thali, street food.
 4. **Diet / meal plans:** budget planner BUILT (see FEATURES). Still to do: shopping list, swap a food, more foods and regional menus, health-condition filters.
-5. **Engagement:** friend streak nudge ("send a punch"), weekly summary card, weekly league,
+5. **Engagement:** friend nudge (BUILT), weekly summary card, weekly league,
    small friend groups, PR share card, milestones, daily personal AI tip.
 6. **Hindi** (and regional languages).
 7. **Trust:** forgot password, account delete, privacy policy are built (untested, see FEATURES); data export still missing.

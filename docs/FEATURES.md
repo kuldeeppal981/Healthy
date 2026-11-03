@@ -154,3 +154,6 @@ Shoe, glass, hero, shaker, bowl and shield PNGs had a framed pale panel baked in
 
 ## Real dark theme (BUILT, UNTESTED)
 The global invert/hue ColorFilter is gone. `ThemeService.dark` + `darkVariantOf(palette)` give a real dark palette; `AppColors` surface, text and accent colours are getters, `buildTheme()` is brightness-aware, `HealthApp` listens to phone brightness and rebuilds (key `accent-dark`). A script dropped `const` in 38 files; if the build says 'not a constant expression', remove that `const`. Hardcoded colours fixed in home protein tip (warnBg/warnInk), muscle figure (dark-aware base/hair/none grey), scan result, allergy, badges, sparkline. Check each screen in dark mode on the phone and report white boxes or unreadable text.
+
+## Friend nudge (BUILT, UNTESTED, needs SQL)
+Bell button on each friend row in Social -> Friends calls `SocialService.nudge()` -> rpc `send_nudge` -> push 'Nudge from NAME'. Needs `friend_nudge.sql` run in Supabase and push set up.

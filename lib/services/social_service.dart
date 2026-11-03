@@ -395,6 +395,27 @@ class SocialService extends ChangeNotifier {
     await refresh();
   }
 
+  /// Sends a push nudge to a friend. Returns a short message for the user.
+  Future<String> nudge(String friendId) async {
+    try {
+      final r = await _c.rpc('send_nudge', params: {'p_user': friendId}) as String;
+      switch (r) {
+        case 'ok':
+          return 'Nudge sent!';
+        case 'already_today':
+          return 'You already nudged them today.';
+        case 'limit':
+          return 'Nudge limit reached for today.';
+        case 'not_friends':
+          return 'You can only nudge friends.';
+        default:
+          return 'Could not send the nudge.';
+      }
+    } catch (_) {
+      return 'Could not send the nudge. Check internet and that the latest SQL was run.';
+    }
+  }
+
   Future<void> removeFriend(String friendId) async {
     try {
       final uid = _c.auth.currentUser!.id;

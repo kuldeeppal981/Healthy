@@ -813,6 +813,17 @@ class _FriendsTabState extends State<_FriendsTab> {
                       child: Text(f.name,
                           style: const TextStyle(fontWeight: FontWeight.w700))),
                   IconButton(
+                    tooltip: 'Nudge',
+                    icon: Icon(Icons.notifications_active_outlined, color: AppColors.primary),
+                    onPressed: () async {
+                      final m = await svc.nudge(f.userId);
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(SnackBar(content: Text(m)));
+                    },
+                  ),
+                  IconButton(
                     tooltip: 'Remove',
                     icon: const Icon(Icons.person_remove_outlined),
                     onPressed: () => svc.removeFriend(f.userId),
