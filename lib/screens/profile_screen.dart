@@ -14,6 +14,7 @@ import '../services/avatar_service.dart';
 import '../widgets/edit_identity.dart';
 import '../widgets/sparkline.dart';
 import 'badges_screen.dart';
+import 'budget_plan_screen.dart';
 import 'coach_screen.dart';
 import 'exercise_library_screen.dart';
 import 'health_connect_screen.dart';
@@ -133,6 +134,12 @@ class ProfileScreen extends StatelessWidget {
             title: 'Muscle volume',
             subtitle: 'Sets per muscle group, weekly and monthly',
             onTap: () => _open(context, const MuscleScreen()),
+          ),
+          MenuRow(
+            icon: Icons.savings_outlined,
+            title: 'Budget diet plan',
+            subtitle: 'A week of meals for your goal and your rupee budget',
+            onTap: () => _open(context, const BudgetPlanScreen()),
           ),
           MenuRow(
             icon: Icons.insights_outlined,
