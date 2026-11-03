@@ -504,7 +504,8 @@ class SocialService extends ChangeNotifier {
         _notifiedAt = fresh.first.at;
         final c = fresh.first;
         final more = fresh.length > 1 ? ' and ${fresh.length - 1} more' : '';
-        await ReminderService.instance.showNow(
+        // With push set up, the server already sends this cheer; avoid a double alert.
+        if (!pushEnabled) await ReminderService.instance.showNow(
           7001,
           '${c.emoji} ${c.who} cheered you$more',
           c.postTitle,
