@@ -136,6 +136,21 @@ class ReminderService {
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
   }
 
+  /// Creates the "Friends" channel up front, so push messages that arrive while
+  /// the app is closed show as a banner (high importance) from the very first one.
+  Future<void> createFriendsChannel() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    try {
+      await android?.createNotificationChannel(const AndroidNotificationChannel(
+        'cheers',
+        'Friends',
+        description: 'Cheers on your achievements',
+        importance: Importance.high,
+      ));
+    } catch (_) {}
+  }
+
   Future<bool> askPermission() async {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();

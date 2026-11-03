@@ -35,6 +35,7 @@ class PushService {
         ),
       );
       _started = true;
+      await ReminderService.instance.createFriendsChannel();
       final fm = FirebaseMessaging.instance;
       await fm.requestPermission();
 
