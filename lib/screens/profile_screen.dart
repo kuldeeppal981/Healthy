@@ -97,98 +97,6 @@ class ProfileScreen extends StatelessWidget {
         else
           _bodyCard(context, s),
         const SizedBox(height: 14),
-        ListenableBuilder(
-          listenable: ThemeService.instance,
-          builder: (context, _) => AppCard(
-            radius: 22,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.dark_mode_outlined, color: AppColors.primary),
-                    SizedBox(width: 12),
-                    Text('Appearance',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<ThemeMode>(
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(value: ThemeMode.system, label: Text('Auto')),
-                      ButtonSegment(value: ThemeMode.light, label: Text('Light')),
-                      ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
-                    ],
-                    selected: {ThemeService.instance.mode},
-                    onSelectionChanged: (v) => ThemeService.instance.set(v.first),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const Text('Theme colour', style: TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 10,
-                  children: [
-                    for (var i = 0; i < accentPalettes.length; i++)
-                      GestureDetector(
-                        onTap: () => ThemeService.instance.setAccent(i),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [accentPalettes[i].light, accentPalettes[i].deep],
-                                ),
-                                border: Border.all(
-                                  color: ThemeService.instance.accentIndex == i
-                                      ? AppColors.ink
-                                      : Colors.transparent,
-                                  width: 2.5,
-                                ),
-                              ),
-                              child: ThemeService.instance.accentIndex == i
-                                  ? const Icon(Icons.check, color: Colors.white, size: 22)
-                                  : null,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(accentPalettes[i].name, style: const TextStyle(fontSize: 11)),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                const Text('Text size', style: TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<double>(
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(value: 1.0, label: Text('Normal')),
-                      ButtonSegment(value: 1.15, label: Text('Large')),
-                      ButtonSegment(value: 1.3, label: Text('Extra')),
-                    ],
-                    selected: {ThemeService.instance.textScale},
-                    onSelectionChanged: (v) => ThemeService.instance.setTextScale(v.first),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 14),
         MenuCard(rows: [
           MenuRow(
             icon: Icons.monitor_heart_outlined,
@@ -302,15 +210,7 @@ class ProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(26),
         child: Stack(
           children: [
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: Opacity(
-                opacity: 0.5,
-                child: AppImage('assets/images/hero.png', fit: BoxFit.fitHeight),
-              ),
-            ),
+            const Positioned.fill(child: CustomPaint(painter: _BackdropPainter())),
             Padding(
               padding: const EdgeInsets.all(18),
               child: Row(
@@ -520,4 +420,61 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Soft decorative shapes (circles, a leaf and a shine) for the profile card.
+class _BackdropPainter extends CustomPainter {
+  const _BackdropPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    Paint white(double o) => Paint()..color = Colors.white.withOpacity(o);
+
+    // Big soft circles.
+    canvas.drawCircle(Offset(w * 0.92, h * 0.05), h * 0.75, white(0.10));
+    canvas.drawCircle(Offset(w * 1.02, h * 0.95), h * 0.55, white(0.10));
+    canvas.drawCircle(Offset(w * 0.05, h * 1.05), h * 0.45, white(0.07));
+
+    // Small dots.
+    for (final o in [
+      Offset(w * 0.62, h * 0.18),
+      Offset(w * 0.78, h * 0.78),
+      Offset(w * 0.48, h * 0.9),
+    ]) {
+      canvas.drawCircle(o, 4, white(0.22));
+    }
+
+    // Leaf on the right.
+    final leaf = Path()
+      ..moveTo(w * 0.80, h * 0.92)
+      ..cubicTo(w * 0.74, h * 0.40, w * 0.88, h * 0.12, w * 0.99, h * 0.06)
+      ..cubicTo(w * 1.04, h * 0.50, w * 0.95, h * 0.82, w * 0.80, h * 0.92)
+      ..close();
+    canvas.drawPath(leaf, white(0.16));
+    canvas.drawPath(
+      Path()
+        ..moveTo(w * 0.82, h * 0.88)
+        ..quadraticBezierTo(w * 0.88, h * 0.48, w * 0.98, h * 0.12),
+      Paint()
+        ..color = Colors.white.withOpacity(0.28)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // Shine across the top.
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, w, h * 0.5),
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.white.withOpacity(0.14), Colors.white.withOpacity(0.0)],
+        ).createShader(Rect.fromLTWH(0, 0, w, h * 0.5)),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _BackdropPainter old) => false;
 }
