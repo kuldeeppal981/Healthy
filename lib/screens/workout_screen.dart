@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../services/reminder_service.dart';
 import '../services/social_service.dart';
 import '../services/voice_parser.dart';
+import '../widgets/celebrate.dart';
 import '../widgets/muscle_art.dart';
 import '../widgets/activity_art.dart';
 import '../widgets/ui_kit.dart';
@@ -257,6 +258,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
 
   void _finish(DayPlan plan, List<List<_SetLog>> logs) {
+    Haptic.win();
+    Celebrate.show(context);
     var sets = 0;
     var volume = 0.0;
     final bests = <Map<String, dynamic>>[];

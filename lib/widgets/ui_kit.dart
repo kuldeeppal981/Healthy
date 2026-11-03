@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/sound_service.dart';
 import '../services/theme_service.dart';
 import '../theme.dart';
 
@@ -15,8 +16,63 @@ class Space {
 /// Light vibrations for small wins. Safe to call anywhere.
 class Haptic {
   static void tap() => HapticFeedback.selectionClick();
-  static void done() => HapticFeedback.lightImpact();
-  static void win() => HapticFeedback.mediumImpact();
+  static void done() {
+    HapticFeedback.lightImpact();
+    SoundService.instance.play('pop');
+  }
+
+  static void win() {
+    HapticFeedback.mediumImpact();
+    SoundService.instance.play('win');
+  }
+
+  static void splash() {
+    HapticFeedback.selectionClick();
+    SoundService.instance.play('splash');
+  }
+}
+
+/// Fades a child in and slides it up a little when it first appears.
+/// Use [delayMs] to stagger several cards one after another.
+class FadeSlideIn extends StatefulWidget {
+  final Widget child;
+  final int delayMs;
+  const FadeSlideIn({super.key, required this.child, this.delayMs = 0});
+
+  @override
+  State<FadeSlideIn> createState() => _FadeSlideInState();
+}
+
+class _FadeSlideInState extends State<FadeSlideIn> with SingleTickerProviderStateMixin {
+  late final AnimationController _c =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
+  late final Animation<double> _t = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(Duration(milliseconds: widget.delayMs), () {
+      if (mounted) _c.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _t,
+      child: widget.child,
+      builder: (context, child) => Opacity(
+        opacity: _t.value,
+        child: Transform.translate(offset: Offset(0, 18 * (1 - _t.value)), child: child),
+      ),
+    );
+  }
 }
 
 /// Friendly message for screens with nothing to show yet.

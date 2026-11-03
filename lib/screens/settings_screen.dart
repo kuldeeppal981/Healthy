@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../services/sound_service.dart';
 import '../services/theme_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -50,7 +51,21 @@ class SettingsScreen extends StatelessWidget {
                     onSelectionChanged: (v) => ThemeService.instance.set(v.first),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 6),
+                ListenableBuilder(
+                  listenable: SoundService.instance,
+                  builder: (context, _) => SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Sounds',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: const Text('Chime on check-in, pop on a finished set',
+                        style: TextStyle(fontSize: 12)),
+                    value: SoundService.instance.enabled,
+                    activeColor: AppColors.primary,
+                    onChanged: SoundService.instance.setEnabled,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 const Text('Theme colour', style: TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 10),
                 Wrap(

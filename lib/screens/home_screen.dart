@@ -60,9 +60,9 @@ class HomeScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
-        _header(context, now, s.displayName),
+        FadeSlideIn(child: _header(context, now, s.displayName)),
         const SizedBox(height: 18),
-        _nutritionCard(context, s),
+        FadeSlideIn(delayMs: 80, child: _nutritionCard(context, s)),
         const SizedBox(height: 22),
         Row(
           children: [
@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
             _quick(Icons.mic, 'Voice', () => logByVoice(context)),
             const SizedBox(width: 10),
             _quick(Icons.water_drop, 'Water', () {
-              Haptic.tap();
+              Haptic.splash();
               s.addWater(1);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Water: ${s.waterToday} of ${s.waterTarget} glasses')),
@@ -108,7 +108,9 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        IntrinsicHeight(
+        FadeSlideIn(
+          delayMs: 300,
+          child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -120,7 +122,7 @@ class HomeScreen extends StatelessWidget {
         ),
         _proteinTip(s, now),
         const SizedBox(height: 16),
-        _workoutCard(context, s, now),
+        FadeSlideIn(delayMs: 220, child: _workoutCard(context, s, now)),
         const SizedBox(height: 16),
         IntrinsicHeight(
           child: Row(
@@ -131,6 +133,7 @@ class HomeScreen extends StatelessWidget {
               const Expanded(child: StreakCard()),
             ],
           ),
+        ),
         ),
         if (cloudEnabled) ...[
           const SizedBox(height: 16),
@@ -540,7 +543,7 @@ class HomeScreen extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () {
-                Haptic.tap();
+                Haptic.splash();
                 s.addWater(1);
               },
               icon: const Icon(Icons.add, size: 18),

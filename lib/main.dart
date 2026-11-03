@@ -15,6 +15,7 @@ import 'services/push_service.dart';
 import 'services/reminder_service.dart';
 import 'services/social_service.dart';
 import 'services/step_service.dart';
+import 'services/sound_service.dart';
 import 'services/theme_service.dart';
 import 'services/widget_service.dart';
 import 'state/app_state.dart';
@@ -50,6 +51,7 @@ Future<void> main() async {
   final state = AppState();
   await state.load();
   await ThemeService.instance.load();
+  await SoundService.instance.load();
   await AvatarService.instance.load();
 
   if (cloudEnabled) {
