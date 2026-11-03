@@ -52,3 +52,6 @@ Real purchases later: Google Play Billing (in_app_purchase or RevenueCat) -> an 
 
 ## delete_my_account() (SQL file only, NOT yet applied)
 `supabase/migrations/delete_my_account.sql`: SECURITY DEFINER, deletes the caller from auth.users (all user tables cascade). Execute only for `authenticated`. Apply it, then remove this 'not applied' note.
+
+## Push notifications (SQL file only, NOT yet applied)
+`supabase/migrations/push_notifications.sql`: table `device_tokens(token pk, user_id, updated_at)` with RLS and no policies; RPCs `register_device_token`, `unregister_device_token` (authenticated); `notify_push(user, title, body)` (pg_net POST to edge function `push` with vault secret `push_secret`); triggers `push_friendship` on friendships and `push_cheer` on feed_reactions. Edge function `push` source: `supabase/functions/push/index.ts` (deployed v2, verify_jwt off).

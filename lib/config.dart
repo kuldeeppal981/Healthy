@@ -14,3 +14,18 @@ const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 const oauthRedirect = 'io.supabase.healthy://login-callback/';
 
 bool get cloudEnabled => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+/// Firebase (push notifications). Values come from the Firebase console and are
+/// passed at build time from GitHub secrets. Without them the app still works,
+/// it just does not register for push messages.
+const firebaseApiKey = String.fromEnvironment('FIREBASE_API_KEY');
+const firebaseAppId = String.fromEnvironment('FIREBASE_APP_ID');
+const firebaseSenderId = String.fromEnvironment('FIREBASE_SENDER_ID');
+const firebaseProjectId = String.fromEnvironment('FIREBASE_PROJECT_ID');
+
+bool get pushEnabled =>
+    cloudEnabled &&
+    firebaseApiKey.isNotEmpty &&
+    firebaseAppId.isNotEmpty &&
+    firebaseSenderId.isNotEmpty &&
+    firebaseProjectId.isNotEmpty;

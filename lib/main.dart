@@ -10,6 +10,7 @@ import 'screens/app_shell.dart';
 import 'services/avatar_service.dart';
 import 'services/cloud_sync.dart';
 import 'services/health_service.dart';
+import 'services/push_service.dart';
 import 'services/reminder_service.dart';
 import 'services/social_service.dart';
 import 'services/step_service.dart';
@@ -35,6 +36,7 @@ Future<void> main() async {
   }
 
   await ReminderService.instance.init();
+  if (pushEnabled) unawaited(PushService.instance.start());
   unawaited(ReminderService.instance.reschedule(state));
 
   unawaited(StepService.instance.start());

@@ -58,6 +58,8 @@ jobs:
           if 'android.permission.CAMERA' not in s:
               s = re.sub(r'(<manifest[^>]*>)', r'\1' + perms, s, count=1)
           # Receivers that keep scheduled reminders alive and restore them after a reboot.
+          if 'firebase.messaging.default_notification_icon' not in s:
+              s = re.sub(r'(<application[^>]*>)', r'\1\n        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_notification"/>', s, count=1)
           if 'ScheduledNotificationReceiver' not in s:
               recv = (
                   '\n        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"/>'
@@ -301,7 +303,17 @@ jobs:
       - name: Build release APK
         env:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: flutter build apk --release --no-shrink --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_SENDER_ID: ${{ secrets.FIREBASE_SENDER_ID }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        run: >
+          flutter build apk --release --no-shrink
+          --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          --dart-define=FIREBASE_API_KEY="$FIREBASE_API_KEY"
+          --dart-define=FIREBASE_APP_ID="$FIREBASE_APP_ID"
+          --dart-define=FIREBASE_SENDER_ID="$FIREBASE_SENDER_ID"
+          --dart-define=FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_ID"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

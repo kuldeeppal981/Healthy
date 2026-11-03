@@ -10,6 +10,7 @@ import '../profile_models.dart';
 import '../services/cloud_sync.dart';
 import '../screens/workout_data.dart';
 import '../services/nutrition_calc.dart';
+import '../services/push_service.dart';
 
 /// App-wide state, saved on the phone with shared_preferences.
 class AppState extends ChangeNotifier {
@@ -283,11 +284,13 @@ class AppState extends ChangeNotifier {
     } catch (_) {
       return false;
     }
+    await PushService.instance.forget();
     await clearAll();
     return true;
   }
 
   Future<void> signOut() async {
+    await PushService.instance.unregister();
     await cloud?.signOut();
     await clearAll();
   }
