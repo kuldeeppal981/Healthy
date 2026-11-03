@@ -10,6 +10,7 @@ import '../services/reminder_service.dart';
 import '../services/social_service.dart';
 import '../services/voice_parser.dart';
 import '../widgets/muscle_art.dart';
+import '../widgets/activity_art.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 import '../data/exercise_library.dart';
@@ -555,14 +556,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
-            Positioned(
-              right: 96,
+            const Positioned(
+              right: 70,
               top: 0,
               bottom: 0,
-              child: Opacity(
-                opacity: 0.55,
-                child: AppImage('assets/images/hero.png', fit: BoxFit.fitHeight),
-              ),
+              child: Center(child: DumbbellArt(width: 120, opacity: 0.22)),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
@@ -756,7 +754,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          AppImage('assets/images/shaker.png', height: 74, fit: BoxFit.contain),
+          const ShakerArt(height: 74),
         ],
       ),
     );

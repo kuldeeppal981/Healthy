@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/food_art.dart';
 import '../widgets/ring.dart';
+import '../widgets/activity_art.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_review.dart';
 import '../widgets/weight_dialog.dart';
@@ -425,7 +426,7 @@ class HomeScreen extends StatelessWidget {
                   right: -14,
                   top: -14,
                   child: IgnorePointer(
-                    child: AppImage('assets/images/shoe.png', width: 76, fit: BoxFit.contain),
+                    child: const ShoeArt(width: 64),
                   ),
                 ),
                 Column(
@@ -487,7 +488,7 @@ class HomeScreen extends StatelessWidget {
             right: -12,
             top: 22,
             child: IgnorePointer(
-              child: AppImage('assets/images/glass.png', width: 62, fit: BoxFit.contain),
+              child: const GlassArt(width: 46),
             ),
           ),
           Column(
