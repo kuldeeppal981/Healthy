@@ -916,7 +916,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
   }
 
-  static const _head =
+  static TextStyle get _head =>
       TextStyle(fontSize: 12, color: AppColors.muted, fontWeight: FontWeight.w700);
 
   Widget _numField(TextEditingController c, {String? hint}) {
