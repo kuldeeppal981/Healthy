@@ -142,3 +142,6 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
 - `lib/data/budget_foods.dart`: ~37 foods with APPROXIMATE home-cooking prices (Rs per serving), roles (staple/main/side/snack), allergens. Prices need a review and should be refreshed yearly.
 - "Add to today's diary" per meal writes DiaryEntry rows. Budget, food type and price level are saved in SharedPreferences only (keys `bp_*`, not synced to the cloud).
 - Next ideas: shopping list for the week, swap one food, health-condition filters, more regional foods, editable prices.
+
+## Dark mode picture fix (UNTESTED)
+Shoe, glass, hero, shaker, bowl and shield PNGs had a framed pale panel baked in, which showed as white boxes in dark mode (and the hero was purple). Replaced by painted widgets in `lib/widgets/activity_art.dart` (ShoeArt, GlassArt, DumbbellArt, ShakerArt) and removed those files. Allergy PNGs and trophy were cleaned of a faint haze. Remaining photos (dumbbell.jpg, ex1-4.jpg) still keep real colours in dark mode. A real dark theme (instead of the global colour filter) is still on the roadmap.
