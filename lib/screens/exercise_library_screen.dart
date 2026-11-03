@@ -120,7 +120,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
           _chips(_equipOptions, _equip, (v) => setState(() => _equip = v)),
           const SizedBox(height: 12),
           if (list.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(32),
               child: Text('No exercise matches. Try clearing a filter.',
                   textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
@@ -215,7 +215,7 @@ class ExerciseDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(info.group,
-                          style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                          style: TextStyle(color: AppColors.muted, fontSize: 12)),
                       Text(info.name,
                           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
                       Text(info.level,
@@ -236,7 +236,7 @@ class ExerciseDetailScreen extends StatelessWidget {
           _title('Muscles worked'),
           Text('Main: ${info.primary}', style: const TextStyle(height: 1.5)),
           Text('Also: ${info.secondary}',
-              style: const TextStyle(height: 1.5, color: AppColors.muted)),
+              style: TextStyle(height: 1.5, color: AppColors.muted)),
           _title('Equipment'),
           Text(info.equipment),
           _title('How to do it'),
@@ -265,7 +265,7 @@ class ExerciseDetailScreen extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.close, size: 18, color: AppColors.danger),
+                  Icon(Icons.close, size: 18, color: AppColors.danger),
                   const SizedBox(width: 8),
                   Expanded(child: Text(m, style: const TextStyle(height: 1.4))),
                 ],
@@ -276,7 +276,7 @@ class ExerciseDetailScreen extends StatelessWidget {
           _variation('Intermediate', info.intermediate),
           _variation('Advanced', info.advanced),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'General fitness guidance, not medical advice. Start light, stop if something hurts, and ask a coach or doctor if you are unsure.',
             style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4),
           ),

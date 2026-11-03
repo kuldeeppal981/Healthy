@@ -118,7 +118,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
             ),
             child: Column(
               children: [
-                const Text(
+                Text(
                   'Place the barcode inside the box',
                   style: TextStyle(color: AppColors.muted),
                 ),

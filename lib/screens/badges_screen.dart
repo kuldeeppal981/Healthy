@@ -59,7 +59,7 @@ class BadgesScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Text('A streak counts every day you log at least one food.',
+          Text('A streak counts every day you log at least one food.',
               style: TextStyle(color: AppColors.muted, fontSize: 12)),
           const SizedBox(height: 20),
           Text('Badges  ${a.earnedCount} / ${a.badges.length}',
@@ -90,7 +90,7 @@ class BadgesScreen extends StatelessWidget {
                     fontSize: 34, fontWeight: FontWeight.w800, color: AppColors.primary)),
             Text(label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                style: TextStyle(color: AppColors.muted, fontSize: 12)),
           ],
         ),
       );
@@ -110,7 +110,7 @@ class BadgesScreen extends StatelessWidget {
   Widget _badgeCard(b.AppBadge x) {
     return AppCard(
       radius: 16,
-      color: x.earned ? AppColors.chipBg : Colors.white,
+      color: x.earned ? AppColors.chipBg : AppColors.card,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

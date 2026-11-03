@@ -86,40 +86,63 @@ Future<void> main() async {
   );
 }
 
-class HealthApp extends StatelessWidget {
+class HealthApp extends StatefulWidget {
   const HealthApp({super.key});
+
+  @override
+  State<HealthApp> createState() => _HealthAppState();
+}
+
+class _HealthAppState extends State<HealthApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // The phone switched between light and dark: draw the app again.
+  @override
+  void didChangePlatformBrightness() {
+    if (ThemeService.instance.mode == ThemeMode.system) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: ThemeService.instance,
-      builder: (context, _) => MaterialApp(
-        key: ValueKey(ThemeService.instance.accentIndex),
-        title: 'Healthy',
-        debugShowCheckedModeBanner: false,
-        theme: buildTheme(),
-        builder: (context, child) {
-          final dark = ThemeService.instance.isDark(context);
-          final scaled = MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(
-                MediaQuery.textScalerOf(context).scale(1.0) * ThemeService.instance.textScale,
+      builder: (context, _) {
+        final ts = ThemeService.instance;
+        // Colours read this flag, so set it before anything is built.
+        ts.dark = ts.resolveDark();
+        final dark = ts.dark;
+        return MaterialApp(
+          key: ValueKey('${ts.accentIndex}-$dark'),
+          title: 'Healthy',
+          debugShowCheckedModeBanner: false,
+          theme: buildTheme(),
+          builder: (context, child) {
+            final scaled = MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(
+                  MediaQuery.textScalerOf(context).scale(1.0) * ts.textScale,
+                ),
               ),
-            ),
-            child: child!,
-          );
-          final body = dark
-              ? ColorFiltered(colorFilter: ThemeService.darkFilter, child: scaled)
-              : scaled;
-          return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: dark
-                ? SystemUiOverlayStyle.light
-                : SystemUiOverlayStyle.dark,
-            child: body,
-          );
-        },
-        home: const AppShell(),
-      ),
+              child: child!,
+            );
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+              child: scaled,
+            );
+          },
+          home: const AppShell(),
+        );
+      },
     );
   }
 }

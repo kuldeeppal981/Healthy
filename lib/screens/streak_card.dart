@@ -126,7 +126,7 @@ class _StreakCardState extends State<StreakCard> {
             Text('${p.xp} XP  |  ❄️ ${s.freezesLeft} freezes',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+                style: TextStyle(color: AppColors.muted, fontSize: 11)),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,

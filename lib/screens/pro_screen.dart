@@ -56,7 +56,7 @@ class _ProScreenState extends State<ProScreen> {
                           if (pro && p?.expiresAt != null)
                             Text(
                               'Valid until ${p!.expiresAt!.day}/${p.expiresAt!.month}/${p.expiresAt!.year}',
-                              style: const TextStyle(color: AppColors.muted),
+                              style: TextStyle(color: AppColors.muted),
                             ),
                         ],
                       ),
@@ -86,7 +86,7 @@ class _ProScreenState extends State<ProScreen> {
                         Expanded(child: Text(r[0], style: const TextStyle(fontSize: 13))),
                         SizedBox(
                           width: 64,
-                          child: Text(r[1] == 'Pro' ? 'Yes' : r[1], textAlign: TextAlign.center, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                          child: Text(r[1] == 'Pro' ? 'Yes' : r[1], textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted, fontSize: 12)),
                         ),
                         SizedBox(
                           width: 64,
@@ -111,7 +111,7 @@ class _ProScreenState extends State<ProScreen> {
             child: const Text('Upgrade (coming soon)'),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Payments will open when the app is on Google Play. Plans and prices are not final.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppColors.muted, fontSize: 12),

@@ -164,7 +164,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                       children: [
                         if (item.brand.isNotEmpty)
                           Text(item.brand,
-                              style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                              style: TextStyle(fontSize: 13, color: AppColors.muted)),
                         Text(item.name,
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                       ],
@@ -188,7 +188,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                                   color: Colors.black87)),
                         ),
                         const SizedBox(height: 2),
-                        const Text('Nutri-Score',
+                        Text('Nutri-Score',
                             style: TextStyle(fontSize: 10, color: AppColors.muted)),
                       ],
                     ),
@@ -240,7 +240,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               if (item.ingredients.trim().isEmpty)
-                const Text('Ingredient list is not available in the database.',
+                Text('Ingredient list is not available in the database.',
                     style: TextStyle(color: AppColors.muted))
               else
                 Text.rich(
@@ -301,7 +301,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     if (contains.isNotEmpty) {
       final names = contains.map((h) => h.allergen.label).join(', ');
       return box(
-        AppColors.danger,
+        AppColors.dangerSolid,
         Colors.white,
         Icons.warning_amber_rounded,
         'Allergy alert: $names',
@@ -369,7 +369,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           if (flags.isEmpty)
-            const Text(
+            Text(
               'Nothing flagged from the information we have. Check the label too.',
               style: TextStyle(color: AppColors.muted, height: 1.4),
             ),
@@ -390,7 +390,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                                 color: color(f.level), fontWeight: FontWeight.w600)),
                         TextSpan(
                             text: '  (${f.conditions})',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 color: AppColors.muted, fontSize: 12)),
                       ]),
                     ),
@@ -399,7 +399,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
               ),
             ),
           const SizedBox(height: 8),
-          const Text('General guidance, not medical advice.',
+          Text('General guidance, not medical advice.',
               style: TextStyle(fontSize: 11, color: AppColors.muted)),
         ],
       ),
@@ -444,7 +444,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       if (m.start > last) spans.add(TextSpan(text: text.substring(last, m.start)));
       spans.add(TextSpan(
         text: text.substring(m.start, m.end),
-        style: const TextStyle(
+        style: TextStyle(
           backgroundColor: AppColors.dangerBg,
           color: AppColors.danger,
           fontWeight: FontWeight.w700,

@@ -150,7 +150,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               Text(
                 '${_greeting(now.hour)}  \u00B7  ${_days[now.weekday - 1]}, ${now.day} ${_months[now.month - 1]}',
-                style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                style: TextStyle(color: AppColors.muted, fontSize: 13),
               ),
               const SizedBox(height: 2),
               Text(first.isEmpty ? 'Welcome' : first,
@@ -213,7 +213,7 @@ class HomeScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(over ? 'Calories over' : 'Calories left',
-                        style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                        style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     const SizedBox(height: 2),
                     FittedBox(
                       fit: BoxFit.scaleDown,
@@ -226,7 +226,7 @@ class HomeScreen extends StatelessWidget {
                               color: over ? AppColors.warnInk : AppColors.ink)),
                     ),
                     Text('of ${_num(s.kcalTarget)} kcal goal',
-                        style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                        style: TextStyle(fontSize: 12, color: AppColors.muted)),
                   ],
                 ),
               ),
@@ -266,7 +266,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+            Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
             const SizedBox(height: 2),
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -278,7 +278,7 @@ class HomeScreen extends StatelessWidget {
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                   TextSpan(
                       text: ' / $target g',
-                      style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+                      style: TextStyle(fontSize: 11, color: AppColors.muted)),
                 ]),
                 maxLines: 1,
               ),
@@ -310,7 +310,7 @@ class HomeScreen extends StatelessWidget {
           Text('${value.round()} / $target g',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+              style: TextStyle(fontSize: 13, color: AppColors.muted)),
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
@@ -376,23 +376,23 @@ class HomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFFFFF4D6), Color(0xFFFFE7B8)]),
+          color: AppColors.warnBg,
           borderRadius: BorderRadius.circular(22),
         ),
         child: Row(
           children: [
             const FoodArt(FoodKind.apple, size: 44),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Protein is a bit low',
                       style: TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF7A4A06))),
-                  SizedBox(height: 2),
+                          fontWeight: FontWeight.w800, fontSize: 14, color: AppColors.warnInk)),
+                  const SizedBox(height: 2),
                   Text('Try paneer, sprouts, dal or a boiled egg',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF9A6A1F))),
+                      style: TextStyle(fontSize: 12, color: AppColors.warnInk.withOpacity(0.85))),
                 ],
               ),
             ),
@@ -522,7 +522,7 @@ class HomeScreen extends StatelessWidget {
           Text('${_num(s.waterToday * glassMl)} ml',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
           Text('Goal: ${_num(s.waterTarget * glassMl)} ml',
-              style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+              style: TextStyle(fontSize: 12, color: AppColors.muted)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 3,
@@ -608,7 +608,7 @@ class HomeScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
                 ),
                 Text(plan.rest ? 'Recover, stretch, walk' : 'Your scheduled workout',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                    style: TextStyle(color: AppColors.muted, fontSize: 13)),
                 const SizedBox(height: 10),
                 GradientButton(
                   label: plan.rest ? 'View plan' : 'Start workout',
@@ -644,7 +644,7 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(dailyTip(s),
-              style: const TextStyle(fontSize: 13, color: AppColors.muted, height: 1.35)),
+              style: TextStyle(fontSize: 13, color: AppColors.muted, height: 1.35)),
           const Spacer(),
           const SizedBox(height: 8),
           InkWell(

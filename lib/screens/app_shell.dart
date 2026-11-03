@@ -66,7 +66,7 @@ class _AppShellState extends State<AppShell> {
               if (error != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(error!, style: const TextStyle(color: AppColors.danger)),
+                  child: Text(error!, style: TextStyle(color: AppColors.danger)),
                 ),
             ],
           ),

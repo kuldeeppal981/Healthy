@@ -25,7 +25,7 @@ Beat HealthifyMe by being free where they charge, safe for allergies, great for 
 - Photo to calories of a meal (AI). Label photo scan is DONE via Gemini (see FEATURES), old ML Kit version stays parked
 - Recipes, family profiles, premium plan (AI limit raise), tips/journey
 - In-app exercise images or videos (needs licensed assets or the user's own files)
-- Real push notifications via Firebase FCM (cheers, friend requests, reminders when app is closed)
+- Real push notifications via Firebase FCM: DONE (see FEATURES)
 
 ## Needs the user (cannot be done from the sandbox)
 - Push setup: Firebase project + Android app `com.kuldeep.healthy_app`; GitHub secrets FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_SENDER_ID, FIREBASE_PROJECT_ID; Supabase secrets FIREBASE_SERVICE_ACCOUNT; run `supabase/migrations/push_notifications.sql` (nothing to edit).

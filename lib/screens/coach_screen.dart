@@ -184,7 +184,7 @@ class _CoachScreenState extends State<CoachScreen> {
                           },
                         ),
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'General guidance only, not medical advice.',

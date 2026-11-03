@@ -232,7 +232,7 @@ class SettingsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                  Text(label, style: TextStyle(fontSize: 13, color: AppColors.muted)),
                   Text(value,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 ],

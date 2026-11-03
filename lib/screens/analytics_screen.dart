@@ -87,7 +87,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -189,7 +189,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         const SizedBox(height: 12),
         MuscleActivitySection(sets: ms.sets),
         const SizedBox(height: 14),
-        const Text(
+        Text(
           'Charts show what you logged. They are general guidance, not medical advice.',
           style: TextStyle(color: AppColors.muted, fontSize: 12),
         ),
@@ -213,7 +213,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               child: Text(value,
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
             ),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+            Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
           ],
         ),
       ),
@@ -254,7 +254,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
           const SizedBox(height: 14),
           if (total == 0)
-            const Text('Log your meals to see your carbs, protein and fat split.',
+            Text('Log your meals to see your carbs, protein and fat split.',
                 style: TextStyle(fontSize: 13, color: AppColors.muted))
           else ...[
             ClipRRect(
@@ -348,7 +348,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
           const SizedBox(height: 12),
           if (shown.length < 2)
-            const Text(
+            Text(
               'Add your weight from the Home screen on two different days to see the trend.',
               style: TextStyle(fontSize: 13, color: AppColors.muted),
             )

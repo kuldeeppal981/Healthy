@@ -40,7 +40,7 @@ class HealthConnectScreen extends StatelessWidget {
               Text(value,
                   style: TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.primary)),
-              Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ],
           ),
         ),
@@ -64,13 +64,13 @@ class HealthConnectScreen extends StatelessWidget {
                   style: TextStyle(height: 1.4),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Healthy only reads this data, and keeps it on your phone. Your watch must sync to Health Connect first (for example through its own app, Google Fit or Samsung Health).',
                   style: TextStyle(color: AppColors.muted, height: 1.4, fontSize: 13),
                 ),
                 if (svc.error != null) ...[
                   const SizedBox(height: 12),
-                  Text(svc.error!, style: const TextStyle(color: AppColors.danger)),
+                  Text(svc.error!, style: TextStyle(color: AppColors.danger)),
                 ],
                 const SizedBox(height: 16),
                 FilledButton(
@@ -120,11 +120,11 @@ class HealthConnectScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text('New sessions from the last 14 days are added to your workout history.',
+                Text('New sessions from the last 14 days are added to your workout history.',
                     style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 const SizedBox(height: 8),
                 if (svc.workouts.isEmpty)
-                  const Text('No exercise sessions found.',
+                  Text('No exercise sessions found.',
                       style: TextStyle(color: AppColors.muted)),
                 for (final w in svc.workouts)
                   Padding(
@@ -140,13 +140,13 @@ class HealthConnectScreen extends StatelessWidget {
                               children: [
                                 Text(w.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                                 Text('${w.start.day}/${w.start.month}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: AppColors.muted, fontSize: 12)),
                               ],
                             ),
                           ),
                           Text('${w.minutes} min${w.kcal != null ? '  |  ${w.kcal} kcal' : ''}',
-                              style: const TextStyle(color: AppColors.muted)),
+                              style: TextStyle(color: AppColors.muted)),
                         ],
                       ),
                     ),
@@ -158,9 +158,9 @@ class HealthConnectScreen extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: svc.disconnect,
-                  child: const Text('Disconnect', style: TextStyle(color: AppColors.danger)),
+                  child: Text('Disconnect', style: TextStyle(color: AppColors.danger)),
                 ),
-                const Text(
+                Text(
                   'To remove Healthy\'s access completely, open Health Connect on your phone and change app permissions.',
                   style: TextStyle(color: AppColors.muted, fontSize: 11),
                 ),

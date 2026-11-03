@@ -204,7 +204,7 @@ class _VoiceReviewState extends State<_VoiceReview> {
         return _foodBody();
       case VoiceKind.none:
         return [
-          const Text(
+          Text(
             'We could not find a food, water or weight in that. Fix the text above, or go back and try again.',
             style: TextStyle(color: AppColors.muted, height: 1.4),
           ),
@@ -224,10 +224,10 @@ class _VoiceReviewState extends State<_VoiceReview> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Not in our food list:',
+              Text('Not in our food list:',
                   style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.warnInk)),
               const SizedBox(height: 4),
-              Text(_unmatched.join(', '), style: const TextStyle(color: AppColors.warnInk)),
+              Text(_unmatched.join(', '), style: TextStyle(color: AppColors.warnInk)),
               const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: _estimating ? null : _estimate,
@@ -242,7 +242,7 @@ class _VoiceReviewState extends State<_VoiceReview> {
       ],
       if (_note != null) ...[
         const SizedBox(height: 8),
-        Text(_note!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+        Text(_note!, style: TextStyle(color: AppColors.danger, fontSize: 12)),
       ],
       if (_items.isNotEmpty) ...[
         const SizedBox(height: 12),
@@ -260,7 +260,7 @@ class _VoiceReviewState extends State<_VoiceReview> {
         const SizedBox(height: 12),
         Text('About ${_totalKcal.round()} kcal in total',
             style: const TextStyle(fontWeight: FontWeight.w700)),
-        const Text('Home-cooked portions vary, so these numbers are approximate.',
+        Text('Home-cooked portions vary, so these numbers are approximate.',
             style: TextStyle(color: AppColors.muted, fontSize: 12)),
         const SizedBox(height: 12),
         FilledButton(onPressed: _saveFood, child: const Text('Add to diary')),
@@ -284,7 +284,7 @@ class _VoiceReviewState extends State<_VoiceReview> {
                   Text(it.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                   Text(
                     '${it.serving}  |  ${(it.kcal * it.qty).round()} kcal${it.estimated ? '  |  AI estimate' : ''}',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                    style: TextStyle(color: AppColors.muted, fontSize: 12),
                   ),
                 ],
               ),

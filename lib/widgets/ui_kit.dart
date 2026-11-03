@@ -71,7 +71,7 @@ class EmptyState extends StatelessWidget {
             const SizedBox(height: 6),
             Text(message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.muted)),
+                style: TextStyle(color: AppColors.muted)),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 18),
               GradientButton(label: actionLabel!, onPressed: onAction, expand: false),
@@ -101,7 +101,7 @@ class ErrorCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: AppColors.danger, size: 34),
+              Icon(Icons.error_outline, color: AppColors.danger, size: 34),
               const SizedBox(height: 10),
               Text(message,
                   textAlign: TextAlign.center,

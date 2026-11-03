@@ -109,7 +109,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const Text('Welcome',
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Tell us a little about you and we will set your daily calorie and protein targets.',
                 style: TextStyle(color: AppColors.muted, height: 1.4),
               ),
@@ -189,7 +189,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'These are estimates for healthy adults (18+), not medical advice. If you have a medical condition, check with your doctor first.',
               style: TextStyle(fontSize: 12, color: AppColors.muted, height: 1.4),
             ),

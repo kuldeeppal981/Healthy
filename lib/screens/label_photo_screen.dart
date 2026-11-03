@@ -60,7 +60,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
        child: Padding(
         padding: const EdgeInsets.all(20),
         child: _busy
-            ? const Center(
+            ? Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -83,7 +83,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'You will see allergy warnings and health notes, and can add it to your diary. Both parts in one photo works best. Uses 1 of your daily AI requests.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppColors.muted),
@@ -95,7 +95,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
                       borderColor: AppColors.dangerBg,
                       child: Text(_error!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
+                          style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w600)),
                     ),
                   ],
                   const SizedBox(height: 24),
@@ -119,7 +119,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
                     label: const Text('Scan barcode instead'),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'AI can misread words. Always check the real label if you have a serious allergy.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppColors.muted, fontSize: 12),

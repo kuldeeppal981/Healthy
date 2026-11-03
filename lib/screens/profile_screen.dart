@@ -46,7 +46,7 @@ class ProfileScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -184,7 +184,7 @@ class ProfileScreen extends StatelessWidget {
                       if (n > 0)
                         Badge(label: Text('$n'), child: const SizedBox(width: 8, height: 8)),
                       const SizedBox(width: 8),
-                      const Icon(Icons.chevron_right, color: AppColors.muted),
+                      Icon(Icons.chevron_right, color: AppColors.muted),
                     ],
                   );
                 },
@@ -340,7 +340,7 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.primary)),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+            Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
           ],
         ),
       ),
@@ -375,7 +375,7 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Current weight',
+                    Text('Current weight',
                         style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     Text('${p.weightKg.toStringAsFixed(1)} kg',
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
@@ -394,7 +394,7 @@ class ProfileScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('BMI',
+                  Text('BMI',
                       style: TextStyle(fontSize: 13, color: AppColors.muted)),
                   Text(bmi.toStringAsFixed(1),
                       style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
@@ -405,7 +405,7 @@ class ProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(bmiLabel(bmi),
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 12,
                             color: AppColors.safe,
                             fontWeight: FontWeight.w700)),
@@ -421,7 +421,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '${p.heightCm.round()} cm  |  ${p.age} yrs  |  ${goalLabels[p.goal] ?? ''}',
-            style: const TextStyle(fontSize: 14, color: AppColors.muted),
+            style: TextStyle(fontSize: 14, color: AppColors.muted),
           ),
           const SizedBox(height: 14),
           GradientButton(

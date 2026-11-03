@@ -35,9 +35,9 @@ const accentPalettes = <AccentPalette>[
 
 /// Light, dark or follow the phone. Saved on this phone.
 ///
-/// Dark mode recolours the whole app with one colour filter (colours are
-/// inverted and the hue is turned back so green stays green). Things that
-/// must keep their real colours, like the camera view, use [undoDark].
+/// Dark mode is a real dark palette: [AppColors] returns dark values while
+/// [dark] is true (set by the app root whenever the mode or the phone's
+/// brightness changes). [undoDark] is kept for old call sites and does nothing.
 class ThemeService extends ChangeNotifier {
   ThemeService._();
   static final instance = ThemeService._();
@@ -46,7 +46,14 @@ class ThemeService extends ChangeNotifier {
 
   /// Index into [accentPalettes] (0 = green, the default).
   int accentIndex = 0;
-  AccentPalette get palette => accentPalettes[accentIndex];
+
+  /// True while the app is drawn in dark mode (set in main.dart).
+  bool dark = false;
+
+  AccentPalette get palette {
+    final p = accentPalettes[accentIndex];
+    return dark ? darkVariantOf(p) : p;
+  }
 
   Future<void> setAccent(int i) async {
     if (i < 0 || i >= accentPalettes.length) return;
@@ -93,64 +100,43 @@ class ThemeService extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Dark or light right now, from the chosen mode and the phone's setting.
+  bool resolveDark() =>
+      mode == ThemeMode.dark ||
+      (mode == ThemeMode.system &&
+          WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark);
+
   bool isDark(BuildContext context) =>
       mode == ThemeMode.dark ||
       (mode == ThemeMode.system &&
           MediaQuery.platformBrightnessOf(context) == Brightness.dark);
 
-  // out = scale * (invert then hue-rotate 180) + lift
-  static const _scale = 0.92;
-  static const _lift = 18.0;
-  static const _a = <double>[
-    // rows: R, G, B
-    0.574, -1.430, -0.144,
-    -0.426, -0.430, -0.144,
-    -0.426, -1.430, 0.856,
-  ];
+  /// Old helper from the filter-based dark mode. Colours are real now, so
+  /// this just returns [child].
+  static Widget undoDark(BuildContext context, Widget child) => child;
+}
 
-  static List<double> get _darkMatrix => [
-        _a[0] * _scale, _a[1] * _scale, _a[2] * _scale, 0, 255 * _scale + _lift,
-        _a[3] * _scale, _a[4] * _scale, _a[5] * _scale, 0, 255 * _scale + _lift,
-        _a[6] * _scale, _a[7] * _scale, _a[8] * _scale, 0, 255 * _scale + _lift,
-        0, 0, 0, 1, 0,
-      ];
+const _darkBg = Color(0xFF0D110E);
+const _darkCard = Color(0xFF151A17);
+const _darkBorder = Color(0xFF26302A);
 
-  static ColorFilter get darkFilter => ColorFilter.matrix(_darkMatrix);
-
-  /// Exact inverse of [darkFilter], to restore real colours inside dark mode.
-  static ColorFilter get restoreFilter {
-    final m = [
-      for (var r = 0; r < 3; r++)
-        for (var c = 0; c < 3; c++) _a[r * 3 + c] * _scale,
-    ];
-    final b = 255 * _scale + _lift;
-    final det = m[0] * (m[4] * m[8] - m[5] * m[7]) -
-        m[1] * (m[3] * m[8] - m[5] * m[6]) +
-        m[2] * (m[3] * m[7] - m[4] * m[6]);
-    final inv = [
-      (m[4] * m[8] - m[5] * m[7]) / det,
-      (m[2] * m[7] - m[1] * m[8]) / det,
-      (m[1] * m[5] - m[2] * m[4]) / det,
-      (m[5] * m[6] - m[3] * m[8]) / det,
-      (m[0] * m[8] - m[2] * m[6]) / det,
-      (m[2] * m[3] - m[0] * m[5]) / det,
-      (m[3] * m[7] - m[4] * m[6]) / det,
-      (m[1] * m[6] - m[0] * m[7]) / det,
-      (m[0] * m[4] - m[1] * m[3]) / det,
-    ];
-    // x = inv * (out - b)  =>  offset = -inv * [b, b, b]
-    double off(int r) => -(inv[r * 3] + inv[r * 3 + 1] + inv[r * 3 + 2]) * b;
-    return ColorFilter.matrix([
-      inv[0], inv[1], inv[2], 0, off(0),
-      inv[3], inv[4], inv[5], 0, off(1),
-      inv[6], inv[7], inv[8], 0, off(2),
-      0, 0, 0, 1, 0,
-    ]);
-  }
-
-  /// Wrap content that must show its real colours (camera, photos).
-  static Widget undoDark(BuildContext context, Widget child) {
-    if (!instance.isDark(context)) return child;
-    return ColorFiltered(colorFilter: restoreFilter, child: child);
-  }
+/// The dark version of an accent palette: dark backgrounds, softened tints.
+/// The Black accent turns into a light grey so it can be seen on dark.
+AccentPalette darkVariantOf(AccentPalette p) {
+  final isBlack = p.name == 'Black';
+  final primary = isBlack ? const Color(0xFF8B93A1) : p.primary;
+  final light = isBlack ? const Color(0xFFA7AEBB) : p.light;
+  final deep = isBlack ? const Color(0xFF6B7280) : p.deep;
+  return AccentPalette(
+    p.name,
+    primary,
+    light,
+    deep,
+    isBlack ? const Color(0xFFC7CCD6) : light,
+    Color.alphaBlend(primary.withOpacity(0.18), _darkCard),
+    isBlack ? const Color(0xFFE5E7EB) : light,
+    Color.alphaBlend(primary.withOpacity(0.12), _darkBg),
+    _darkBg,
+    _darkBorder,
+  );
 }

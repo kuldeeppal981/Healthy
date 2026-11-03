@@ -84,7 +84,7 @@ class _VoiceCaptureState extends State<_VoiceCapture> {
           Text(widget.hint,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          const Text('Example: "2 roti, ek katori dal aur ek glass doodh"',
+          Text('Example: "2 roti, ek katori dal aur ek glass doodh"',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.muted, fontSize: 12)),
           const SizedBox(height: 12),
@@ -126,13 +126,13 @@ class _VoiceCaptureState extends State<_VoiceCapture> {
           ValueListenableBuilder<bool>(
             valueListenable: _voice.listening,
             builder: (_, on, __) => Text(on ? 'Listening...' : 'Tap the mic to speak',
-                style: const TextStyle(color: AppColors.muted)),
+                style: TextStyle(color: AppColors.muted)),
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
             Text(_error!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+                style: TextStyle(color: AppColors.danger, fontSize: 12)),
           ],
           const SizedBox(height: 12),
           TextField(

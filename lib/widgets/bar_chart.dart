@@ -85,7 +85,7 @@ class BarChartCard extends StatelessWidget {
           ),
           if (note != null) ...[
             const SizedBox(height: 8),
-            Text(note!, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            Text(note!, style: TextStyle(fontSize: 12, color: AppColors.muted)),
           ],
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/body_paths.dart';
 import '../data/exercise_library.dart';
 import '../services/muscle_stats.dart';
+import '../services/theme_service.dart';
 import '../theme.dart';
 import 'muscle_art.dart';
 import 'ui_kit.dart';
@@ -17,12 +18,12 @@ String muscleStatus(int sets, int total) {
   return 'trained';
 }
 
-const _statusColors = <String, Color>{
-  'none': Color(0xFFD5DADF),
-  'attention': Color(0xFFF59E0B),
-  'trained': Color(0xFF22C55E),
-  'high': Color(0xFF2563EB),
-};
+Map<String, Color> get _statusColors => {
+      'none': ThemeService.instance.dark ? const Color(0xFF3A443F) : const Color(0xFFD5DADF),
+      'attention': const Color(0xFFF59E0B),
+      'trained': const Color(0xFF22C55E),
+      'high': const Color(0xFF2563EB),
+    };
 
 const _statusNames = <String, String>{
   'none': 'Not trained',
@@ -111,13 +112,14 @@ class _BodyPainter extends CustomPainter {
     canvas.scale(size.width / 724, size.height / 1448);
     if (!front) canvas.translate(-724, 0);
     final shapes = front ? _frontShapes : _backShapes;
-    const base = Color(0xFFE3E8EC);
-    const hair = Color(0xFFCBD2D9);
+    final dark = ThemeService.instance.dark;
+    final base = dark ? const Color(0xFF29322D) : const Color(0xFFE3E8EC);
+    final hair = dark ? const Color(0xFF39443E) : const Color(0xFFCBD2D9);
     final edge = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4
       ..strokeJoin = StrokeJoin.round
-      ..color = Colors.white;
+      ..color = AppColors.card;
     for (final sh in shapes) {
       final color = sh.group != null
           ? (colors[sh.group] ?? _statusColors['none']!)
@@ -232,7 +234,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
                     child: Icon(Icons.accessibility_new, color: AppColors.primary),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -258,7 +260,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
                           selected: sel,
                           onPick: (m) => setState(() => _sel = m),
                         ),
-                        const Text('Front',
+                        Text('Front',
                             style: TextStyle(fontSize: 12, color: AppColors.muted)),
                       ],
                     ),
@@ -273,7 +275,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
                           selected: sel,
                           onPick: (m) => setState(() => _sel = m),
                         ),
-                        const Text('Back',
+                        Text('Back',
                             style: TextStyle(fontSize: 12, color: AppColors.muted)),
                       ],
                     ),
@@ -297,7 +299,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
                         ),
                         const SizedBox(width: 6),
                         Text(_statusNames[k]!,
-                            style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                            style: TextStyle(fontSize: 12, color: AppColors.muted)),
                       ],
                     ),
                 ],
@@ -326,7 +328,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
               Container(
                 width: 42,
                 height: 42,
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                decoration: BoxDecoration(color: AppColors.card, shape: BoxShape.circle),
                 child: Icon(Icons.lightbulb_outline, color: AppColors.primary),
               ),
               const SizedBox(width: 12),
@@ -393,7 +395,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
                         fontWeight: FontWeight.w800,
                         color: status == 'none' ? AppColors.muted : AppColors.primary)),
                 Text('$pct% of total sets',
-                    style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                    style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 const SizedBox(height: 6),
                 GradientBar(
                   value: total == 0 ? 0.0 : v / total,
@@ -402,7 +404,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
                 ),
                 const SizedBox(height: 6),
                 Text(_statusAdvice[status]!,
-                    style: const TextStyle(fontSize: 12, color: AppColors.muted, height: 1.3)),
+                    style: TextStyle(fontSize: 12, color: AppColors.muted, height: 1.3)),
               ],
             ),
           ),
@@ -444,7 +446,7 @@ class _MuscleActivitySectionState extends State<MuscleActivitySection> {
               width: 82,
               child: Text('$v sets  $pct%',
                   textAlign: TextAlign.right,
-                  style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                  style: TextStyle(color: AppColors.muted, fontSize: 12)),
             ),
           ],
         ),
@@ -483,7 +485,7 @@ class MuscleStatTiles extends StatelessWidget {
                     child: Text(value,
                         style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                   ),
-                  Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+                  Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
                 ],
               ),
             ),

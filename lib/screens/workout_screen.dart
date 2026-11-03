@@ -183,7 +183,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   w.enabled
                       ? 'Rings at ${w.time.format(context)} on workout days'
                       : 'Off',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
               ],
             ),
@@ -397,13 +397,13 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                                 Text(w.title,
                                     style: const TextStyle(fontWeight: FontWeight.w700)),
                                 Text('${w.at.day} ${_months[w.at.month - 1]}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 12, color: AppColors.muted)),
                               ],
                             ),
                           ),
                           Text(w.sets == 0 ? 'Synced' : '${w.sets} sets  |  ${w.volumeKg.round()} kg',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 13, color: AppColors.muted)),
                         ],
                       ),
@@ -456,7 +456,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 state.isCustomPlan(_weekday)
                     ? 'Your own plan'
                     : (plan.rest ? 'Recover well' : 'Build stronger today'),
-                style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                style: TextStyle(color: AppColors.muted, fontSize: 13),
               ),
             ],
           ),
@@ -694,7 +694,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                               style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w700)),
                           Text(plan.exercises[i].target,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 13, color: AppColors.muted)),
                         ],
                       ),
@@ -807,7 +807,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   children: [
                     Text('${state.workoutsThisWeek} / $goal',
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
-                    const Text('Workouts completed',
+                    Text('Workouts completed',
                         style: TextStyle(color: AppColors.muted, fontSize: 14)),
                   ],
                 ),
@@ -820,7 +820,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   children: [
                     Text('${kg.round()} kg',
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
-                    const Text('Total lifted',
+                    Text('Total lifted',
                         style: TextStyle(color: AppColors.muted, fontSize: 14)),
                   ],
                 ),
@@ -846,7 +846,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             Row(
               children: [
                 if (allDone)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(right: 8),
                     child: Icon(Icons.check_circle, color: AppColors.safe),
                   ),
@@ -857,7 +857,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                       Text(ex.name,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                       Text(ex.target,
-                          style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                          style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     ],
                   ),
                 ),

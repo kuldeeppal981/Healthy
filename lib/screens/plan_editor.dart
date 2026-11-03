@@ -111,7 +111,7 @@ class _PlanEditorState extends State<PlanEditor> {
                   Text('Edit ${widget.dayName}',
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 4),
-                  const Text('Build the workout you actually do on this day.',
+                  Text('Build the workout you actually do on this day.',
                       style: TextStyle(color: AppColors.muted)),
                   const SizedBox(height: 16),
                   TextField(
@@ -137,7 +137,7 @@ class _PlanEditorState extends State<PlanEditor> {
                   ],
                   if (_error != null) ...[
                     const SizedBox(height: 12),
-                    Text(_error!, style: const TextStyle(color: AppColors.danger)),
+                    Text(_error!, style: TextStyle(color: AppColors.danger)),
                   ],
                   if (widget.isCustom)
                     TextButton(

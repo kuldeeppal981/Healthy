@@ -43,7 +43,7 @@ class StepsCard extends StatelessWidget {
                 if (!svc.granted)
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text('Count your steps automatically with your phone sensor.',
                             style: TextStyle(color: AppColors.muted, height: 1.3)),
                       ),
@@ -61,7 +61,7 @@ class StepsCard extends StatelessWidget {
                   GradientBar(value: pct, height: 10),
                   const SizedBox(height: 6),
                   Text('About ${StepService.kcalFor(svc.steps, weight)} kcal burned walking',
-                      style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                      style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 ],
               ],
             ),
@@ -127,17 +127,17 @@ class StepsScreen extends StatelessWidget {
                 Text('${svc.steps}',
                     style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w800)),
                 Text('of ${svc.goal} steps today',
-                    style: const TextStyle(color: AppColors.muted)),
+                    style: TextStyle(color: AppColors.muted)),
                 const SizedBox(height: 4),
                 Text('About ${StepService.kcalFor(svc.steps, weight)} kcal burned walking',
-                    style: const TextStyle(color: AppColors.muted)),
+                    style: TextStyle(color: AppColors.muted)),
                 TextButton(
                   onPressed: () => _editGoal(context, svc),
                   child: const Align(
                       alignment: Alignment.centerLeft, child: Text('Change goal')),
                 ),
                 if (svc.unavailable)
-                  const Text('This phone does not have a step sensor.',
+                  Text('This phone does not have a step sensor.',
                       style: TextStyle(color: AppColors.danger)),
                 const SizedBox(height: 16),
                 const Text('Last 7 days',
@@ -167,7 +167,7 @@ class StepsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(_days[e.key.weekday - 1],
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       fontSize: 11, color: AppColors.muted)),
                             ],
                           ),
@@ -176,7 +176,7 @@ class StepsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Steps come from your phone sensor and are counted from the first time the app sees the sensor each day, so open the app in the morning for the most accurate total. Calories are an estimate.',
                   style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4),
                 ),

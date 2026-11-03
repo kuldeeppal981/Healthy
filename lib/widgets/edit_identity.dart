@@ -66,7 +66,7 @@ Future<void> showEditIdentity(BuildContext context, AppState s) {
             ),
           ),
           const SizedBox(height: 6),
-          const Text('The photo stays on this phone.',
+          Text('The photo stays on this phone.',
               style: TextStyle(fontSize: 12, color: AppColors.muted)),
           const SizedBox(height: 16),
           TextField(

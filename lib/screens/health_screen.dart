@@ -21,7 +21,7 @@ class HealthScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text(
+          Text(
             'Switch on what applies to you. Scanned products will show a warning when they are high in sugar, salt or bad fats for you.',
             style: TextStyle(color: AppColors.muted, height: 1.4),
           ),
@@ -30,7 +30,7 @@ class HealthScreen extends StatelessWidget {
             color: AppColors.warnBg,
             borderColor: AppColors.warnBg,
             radius: 14,
-            child: const Text(
+            child: Text(
               'This is general guidance, not medical advice. Follow what your doctor or dietitian tells you.',
               style: TextStyle(color: AppColors.warnInk, fontSize: 13, height: 1.4),
             ),
@@ -51,7 +51,7 @@ class HealthScreen extends StatelessWidget {
                           Text(c.label,
                               style: const TextStyle(fontWeight: FontWeight.w700)),
                           Text(c.summary,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.muted, fontSize: 12)),
                         ],
                       ),

@@ -57,7 +57,7 @@ class _ReportScreenState extends State<ReportScreen> {
                     fontWeight: FontWeight.w800,
                     color: color ?? AppColors.primary)),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12)),
           ],
         ),
       );

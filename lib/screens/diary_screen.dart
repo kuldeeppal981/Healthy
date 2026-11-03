@@ -202,7 +202,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+        Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
         const SizedBox(height: 2),
         Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
       ],
@@ -231,7 +231,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                       Text(mealLabels[meal]!,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                       if (items.isEmpty)
-                        const Text('Nothing added yet',
+                        Text('Nothing added yet',
                             style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     ],
                   ),
@@ -255,7 +255,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 16),
                   color: AppColors.dangerBg,
-                  child: const Icon(Icons.delete_outline, color: AppColors.danger),
+                  child: Icon(Icons.delete_outline, color: AppColors.danger),
                 ),
                 onDismissed: (_) => s.removeEntry(e.id),
                 child: Padding(
@@ -270,10 +270,10 @@ class _DiaryScreenState extends State<DiaryScreen> {
                         child: Text(e.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                            style: TextStyle(fontSize: 13, color: AppColors.muted)),
                       ),
                       Text('${e.kcal.round()} kcal',
-                          style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                          style: TextStyle(fontSize: 13, color: AppColors.muted)),
                     ],
                   ),
                 ),

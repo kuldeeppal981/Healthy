@@ -18,23 +18,35 @@ class AppColors {
   static Color get chipBg => _p.chipBg;
   static Color get chipInk => _p.chipInk;
 
-  // Fixed colours (never change with the accent).
-  static const card = Color(0xFFFFFFFF);
-  static const ink = Color(0xFF0F1222);
-  static const muted = Color(0xFF5C6A63);
+  // Surface and text colours: they switch between the light and dark look.
+  static bool get _d => ThemeService.instance.dark;
+  static Color get card => _d ? const Color(0xFF151A17) : const Color(0xFFFFFFFF);
+  static Color get ink => _d ? const Color(0xFFF1F5F2) : const Color(0xFF0F1222);
+  static Color get muted => _d ? const Color(0xFF9BA9A1) : const Color(0xFF5C6A63);
+  static Color get danger => _d ? const Color(0xFFFF8A80) : const Color(0xFFB3261E);
+  static Color get dangerBg => _d ? const Color(0xFF3B1B19) : const Color(0xFFFCEBE9);
+  static Color get warnBg => _d ? const Color(0xFF33280D) : const Color(0xFFFFF1D6);
+  static Color get warnInk => _d ? const Color(0xFFF5D68A) : const Color(0xFF6B4700);
+  static Color get safe => _d ? const Color(0xFF5BD68C) : const Color(0xFF1B7F4B);
+  static Color get safeBg => _d ? const Color(0xFF11301F) : const Color(0xFFE3F4EA);
+
+  /// Page colour the soft top gradient fades into (white in light mode).
+  static Color get page => _d ? const Color(0xFF0D110E) : const Color(0xFFFFFFFF);
+
+  /// Text and icons placed on the accent colour (buttons, gradients).
+  static const onAccent = Color(0xFFFFFFFF);
+
+  // Fixed colours (same in light and dark).
   static const ring = Color(0xFFFF5C35);
+  static const dangerSolid = Color(0xFFB3261E);
   static const blue = Color(0xFF1E88F0);
-  static const danger = Color(0xFFB3261E);
-  static const dangerBg = Color(0xFFFCEBE9);
-  static const warnBg = Color(0xFFFFF1D6);
-  static const warnInk = Color(0xFF6B4700);
-  static const safe = Color(0xFF1B7F4B);
-  static const safeBg = Color(0xFFE3F4EA);
 }
 
 ThemeData buildTheme() {
+  final dark = ThemeService.instance.dark;
   final scheme = ColorScheme.fromSeed(
     seedColor: AppColors.primary,
+    brightness: dark ? Brightness.dark : Brightness.light,
     primary: AppColors.primary,
     surface: AppColors.card,
   );
@@ -42,6 +54,7 @@ ThemeData buildTheme() {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: AppColors.bg,
+    canvasColor: AppColors.card,
   );
   return base.copyWith(
     pageTransitionsTheme: const PageTransitionsTheme(
@@ -68,7 +81,7 @@ ThemeData buildTheme() {
       style: FilledButton.styleFrom(
         minimumSize: const Size.fromHeight(52),
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.onAccent,
         textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -224,7 +237,7 @@ class AppBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.bgTop, Colors.white, Colors.white],
+          colors: [AppColors.bgTop, AppColors.page, AppColors.page],
           stops: [0.0, 0.28, 1.0],
         ),
       ),
@@ -302,11 +315,11 @@ class MenuRow extends StatelessWidget {
                   Text(subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+                      style: TextStyle(fontSize: 13, color: AppColors.muted)),
                 ],
               ),
             ),
-            trailing ?? const Icon(Icons.chevron_right, color: AppColors.muted),
+            trailing ?? Icon(Icons.chevron_right, color: AppColors.muted),
           ],
         ),
       ),

@@ -100,7 +100,7 @@ class _AddFoodFormState extends State<_AddFoodForm> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('1 serving = ${f.serving}',
-                    style: const TextStyle(color: AppColors.muted)),
+                    style: TextStyle(color: AppColors.muted)),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -232,7 +232,7 @@ class _AddFoodFormState extends State<_AddFoodForm> {
             SizedBox(
               height: 300,
               child: foods.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('No match. Use the Custom tab to add it yourself.',
                           style: TextStyle(color: AppColors.muted)))
                   : ListView.builder(
@@ -251,7 +251,7 @@ class _AddFoodFormState extends State<_AddFoodForm> {
                       },
                     ),
             ),
-            const Text(
+            Text(
               'Values are approximate for a typical home portion.',
               style: TextStyle(fontSize: 12, color: AppColors.muted),
             ),

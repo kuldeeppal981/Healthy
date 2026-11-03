@@ -54,8 +54,9 @@ Theme: fresh green on white (changed from purple), font Outfit. User can pick a 
 - **Buttons in a Row:** `buildTheme()` gives Filled/Outlined buttons `minimumSize: Size.fromHeight(52)`
   (infinite width). Inside a Row this breaks layout (text rendered vertically). Always pass
   `styleFrom(minimumSize: Size(0, 40))` or wrap in a bounded widget.
-- **Colors:** accent colours in `AppColors` (primary, primaryLight, primaryDeep, link, chipBg, chipInk, bg, bgTop, border, track) are now GETTERS (theme colour picker, `ThemeService.palette`), so they can NOT be used in `const` widgets or `const` lists; drop the `const` keyword. The other colours (ink, muted, card, danger, safe, ring...) are still `static const`. Dark mode is a global ColorFilter in `main.dart`
-  (invert + hue rotate). Wrap anything that must keep real colors (camera) in `ThemeService.undoDark`.
+- **Colors:** accent colours in `AppColors` (primary, primaryLight, primaryDeep, link, chipBg, chipInk, bg, bgTop, border, track) are now GETTERS (theme colour picker, `ThemeService.palette`), so they can NOT be used in `const` widgets or `const` lists; drop the `const` keyword. Surface/text colours (ink, muted, card, ...) are getters too. Still `static const`: ring, blue, onAccent, dangerSolid. Dark mode is a
+  REAL dark palette (`ThemeService.dark` + `darkVariantOf`), not a filter; `undoDark` is now a no-op helper.
+  Never hardcode white/black or `Color(0xFF...)` for surfaces or text; use `AppColors`.
 - **Do not add packages that need newer JVM targets or ML Kit** without testing: they broke the
   build before (flutter_timezone, google_mlkit text recognition). The time zone is derived from the
   phone offset in `reminder_service`.

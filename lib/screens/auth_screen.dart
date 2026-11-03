@@ -227,7 +227,7 @@ class _AuthScreenState extends State<AuthScreen> {
             Text(title,
                 style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            Text(subtitle, style: const TextStyle(color: AppColors.muted, height: 1.4)),
+            Text(subtitle, style: TextStyle(color: AppColors.muted, height: 1.4)),
             const SizedBox(height: 20),
             AppCard(
               child: Column(
@@ -350,7 +350,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 onPressed: (_busy || _cooldown > 0) ? null : _resend,
                 child: Text(_cooldown > 0 ? 'Resend code in ${_cooldown}s' : 'Resend code'),
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
                   'No email? Check spam. If you already have an account, go back and sign in instead.',
@@ -376,7 +376,7 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _orDivider() => const Row(
+  Widget _orDivider() => Row(
         children: [
           Expanded(child: Divider()),
           Padding(

@@ -54,7 +54,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
                 Text(subtitle,
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                    style: TextStyle(color: AppColors.muted, fontSize: 13)),
               ],
             ),
           ),
@@ -103,7 +103,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     children: [
                       Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -144,7 +144,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Reminders are saved on this phone. Android may deliver them a few minutes late to save battery.',
                   style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4),
                 ),

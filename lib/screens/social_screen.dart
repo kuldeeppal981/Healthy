@@ -185,7 +185,7 @@ class _TurnOnState extends State<_TurnOn> {
         const Text('Compete with friends',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Add friends with a code, see who walks the most, and join a 30-day challenge together.',
           style: TextStyle(color: AppColors.muted, height: 1.4),
         ),
@@ -207,7 +207,7 @@ class _TurnOnState extends State<_TurnOn> {
           decoration: const InputDecoration(labelText: 'Name your friends will see'),
         ),
         if (_error != null)
-          Text(_error!, style: const TextStyle(color: AppColors.danger)),
+          Text(_error!, style: TextStyle(color: AppColors.danger)),
         const SizedBox(height: 12),
         FilledButton(
           onPressed: _busy ? null : _go,
@@ -372,7 +372,7 @@ class _FeedTabState extends State<_FeedTab> {
                       Text(p.isMe ? 'You' : p.name,
                           style: const TextStyle(fontWeight: FontWeight.w700)),
                       Text(_ago(p.at),
-                          style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                          style: TextStyle(color: AppColors.muted, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -389,7 +389,7 @@ class _FeedTabState extends State<_FeedTab> {
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
             if (p.body != null && p.body!.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(p.body!, style: const TextStyle(color: AppColors.muted)),
+              Text(p.body!, style: TextStyle(color: AppColors.muted)),
             ],
             const SizedBox(height: 10),
             Wrap(
@@ -604,7 +604,7 @@ class _FriendsTabState extends State<_FriendsTab> {
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   TextSpan(
                       text: p.tag.isEmpty ? '' : '  #${p.tag}',
-                      style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                      style: TextStyle(color: AppColors.muted, fontSize: 12)),
                 ])),
               ),
               FilledButton(
@@ -668,7 +668,7 @@ class _FriendsTabState extends State<_FriendsTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Your friend code',
+              Text('Your friend code',
                   style: TextStyle(color: AppColors.muted, fontSize: 12)),
               Text(svc.code ?? '',
                   style: const TextStyle(
@@ -728,7 +728,7 @@ class _FriendsTabState extends State<_FriendsTab> {
         if (_results != null) ...[
           const SizedBox(height: 10),
           if (_results!.isEmpty)
-            const Text('No one found with that name.',
+            Text('No one found with that name.',
                 style: TextStyle(color: AppColors.muted)),
           for (final p in _results!) _personRow(p),
         ],
@@ -763,7 +763,7 @@ class _FriendsTabState extends State<_FriendsTab> {
         if (_msg != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(_msg!, style: const TextStyle(color: AppColors.muted)),
+            child: Text(_msg!, style: TextStyle(color: AppColors.muted)),
           ),
         if (svc.requests.isNotEmpty) ...[
           const SizedBox(height: 20),
@@ -833,7 +833,7 @@ class _FriendsTabState extends State<_FriendsTab> {
         ),
         TextButton(
           onPressed: _turnOff,
-          child: const Text('Turn off friends and delete my shared data',
+          child: Text('Turn off friends and delete my shared data',
               style: TextStyle(color: AppColors.danger)),
         ),
       ],
@@ -903,7 +903,7 @@ class _ChallengesTabState extends State<_ChallengesTab> {
                     'workouts' => 'Most days with a workout wins.',
                     _ => 'Each day: 1 point for logging food, 1 for a workout, 1 for your step goal.',
                   },
-                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -981,7 +981,7 @@ class _ChallengesTabState extends State<_ChallengesTab> {
         if (_msg != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(_msg!, style: const TextStyle(color: AppColors.muted)),
+            child: Text(_msg!, style: TextStyle(color: AppColors.muted)),
           ),
         const SizedBox(height: 20),
         if (svc.challenges.isEmpty)
@@ -1009,7 +1009,7 @@ class _ChallengesTabState extends State<_ChallengesTab> {
                           Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                           Text(
                             '${c.kindLabel}  |  ${day.isAfter(c.end) ? 'Finished' : day.isBefore(c.start) ? 'Not started' : '${c.end.difference(day).inDays + 1} days left'}',
-                            style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                            style: TextStyle(color: AppColors.muted, fontSize: 12),
                           ),
                         ],
                       ),
@@ -1124,7 +1124,7 @@ class _ChallengeScreenState extends State<ChallengeScreen> {
                     await SocialService.instance.leaveChallenge(c.id);
                     if (context.mounted) Navigator.pop(context);
                   },
-                  child: const Text('Leave this challenge',
+                  child: Text('Leave this challenge',
                       style: TextStyle(color: AppColors.danger)),
                 ),
               ],

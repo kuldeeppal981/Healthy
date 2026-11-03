@@ -53,7 +53,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
               child: const Icon(Icons.verified_user_outlined, color: Colors.white, size: 28),
             ),
             const SizedBox(width: 14),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -196,7 +196,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
+        color: AppColors.card.withOpacity(0.7),
         borderRadius: BorderRadius.circular(34),
         border: Border.all(color: AppColors.border),
       ),
@@ -231,7 +231,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
                 child: const Icon(Icons.priority_high, color: Colors.white, size: 22),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -248,7 +248,7 @@ class _AllergyScreenState extends State<AllergyScreen> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(30),
             ),
             child: Row(
@@ -283,19 +283,19 @@ class _AllergyScreenState extends State<AllergyScreen> {
             ),
           ),
           if (chosen.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 8),
               child: Text('Pick at least one allergy above first.',
                   style: TextStyle(fontSize: 12, color: AppColors.muted)),
             )
           else if (common == null)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 8),
               child: Text('Your allergies have different levels. Tap one to set them all.',
                   style: TextStyle(fontSize: 12, color: AppColors.muted)),
             )
           else if (common == 'severe')
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 8),
               child: Text(
                 'With a severe allergy, also avoid products that say "may contain".',
@@ -361,7 +361,7 @@ class _AllergenTile extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                          border: Border.all(color: AppColors.card, width: 2),
                         ),
                         child: const Icon(Icons.check, size: 13, color: Colors.white),
                       ),

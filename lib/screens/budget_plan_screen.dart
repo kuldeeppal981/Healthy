@@ -175,12 +175,12 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Plan for your goal',
+                Text('Plan for your goal',
                     style: TextStyle(fontSize: 12, color: AppColors.muted)),
                 Text(goal,
                     style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                 Text('${s.kcalTarget} kcal and ${s.proteinTarget} g protein a day',
-                    style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
+                    style: TextStyle(fontSize: 12.5, color: AppColors.muted)),
               ],
             ),
           ),
@@ -306,11 +306,11 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text('Calories', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+          Text('Calories', style: TextStyle(fontSize: 12, color: AppColors.muted)),
           const SizedBox(height: 4),
           GradientBar(value: kcalFrac),
           const SizedBox(height: 10),
-          const Text('Budget used', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+          Text('Budget used', style: TextStyle(fontSize: 12, color: AppColors.muted)),
           const SizedBox(height: 4),
           GradientBar(
             value: costFrac,
@@ -327,7 +327,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Text(w,
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.warnInk, height: 1.35)),
+                  style: TextStyle(fontSize: 12.5, color: AppColors.warnInk, height: 1.35)),
             ),
           ],
         ],
@@ -343,7 +343,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
           const SizedBox(height: 2),
           Text(small,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 11, color: AppColors.muted)),
+              style: TextStyle(fontSize: 11, color: AppColors.muted)),
         ],
       ),
     );
@@ -360,12 +360,12 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
               const Spacer(),
               Text('${m.kcal.round()} kcal  |  Rs ${m.cost.round()}',
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
+                  style: TextStyle(fontSize: 12.5, color: AppColors.muted)),
             ],
           ),
           const SizedBox(height: 8),
           if (m.items.isEmpty)
-            const Text('No safe food found for this meal. Try another food type.',
+            Text('No safe food found for this meal. Try another food type.',
                 style: TextStyle(fontSize: 13, color: AppColors.muted)),
           for (final it in m.items)
             Padding(
@@ -384,12 +384,12 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
                         Text(it.food.name,
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                         Text(it.servingText,
-                            style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                            style: TextStyle(fontSize: 12, color: AppColors.muted)),
                       ],
                     ),
                   ),
                   Text('${it.kcal.round()} kcal',
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
+                      style: TextStyle(fontSize: 12.5, color: AppColors.muted)),
                 ],
               ),
             ),
@@ -449,9 +449,9 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(allergyLine,
-              style: const TextStyle(fontSize: 12.5, color: AppColors.muted, height: 1.4)),
+              style: TextStyle(fontSize: 12.5, color: AppColors.muted, height: 1.4)),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Prices are rough home-cooking costs and change by city and season. '
             'This is general guidance, not medical advice. If you have a health '
             'condition, check your diet with a doctor or dietitian.',

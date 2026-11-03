@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
+
 /// Smooth line chart with a soft fill, guide lines and min/max labels
 /// (for example weight over time).
 class Sparkline extends StatelessWidget {
@@ -121,7 +123,7 @@ class _SparkPainter extends CustomPainter {
     // End dot with a white ring, and labels.
     if (t > 0.98) {
       final last = pts.last;
-      canvas.drawCircle(last, 8, Paint()..color = Colors.white);
+      canvas.drawCircle(last, 8, Paint()..color = AppColors.card);
       canvas.drawCircle(last, 5.5, Paint()..color = color);
     }
     _label(canvas, maxV.toStringAsFixed(1), const Offset(padX, 0));

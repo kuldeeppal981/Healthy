@@ -46,11 +46,11 @@ class _MuscleScreenState extends State<MuscleScreen> {
               Text(
                 '${st.oldSets} sets from older workouts are not counted, because muscle data was not saved for them. '
                 'Custom exercises that are not in the library are not counted either.',
-                style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                style: TextStyle(color: AppColors.muted, fontSize: 12),
               ),
             ],
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'General guide: many people train each muscle about 10 sets a week. Not medical advice.',
               style: TextStyle(color: AppColors.muted, fontSize: 12),
             ),
