@@ -145,3 +145,9 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
 
 ## Dark mode picture fix (UNTESTED)
 Shoe, glass, hero, shaker, bowl and shield PNGs had a framed pale panel baked in, which showed as white boxes in dark mode (and the hero was purple). Replaced by painted widgets in `lib/widgets/activity_art.dart` (ShoeArt, GlassArt, DumbbellArt, ShakerArt) and removed those files. Allergy PNGs and trophy were cleaned of a faint haze. Remaining photos (dumbbell.jpg, ex1-4.jpg) still keep real colours in dark mode. A real dark theme (instead of the global colour filter) is still on the roadmap.
+
+## Analytics tab + new Muscle volume look + Allergy moved (BUILT, UNTESTED)
+- Bottom tabs now: Home, Diary, Workout, **Analytics**, Profile. The Allergy screen moved to Profile -> "Allergies" (`AllergyPage` wrapper in `allergy_screen.dart`; the tab body `AllergyScreen` is unchanged).
+- `lib/screens/analytics_screen.dart`: 7 / 30 day range. Tiles (avg kcal, days on target, workouts), bar charts for calories, protein, workouts, steps, water (`lib/widgets/bar_chart.dart`: animated rounded bars, dashed goal line, last bar strongest), a carbs/protein/fat split bar, weight line (`Sparkline`), and the muscle section. "Days on target" = 80% to 110% of the kcal goal. Averages ignore days with nothing logged.
+- Muscle volume: `lib/widgets/muscle_activity.dart` draws front and back body figures in code (no picture files), muscles coloured by status (high volume blue, trained green, needs attention orange, not trained grey), tap a muscle for details, list, balance tip. Status rule in `muscleStatus()`: share >= 25% high; under 3 sets or under 8% needs attention. `lib/services/muscle_stats.dart` computes sets, volume, workouts. `MuscleScreen` (Profile -> Muscle volume) reuses the same section.
+- The figures are stylised shapes, not anatomical art; they may need polishing after seeing them on a phone.

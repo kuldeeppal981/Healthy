@@ -383,3 +383,17 @@ class _AllergenTile extends StatelessWidget {
     );
   }
 }
+
+/// The allergy screen as its own page (opened from Profile).
+class AllergyPage extends StatelessWidget {
+  const AllergyPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(backgroundColor: Colors.transparent, title: const Text('Allergies')),
+      body: const AppBackground(child: AllergyScreen()),
+    );
+  }
+}

@@ -441,7 +441,7 @@ class _BudgetPlanScreenState extends State<BudgetPlanScreen> {
         if (allergenById(id) != null) allergenById(id)!.label,
     ];
     final allergyLine = names.isEmpty
-        ? 'You have not added allergies. Add them in the Allergy tab and this plan will skip those foods.'
+        ? 'You have not added allergies. Add them in Profile, Allergies, and this plan will skip those foods.'
         : 'Skipping foods that usually contain: ${names.join(', ')}. Recipes differ, so always check ingredients.';
     return AppCard(
       radius: 20,

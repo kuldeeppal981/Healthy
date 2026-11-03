@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../state/app_state.dart';
 import '../theme.dart';
-import 'allergy_screen.dart';
+import 'analytics_screen.dart';
 import 'diary_screen.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
@@ -13,7 +13,7 @@ import 'onboarding_screen.dart';
 import 'profile_screen.dart';
 import 'workout_screen.dart';
 
-/// Bottom navigation: Home, Allergy | Scan | Workout, Profile.
+/// Bottom navigation: Home, Diary, Workout, Analytics, Profile.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -150,7 +150,7 @@ class _AppShellState extends State<AppShell> {
       HomeScreen(onGoto: _goto),
       const DiaryScreen(),
       const WorkoutScreen(),
-      const AllergyScreen(),
+      const AnalyticsScreen(),
       const ProfileScreen(),
     ];
 
@@ -171,7 +171,7 @@ class _AppShellState extends State<AppShell> {
               _navItem(0, Icons.home_outlined, Icons.home_rounded, 'Home'),
               _navItem(1, Icons.menu_book_outlined, Icons.menu_book, 'Diary'),
               _navItem(2, Icons.fitness_center, Icons.fitness_center, 'Workout'),
-              _navItem(3, Icons.shield_outlined, Icons.shield, 'Allergy'),
+              _navItem(3, Icons.bar_chart_outlined, Icons.bar_chart_rounded, 'Analytics'),
               _navItem(4, Icons.person_outline, Icons.person, 'Profile'),
             ],
           ),

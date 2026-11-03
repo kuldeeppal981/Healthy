@@ -324,7 +324,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
         AppColors.chipInk,
         Icons.shield_outlined,
         'Your allergy profile is empty',
-        'Select your allergies in the Allergy tab to get an alert on every scan.',
+        'Select your allergies in Profile, Allergies to get an alert on every scan.',
       );
     }
     if (incomplete) {

@@ -13,6 +13,7 @@ import '../widgets/ui_kit.dart';
 import '../services/avatar_service.dart';
 import '../widgets/edit_identity.dart';
 import '../widgets/sparkline.dart';
+import 'allergy_screen.dart';
 import 'badges_screen.dart';
 import 'budget_plan_screen.dart';
 import 'coach_screen.dart';
@@ -122,6 +123,14 @@ class ProfileScreen extends StatelessWidget {
             subtitle:
                 '${a.currentStreak} day food streak  |  ${a.earnedCount} of ${a.badges.length} badges',
             onTap: () => _open(context, const BadgesScreen()),
+          ),
+          MenuRow(
+            icon: Icons.shield_outlined,
+            title: 'Allergies',
+            subtitle: s.allergies.isEmpty
+                ? 'Set your allergies, every scan is checked against them'
+                : '${s.allergies.length} allergies set, every scan is checked',
+            onTap: () => _open(context, const AllergyPage()),
           ),
           MenuRow(
             icon: Icons.workspace_premium_outlined,
