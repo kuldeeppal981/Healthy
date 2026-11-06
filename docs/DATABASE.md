@@ -58,3 +58,6 @@ Real purchases later: Google Play Billing (in_app_purchase or RevenueCat) -> an 
 
 ## Friend nudge
 `supabase/migrations/friend_nudge.sql` (user pastes in SQL editor): table `nudges` (RLS, no policies), RPC `send_nudge(p_user)` (authenticated; checks accepted friendship, 1 per friend per day, 10 per day, then `notify_push`). Returns ok / already_today / limit / not_friends.
+
+## Edge function `report`
+Source `supabase/functions/report/index.ts` (verify_jwt on, v1). Reads a medical report photo with Gemini and returns food guidance JSON. Uses the same `bump_ai_usage` daily limit and `user_plans` as `coach`. Needs the `GEMINI_API_KEY` secret. The `coach` function (v15) also has a `form` mode for exercise form photos.

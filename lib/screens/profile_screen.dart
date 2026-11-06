@@ -20,6 +20,7 @@ import 'coach_screen.dart';
 import 'exercise_library_screen.dart';
 import 'health_connect_screen.dart';
 import 'health_screen.dart';
+import 'medical_report_screen.dart';
 import 'muscle_screen.dart';
 import 'onboarding_screen.dart';
 import 'pro_screen.dart';
@@ -131,6 +132,14 @@ class ProfileScreen extends StatelessWidget {
                 ? 'Set your allergies, every scan is checked against them'
                 : '${s.allergies.length} allergies set, every scan is checked',
             onTap: () => _open(context, const AllergyPage()),
+          ),
+          MenuRow(
+            icon: Icons.medical_information_outlined,
+            title: 'Medical report',
+            subtitle: s.medicalNotes == null
+                ? 'Scan a report, get food to limit and eat more of'
+                : 'Report saved, your food is checked against it',
+            onTap: () => _open(context, const MedicalReportScreen()),
           ),
           MenuRow(
             icon: Icons.workspace_premium_outlined,

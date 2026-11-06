@@ -458,6 +458,13 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
   void _add(BuildContext context, FoodItem item, double kcal, double protein,
       double carbs, double fat) {
+    final hit = context.read<AppState>().reportAvoidHit(item.name);
+    if (hit != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Your report says to limit "$hit". Keep the portion small.'),
+        duration: const Duration(seconds: 4),
+      ));
+    }
     context.read<AppState>().addEntry(
           DiaryEntry(
             id: DateTime.now().microsecondsSinceEpoch.toString(),

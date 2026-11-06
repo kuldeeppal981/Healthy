@@ -25,6 +25,10 @@ class AppState extends ChangeNotifier {
   // Allergies
   final Set<String> allergies = {};
   final Set<String> conditions = {};
+
+  /// Food guidance from a scanned medical report: summary, markers, avoid,
+  /// prefer, concerns, date. Private to this user (synced with their data).
+  Map<String, dynamic>? medicalNotes;
   final Map<String, String> severity = {}; // allergen id -> mild|medium|severe
   bool traceWarning = true;
 
@@ -93,6 +97,7 @@ class AppState extends ChangeNotifier {
         'weights': weights.map((e) => e.toJson()).toList(),
         'allergies': allergies.toList(),
         'conditions': conditions.toList(),
+        'medicalNotes': medicalNotes,
         'severity': severity,
         'traceWarning': traceWarning,
         'kcalTarget': kcalTarget,
@@ -125,6 +130,9 @@ class AppState extends ChangeNotifier {
     conditions
       ..clear()
       ..addAll(((j['conditions'] as List?) ?? const []).map((x) => x.toString()));
+    medicalNotes = j['medicalNotes'] is Map
+        ? Map<String, dynamic>.from(j['medicalNotes'] as Map)
+        : null;
     severity
       ..clear()
       ..addAll(Map<String, String>.from((j['severity'] as Map?) ?? const {}));
@@ -335,6 +343,13 @@ class AppState extends ChangeNotifier {
     conditions
       ..clear()
       ..addAll(p.getStringList('conditions') ?? const []);
+    medicalNotes = null;
+    final mn = p.getString('medicalNotes');
+    if (mn != null && mn.isNotEmpty) {
+      try {
+        medicalNotes = Map<String, dynamic>.from(jsonDecode(mn) as Map);
+      } catch (_) {}
+    }
 
     final sev = p.getString('severity');
     severity.clear();
@@ -403,6 +418,11 @@ class AppState extends ChangeNotifier {
     await p.setString('weights', jsonEncode(weights.map((e) => e.toJson()).toList()));
     await p.setStringList('allergies', allergies.toList());
     await p.setStringList('conditions', conditions.toList());
+    if (medicalNotes == null) {
+      await p.remove('medicalNotes');
+    } else {
+      await p.setString('medicalNotes', jsonEncode(medicalNotes));
+    }
     await p.setString('severity', jsonEncode(severity));
     await p.setBool('traceWarning', traceWarning);
     await p.setInt('kcalTarget', kcalTarget);
@@ -477,6 +497,36 @@ class AppState extends ChangeNotifier {
   void toggleCondition(String id) {
     if (!conditions.remove(id)) conditions.add(id);
     _changed();
+  }
+
+  // ---- Medical report notes ----
+  /// Saves what was read from a report and switches on the matching conditions.
+  void saveMedicalNotes(Map<String, dynamic> notes, Iterable<String> conditionIds) {
+    medicalNotes = notes;
+    conditions.addAll(conditionIds);
+    _changed();
+  }
+
+  void clearMedicalNotes() {
+    medicalNotes = null;
+    _changed();
+  }
+
+  /// If the food name matches something the report says to limit, returns that
+  /// word, so the app can show a gentle reminder. General guidance only.
+  String? reportAvoidHit(String foodName) {
+    final list = medicalNotes?['avoid'];
+    if (list is! List) return null;
+    final food = foodName.toLowerCase();
+    for (final a in list) {
+      final term = a.toString().toLowerCase().trim();
+      if (term.length < 3) continue;
+      if (food.contains(term)) return a.toString();
+      for (final w in term.split(RegExp(r'[^a-z]+'))) {
+        if (w.length >= 4 && food.contains(w)) return a.toString();
+      }
+    }
+    return null;
   }
 
   // ---- Allergies ----
@@ -683,6 +733,7 @@ class AppState extends ChangeNotifier {
     weights.clear();
     allergies.clear();
     conditions.clear();
+    medicalNotes = null;
     severity.clear();
     entries.clear();
     water.clear();
