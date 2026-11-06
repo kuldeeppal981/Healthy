@@ -66,5 +66,5 @@ Also: ingredient -> allergen dictionary table grown from AI answers to make alle
 - Ideas not done: reorder Home by time of day, persist the "moved workout", use experience level for plan defaults and budget plan, diet filter in budget plan and voice/photo results, real connectivity check, TalkBack pass.
 - Social ideas from the user's ChatGPT list (buddy matching, private groups, group challenges, shared plans, activity status, PR reactions, weekly community leaderboard, invite links, report/block/mute, private profile, accountability partner): planned, needs SQL.
 
-## Pending: Home redesign
-Branch `home-redesign` is local only (user said do not push). Needs user go-ahead to push, build and merge to main.
+## Home redesign
+Merged to main and pushed (c704f08 and later). Still untested on a phone.
