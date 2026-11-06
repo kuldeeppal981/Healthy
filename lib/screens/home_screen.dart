@@ -20,6 +20,7 @@ import 'coach_screen.dart';
 import 'diary_screen.dart';
 import 'health_connect_screen.dart';
 import '../services/reminder_service.dart';
+import '../services/social_service.dart';
 import '../widgets/explore_section.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
