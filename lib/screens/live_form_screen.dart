@@ -103,7 +103,7 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
       metadata: InputImageMetadata(
         size: Size(img.width.toDouble(), img.height.toDouble()),
         rotation: rotation,
-        format: format,
+        format: InputImageFormat.nv21,
         bytesPerRow: plane.bytesPerRow,
       ),
     );
