@@ -17,6 +17,8 @@ import '../widgets/voice_capture.dart';
 import '../data/exercise_library.dart';
 import 'exercise_library_screen.dart';
 import 'form_check_screen.dart';
+import 'training_status_screen.dart';
+import '../services/training_stats.dart';
 import 'plan_editor.dart';
 import 'workout_data.dart';
 
@@ -75,12 +77,18 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     });
   }
 
+  /// Shortened plans for today only: weekday -> exercises kept.
+  final Map<int, DayPlan> _short = {};
+
   /// Exercises swapped for today only: weekday -> (exercise index -> new name).
   final Map<int, Map<int, String>> _swaps = {};
 
   /// The plan for a day with today's swaps applied.
+  /// The plan before swaps: the shortened one if it is on, else the saved plan.
+  DayPlan _basePlan(AppState state, int weekday) => _short[weekday] ?? state.planFor(weekday);
+
   DayPlan _plan(AppState state, int weekday) {
-    final base = state.planFor(weekday);
+    final base = _basePlan(state, weekday);
     final sw = _swaps[weekday];
     if (sw == null || sw.isEmpty) return base;
     return DayPlan(
@@ -101,7 +109,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     final alts = alternativesFor(ex.name);
     final muscle = muscleOf(ex.name);
     final plannedName =
-        context.read<AppState>().planFor(_weekday).exercises[index].name;
+        _basePlan(context.read<AppState>(), _weekday).exercises[index].name;
     final picked = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -165,6 +173,137 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
         SnackBar(content: Text('Using $picked for today.')));
   }
 
+  /// "I only have 30 minutes": suggests a shorter version of today's plan.
+  Future<void> _askShort(AppState state, int weekday) async {
+    final plan = state.planFor(weekday);
+    if (plan.rest || plan.exercises.isEmpty) return;
+    final ov = TrainingOverview.compute(state);
+    final full = estimateMinutes(plan);
+    var minutes = full > 30 ? 30 : (full > 20 ? 20 : 15);
+    final picked = await showModalBottomSheet<ShortPlan>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          final sp = shortenPlan(plan, minutes, ov);
+          return SafeArea(
+            child: ConstrainedBox(
+              constraints:
+                  BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.8),
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                children: [
+                  Text('Short on time?',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                  const SizedBox(height: 4),
+                  Text('Planned workout is about $full min. How much time do you have?',
+                      style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final m in const [15, 20, 30, 45])
+                        if (m < full)
+                          ChoiceChip(
+                            label: Text('$m min'),
+                            selected: minutes == m,
+                            onSelected: (_) => setLocal(() => minutes = m),
+                          ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text('Short plan, about ${sp.minutes} min',
+                      style: const TextStyle(fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 6),
+                  for (final e in sp.plan.exercises)
+                    ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.check_circle_outline, color: AppColors.primary),
+                      title: Text(e.name),
+                      subtitle: Text(e.target),
+                    ),
+                  if (sp.dropped.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text('Skipped today: ${sp.dropped.join(', ')}',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                  ],
+                  const SizedBox(height: 4),
+                  Text(
+                      'Big lifts and rested muscles come first. Your saved plan does not change.',
+                      style: TextStyle(color: AppColors.muted, fontSize: 11)),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: sp.plan.exercises.isEmpty ? null : () => Navigator.pop(ctx, sp),
+                    child: const Text('Use this short plan'),
+                  ),
+                  if (_short.containsKey(weekday))
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _resetDay(weekday);
+                        setState(() {});
+                      },
+                      child: const Text('Back to full plan'),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (picked == null || !mounted) return;
+    // New exercise list means new set rows: start the day's log fresh.
+    _resetDay(weekday);
+    setState(() {
+      _short[weekday] = picked.plan;
+      _logging = false;
+    });
+  }
+
+  Widget _trainingCard(AppState state) {
+    final ov = TrainingOverview.compute(state);
+    final ready = [for (final m in ov.muscles) if (m.everTrained && m.ready) m.muscle];
+    final rec = [for (final m in ov.muscles) if (m.everTrained && !m.ready) m];
+    return AppCard(
+      radius: 18,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const TrainingStatusScreen())),
+        child: Row(
+          children: [
+            Icon(Icons.monitor_heart_outlined, color: AppColors.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Training status',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 2),
+                  Text(
+                    ov.muscles.every((m) => !m.everTrained)
+                        ? 'Log workouts to see last trained, weekly sets and recovery estimate'
+                        : '${ready.isEmpty ? '' : 'Likely ready: ${ready.take(3).join(', ')}. '}${rec.isEmpty ? '' : 'Recovering: ${rec.take(2).map((m) => '${m.muscle} (~${m.hoursLeft} h)').join(', ')}'}',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.35),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+      ),
+    );
+  }
+
   String _kgText(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
 
   /// Best set of this exercise from earlier workouts, or null.
@@ -219,6 +358,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   void _resetDay(int weekday) {
     _swaps.remove(weekday);
+    _short.remove(weekday);
     final day = _logs.remove(weekday);
     if (day == null) return;
     // Dispose after the frame so text fields are no longer using them.
@@ -517,6 +657,21 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                 )
               else ...[
                 _banner(plan, done, total),
+                if (!_logging) ...[
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: ActionChip(
+                      avatar: Icon(Icons.timer_outlined, size: 18, color: AppColors.primary),
+                      label: Text(_short.containsKey(_weekday)
+                          ? 'Short plan on, change'
+                          : 'Short on time?'),
+                      onPressed: () => _askShort(state, _weekday),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _trainingCard(state),
+                ],
                 const SizedBox(height: 14),
                 if (_logging)
                   Padding(
