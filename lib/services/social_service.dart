@@ -40,6 +40,15 @@ class Person {
   const Person(this.userId, this.name, this.tag);
 }
 
+/// Someone the user blocked or muted.
+class BlockedPerson {
+  final String userId;
+  final String name;
+  final bool mute; // true = muted only, false = blocked
+
+  const BlockedPerson(this.userId, this.name, this.mute);
+}
+
 class Challenge {
   final String id;
   final String name;
@@ -180,6 +189,16 @@ class SocialService extends ChangeNotifier {
   List<Person> suggestions = [];
   bool discoverable = true;
 
+  /// Private profile: not found in search, not on friends' boards or feeds.
+  bool privateProfile = false;
+
+  /// Opt-in: friends can see when you were active in the last few minutes.
+  bool showActivity = false;
+
+  /// Friends who are active right now (only those who opted in).
+  Set<String> activeNow = {};
+  List<BlockedPerson> blocked = [];
+
   String? _uid;
 
   bool get enabled => code != null;
@@ -198,6 +217,10 @@ class SocialService extends ChangeNotifier {
     suggestions = [];
     feed = [];
     cheers = [];
+    privateProfile = false;
+    showActivity = false;
+    activeNow = {};
+    blocked = [];
     cheersSeen = null;
     loaded = false;
     error = null;
@@ -271,6 +294,7 @@ class SocialService extends ChangeNotifier {
           for (final r in rq)
             FriendRequest(r['requester'] as String, (r['name'] as String?) ?? 'Someone'),
         ];
+        await _loadSafety();
         final ch = await _c.from('challenges').select().order('end_day', ascending: false) as List;
         challenges = [
           for (final r in ch)
@@ -290,6 +314,79 @@ class SocialService extends ChangeNotifier {
     }
     loading = false;
     notifyListeners();
+  }
+
+  /// Privacy switches, activity and the block list. Quiet when the safety SQL
+  /// has not been run yet (the old behaviour keeps working).
+  Future<void> _loadSafety() async {
+    try {
+      final pr = await _c.rpc('get_privacy') as List;
+      if (pr.isNotEmpty) {
+        privateProfile = (pr.first['private_profile'] as bool?) ?? false;
+        showActivity = (pr.first['show_activity'] as bool?) ?? false;
+      }
+      final act = await _c.rpc('friends_activity') as List;
+      activeNow = {for (final r in act) r['user_id'] as String};
+      final bl = await _c.rpc('my_blocks') as List;
+      blocked = [
+        for (final r in bl)
+          BlockedPerson(r['user_id'] as String, (r['name'] as String?) ?? 'Someone',
+              (r['mute'] as bool?) ?? false),
+      ];
+    } catch (_) {}
+  }
+
+  Future<String> setPrivacy({bool? private, bool? activity}) async {
+    final p = private ?? privateProfile;
+    final a = activity ?? showActivity;
+    try {
+      await _c.rpc('set_privacy', params: {'p_private': p, 'p_activity': a});
+      privateProfile = p;
+      showActivity = a;
+      if (p) discoverable = false;
+      notifyListeners();
+      return 'Saved';
+    } catch (_) {
+      return 'Could not save. Run the latest SQL (social_safety) first.';
+    }
+  }
+
+  /// Block removes the friendship both ways; mute only hides their posts and
+  /// numbers from you.
+  Future<String> blockUser(String userId, {required bool mute}) async {
+    try {
+      await _c.rpc('block_user', params: {'p_user': userId, 'p_mute': mute});
+      feed = feed.where((x) => x.userId != userId).toList();
+      await refresh();
+      return mute ? 'Muted. You will not see their posts.' : 'Blocked.';
+    } catch (_) {
+      return 'Could not do that. Run the latest SQL (social_safety) first.';
+    }
+  }
+
+  Future<void> unblockUser(String userId) async {
+    try {
+      await _c.rpc('unblock_user', params: {'p_user': userId});
+    } catch (_) {}
+    await refresh();
+    await loadFeed();
+  }
+
+  Future<String> reportUser(String userId, {String? postId, String? reason}) async {
+    try {
+      final r = await _c.rpc('report_user', params: {
+        'p_user': userId,
+        'p_post': postId,
+        'p_reason': reason ?? '',
+      }) as String;
+      return r == 'ok'
+          ? 'Thanks, we will look at it.'
+          : r == 'limit'
+              ? 'You have sent many reports today. Try again tomorrow.'
+              : 'Could not send the report.';
+    } catch (_) {
+      return 'Could not send the report. Run the latest SQL (social_safety) first.';
+    }
   }
 
   /// Keeps the friends name in step with the name in Profile.
@@ -693,6 +790,11 @@ class SocialService extends ChangeNotifier {
       if (sig == _lastSent) return;
       await _c.from('daily_stats').upsert(row);
       _lastSent = sig;
+      if (showActivity) {
+        try {
+          await _c.rpc('touch_activity');
+        } catch (_) {}
+      }
     } catch (_) {}
   }
 }

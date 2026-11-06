@@ -113,6 +113,161 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 }
 
+
+/// Mute, block or report someone (from a post or the friends list).
+Future<void> _showSafetySheet(
+  BuildContext context,
+  SocialService svc,
+  String userId,
+  String name, {
+  String? postId,
+}) async {
+  void say(String m) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(m)));
+  }
+
+  final pick = await showModalBottomSheet<String>(
+    context: context,
+    backgroundColor: AppColors.card,
+    showDragHandle: true,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: Text(name, style: const TextStyle(fontWeight: FontWeight.w800)),
+            subtitle: const Text('Only you see what you choose here'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.volume_off_outlined),
+            title: const Text('Mute'),
+            subtitle: const Text('Hide their posts and numbers, stay friends'),
+            onTap: () => Navigator.pop(ctx, 'mute'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.block),
+            title: const Text('Block'),
+            subtitle: const Text('Remove as friend. They cannot find or add you'),
+            onTap: () => Navigator.pop(ctx, 'block'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.flag_outlined),
+            title: const Text('Report'),
+            subtitle: const Text('Tell us about abuse or spam'),
+            onTap: () => Navigator.pop(ctx, 'report'),
+          ),
+        ],
+      ),
+    ),
+  );
+  if (pick == null || !context.mounted) return;
+  if (pick == 'mute') {
+    say(await svc.blockUser(userId, mute: true));
+  } else if (pick == 'block') {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Block $name?'),
+        content: const Text('They will be removed from your friends. You can unblock later in Privacy.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Block')),
+        ],
+      ),
+    );
+    if (ok == true) say(await svc.blockUser(userId, mute: false));
+  } else if (pick == 'report') {
+    final ctl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Report $name'),
+        content: TextField(
+          controller: ctl,
+          maxLength: 200,
+          decoration: const InputDecoration(labelText: 'What happened? (optional)'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Send')),
+        ],
+      ),
+    );
+    final reason = ctl.text.trim();
+    ctl.dispose();
+    if (ok == true) say(await svc.reportUser(userId, postId: postId, reason: reason));
+  }
+}
+
+/// Private profile, activity status and the blocked list.
+class _SafetyCard extends StatelessWidget {
+  final SocialService svc;
+  const _SafetyCard({required this.svc});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      radius: 16,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Safety and privacy',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Private profile', style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: const Text(
+                'Not in search. Your numbers and posts are hidden from friends\' boards and feeds',
+                style: TextStyle(fontSize: 12)),
+            value: svc.privateProfile,
+            activeColor: AppColors.primary,
+            onChanged: (v) async {
+              final m = await svc.setPrivacy(private: v);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(content: Text(m)));
+            },
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Show when I am active',
+                style: TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: const Text('Friends see a green dot while you use the app. Off by default',
+                style: TextStyle(fontSize: 12)),
+            value: svc.showActivity,
+            activeColor: AppColors.primary,
+            onChanged: (v) async {
+              final m = await svc.setPrivacy(activity: v);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(content: Text(m)));
+            },
+          ),
+          const SizedBox(height: 4),
+          Text(svc.blocked.isEmpty ? 'Blocked and muted: nobody' : 'Blocked and muted',
+              style: const TextStyle(fontWeight: FontWeight.w700)),
+          for (final b in svc.blocked)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(b.name),
+              subtitle: Text(b.mute ? 'Muted' : 'Blocked'),
+              trailing: TextButton(
+                onPressed: () => svc.unblockUser(b.userId),
+                child: Text(b.mute ? 'Unmute' : 'Unblock'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Note extends StatelessWidget {
   final String text;
 
@@ -384,6 +539,13 @@ class _FeedTabState extends State<_FeedTab> {
                     tooltip: 'Delete post',
                     icon: const Icon(Icons.delete_outline, size: 20),
                     onPressed: () => widget.svc.deletePost(p),
+                  )
+                else
+                  IconButton(
+                    tooltip: 'Mute, block or report',
+                    icon: const Icon(Icons.more_vert, size: 20),
+                    onPressed: () =>
+                        _showSafetySheet(context, widget.svc, p.userId, p.name, postId: p.id),
                   ),
               ],
             ),
@@ -812,6 +974,14 @@ class _FriendsTabState extends State<_FriendsTab> {
               padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
               child: Row(
                 children: [
+                  if (svc.activeNow.contains(f.userId))
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Tooltip(
+                        message: 'Active now',
+                        child: Icon(Icons.circle, size: 10, color: AppColors.safe),
+                      ),
+                    ),
                   Expanded(
                       child: Text(f.name,
                           style: const TextStyle(fontWeight: FontWeight.w700))),
@@ -831,6 +1001,11 @@ class _FriendsTabState extends State<_FriendsTab> {
                     icon: const Icon(Icons.person_remove_outlined),
                     onPressed: () => svc.removeFriend(f.userId),
                   ),
+                  IconButton(
+                    tooltip: 'Mute, block or report',
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: () => _showSafetySheet(context, svc, f.userId, f.name),
+                  ),
                 ],
               ),
             ),
@@ -845,6 +1020,8 @@ class _FriendsTabState extends State<_FriendsTab> {
           activeColor: AppColors.primary,
           onChanged: svc.setDiscoverable,
         ),
+        const SizedBox(height: 8),
+        _SafetyCard(svc: svc),
         TextButton(
           onPressed: _turnOff,
           child: Text('Turn off friends and delete my shared data',

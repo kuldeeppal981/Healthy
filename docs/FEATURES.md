@@ -218,3 +218,6 @@ On branch `pose-test` only (to protect main from build breaks): `camera ^0.11.0+
 - **Comeback reward**: first activity after 4+ days away sets `AppState.comebackGap`; the auto check-in popup shows "Welcome back" and "+25 comeback bonus". XP is derived (`Missions.comebacks` = 25 XP each).
 - **Milestones** 7/30/90/180 (best daily streak, `Missions.bestStreak`) and **Streak freezes** card (left this month + dates used) in Streaks and badges.
 - Not built: team challenges (needs SQL), friends seeing custom challenges.
+
+## Social safety (BUILT, UNTESTED, SQL already applied to the live database)
+Friends screen: more menu (3 dots) on friend rows and other people's feed posts -> Mute / Block / Report (`_showSafetySheet` in `social_screen.dart`). Friends tab bottom: "Safety and privacy" card with Private profile, Show when I am active (opt-in, green dot for friends, updated when numbers are sent), and the blocked/muted list with Unblock. Mute hides their posts and numbers only; block removes the friendship and hides both ways. Reports go to the `reports` table (no admin screen). Needs two accounts to test. Not built from the social list: buddy matching, private groups, group challenges, shared plans, weekly community leaderboard, invite links, accountability partner, PR reaction types.

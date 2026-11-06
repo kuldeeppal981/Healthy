@@ -61,3 +61,10 @@ Real purchases later: Google Play Billing (in_app_purchase or RevenueCat) -> an 
 
 ## Edge function `report`
 Source `supabase/functions/report/index.ts` (verify_jwt on, v1). Reads a medical report photo with Gemini and returns food guidance JSON. Uses the same `bump_ai_usage` daily limit and `user_plans` as `coach`. Needs the `GEMINI_API_KEY` secret. The `coach` function (v15) also has a `form` mode for exercise form photos.
+
+## Social safety (applied to the live DB via MCP; source: `supabase/migrations/social_safety.sql`)
+- `social_profiles` new columns: `private_profile`, `show_activity`, `last_active`.
+- Tables `blocks(blocker, blocked, mute)` and `reports(id, reporter, reported, post_id, reason)`: RLS on, no policies (RPC only). The owner reads `reports` in the Supabase dashboard (no admin screen yet).
+- Helpers `is_blocked_pair`, `is_muted`; `is_friend` / `are_friends` now return false for blocked pairs.
+- Replaced: `get_feed`, `friends_board` (hide muted people and private profiles), `search_people`, `suggested_people` (skip blocked and private), `request_friend`, `request_friend_id` (refuse blocked pairs, return not_found).
+- New RPCs (authenticated only): `block_user(p_user, p_mute)` (block also deletes the friendship), `unblock_user`, `my_blocks`, `report_user` (10 per day), `set_privacy(p_private, p_activity)` (private also turns discoverable off), `get_privacy`, `touch_activity`, `friends_activity` (friends who opted in, active in the last 10 min).
