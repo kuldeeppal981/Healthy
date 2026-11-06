@@ -10,6 +10,7 @@ import 'badges_screen.dart';
 import 'allergy_screen.dart';
 import 'budget_plan_screen.dart';
 import 'exercise_library_screen.dart';
+import 'groups_screen.dart';
 import 'health_connect_screen.dart';
 import 'health_screen.dart';
 import 'medical_report_screen.dart';
@@ -252,6 +253,8 @@ HubScreen communityHub() => HubScreen(
                 MenuCard(rows: [
                   _row(c, Icons.groups_outlined, 'Friends and challenges',
                       'Feed, leaderboard, 30-day challenge', const SocialScreen()),
+                  _row(c, Icons.leaderboard_outlined, 'League and groups',
+                      'Weekly league, groups, partner, buddies', const GroupsScreen()),
                 ])
               else
                 AppCard(

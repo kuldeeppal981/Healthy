@@ -68,3 +68,9 @@ Source `supabase/functions/report/index.ts` (verify_jwt on, v1). Reads a medical
 - Helpers `is_blocked_pair`, `is_muted`; `is_friend` / `are_friends` now return false for blocked pairs.
 - Replaced: `get_feed`, `friends_board` (hide muted people and private profiles), `search_people`, `suggested_people` (skip blocked and private), `request_friend`, `request_friend_id` (refuse blocked pairs, return not_found).
 - New RPCs (authenticated only): `block_user(p_user, p_mute)` (block also deletes the friendship), `unblock_user`, `my_blocks`, `report_user` (10 per day), `set_privacy(p_private, p_activity)` (private also turns discoverable off), `get_privacy`, `touch_activity`, `friends_activity` (friends who opted in, active in the last 10 min).
+
+## Social part 2 (applied via MCP; source `supabase/migrations/social_part2.sql`)
+Tables (RLS on, no policies, RPC only): `groups(id, owner, name, code)`, `group_members`, `partners(a requester, b, status pending/active)`, `buddy_profiles(user_id, goal, level, slot, looking)`. `challenges.group_id` added (group challenges).
+RPCs (authenticated only): `create_group`, `join_group(code)` (max 30 members, 5 groups per owner), `leave_group` (owner passes to oldest member), `my_groups`, `weekly_league(p_today)` (me + accepted friends, hides blocked/muted/private), `group_league`, `create_group_challenge`, `group_challenges`, `join_group_challenge`, `request_partner`, `respond_partner`, `end_partner`, `my_partner`, `set_buddy_profile`, `get_buddy_profile`, `find_buddies` (same goal, opt-in, discoverable, not private, not blocked, not already friends).
+League points (7 days): 20 per workout day, 5 per food-logged day, 2 per 1000 steps (cap 20000/day). Helper `_league_points` is not callable by clients.
+Invite "links" are codes shared with the share sheet (real deep links need Play Store setup).

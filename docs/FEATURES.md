@@ -235,3 +235,6 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 
 ## Pro UI preview (untested)
 `pro_screen.dart`: gradient hero, preview prices (Rs 99/month, Rs 799/year, marked not final), "Notify me when Pro opens" (`prefs['proNotify']`). `widgets/pro_sheet.dart` `showProLimitSheet`: shown in the coach when the server answers error "limit". No real payment yet (needs Google Play Billing / RevenueCat).
+
+## Social part 2 (untested)
+`services/community_service.dart`, `screens/groups_screen.dart` (Explore, Community, Friends tab, "League and groups"): tabs League (weekly points of friends), Groups (create, join by code, share invite text, group league, group challenges, leave), Partner (pick a friend, accept/decline, today's check-in, nudge, end), Buddies (goal/level/time profile, matches, Add friend). PR reactions already exist on feed posts (fire, clap, muscle, heart).
