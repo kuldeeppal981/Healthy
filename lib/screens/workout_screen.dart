@@ -16,6 +16,7 @@ import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 import '../data/exercise_library.dart';
 import 'exercise_library_screen.dart';
+import 'form_check_screen.dart';
 import 'plan_editor.dart';
 import 'workout_data.dart';
 
@@ -1023,6 +1024,14 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     ],
                   ),
                 ),
+                if (findExercise(ex.name) != null)
+                  IconButton(
+                    tooltip: 'Check my form (photo)',
+                    icon: Icon(Icons.photo_camera_outlined, color: AppColors.primary),
+                    onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                      builder: (_) => FormCheckScreen(exercise: ex.name),
+                    )),
+                  ),
                 if (findExercise(ex.name) != null)
                   IconButton(
                     tooltip: 'Machine busy? Find an alternative',
