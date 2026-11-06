@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../data/exercise_library.dart';
 import '../services/form_ai.dart';
+import '../services/pose_math.dart';
+import 'live_form_screen.dart';
 import '../theme.dart';
 import '../widgets/ui_kit.dart';
 
@@ -93,6 +95,20 @@ class _FormCheckScreenState extends State<FormCheckScreen> {
               ],
             ),
           ),
+          if (ruleFor(widget.exercise) != null) ...[
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => LiveFormScreen(rule: ruleFor(widget.exercise)!),
+              )),
+              icon: const Icon(Icons.videocam_outlined),
+              label: const Text('Live camera analysis (beta)'),
+            ),
+            const SizedBox(height: 4),
+            Text(
+                'Skeleton, joint angles, rep count and range of motion, on your phone. Or use a single photo below.',
+                style: TextStyle(color: AppColors.muted, fontSize: 12)),
+          ],
           const SizedBox(height: 12),
           Row(
             children: [

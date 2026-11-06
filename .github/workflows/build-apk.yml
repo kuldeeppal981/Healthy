@@ -244,7 +244,7 @@ jobs:
           python3 - <<'EOF'
           import os
           rules = 'android/app/proguard-rules.pro'
-          open(rules, 'w').write('-dontwarn com.google.mlkit.vision.text.**\n-dontwarn com.google.android.gms.internal.mlkit_vision_text_**\n')
+          open(rules, 'w').write('-dontwarn com.google.mlkit.vision.text.**\n-dontwarn com.google.android.gms.internal.mlkit_vision_text_**\n-dontwarn com.google.mlkit.vision.pose.**\n-dontwarn com.google.android.gms.internal.mlkit_vision_pose_**\n')
           kts = 'android/app/build.gradle.kts'
           groovy = 'android/app/build.gradle'
           if os.path.exists(kts):
