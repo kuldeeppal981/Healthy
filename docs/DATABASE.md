@@ -34,7 +34,7 @@ search_people (name search, discoverable only), suggested_people, pending_reques
 (leaderboard numbers), create_challenge, join_challenge, challenge_board, get_feed, react_to_post,
 get_cheers (reactions others gave to my posts), bump_ai_usage.
 
-## Edge function `coach` (verify_jwt on)
+## Edge function `coach` (verify_jwt on, v16 adds mode `meal`)
 Source: `supabase/functions/coach/index.ts` (deployed v11; label mode also accepts `text` from phone OCR). Modes: chat (`messages`, `context`), `estimate`
 (`items` -> nutrition JSON) and `label` (`image` base64 JPEG + `mime` -> `label` JSON: ingredients, contains, may_contain, per100 values). Gemini model from `GEMINI_MODEL` (default gemini-3.8-flash), daily limit from
 `COACH_DAILY_LIMIT` (default 10, day boundary in IST). Secret `GEMINI_API_KEY` must be set in the

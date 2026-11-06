@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../screens/meal_photo_screen.dart';
 import '../screens/scan_screen.dart';
 import '../screens/search_screen.dart';
 import '../state/app_state.dart';
@@ -85,6 +86,11 @@ Future<void> showQuickAdd(
                   );
                 }),
                 tile(ctx, Icons.mic, 'Voice', () => logByVoice(context)),
+                tile(ctx, Icons.photo_camera_outlined, 'Meal photo', () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const MealPhotoScreen()),
+                  );
+                }),
                 tile(ctx, Icons.water_drop, 'Water', () {
                   Haptic.splash();
                   s.addWater(1);

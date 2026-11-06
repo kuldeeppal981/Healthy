@@ -24,7 +24,7 @@ class _ProScreenState extends State<ProScreen> {
     ['Workouts, streaks, friends feed', 'Free', 'Pro'],
     ['AI requests per day (coach, voice, label scan)', '10', '60'],
     ['Weekly AI diet and workout plan', '-', 'Pro'],
-    ['Meal photo to calories', '-', 'Pro'],
+    ['Meal photo to calories (uses AI requests)', 'Yes', 'Yes'],
     ['Muscle and nutrition trends, PDF reports', 'Basic', 'Full'],
     ['Cloud backup of full history', '90 days', 'All'],
   ];
