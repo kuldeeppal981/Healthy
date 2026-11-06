@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:provider/provider.dart';
+
 import '../services/plan_service.dart';
+import '../state/app_state.dart';
 import '../theme.dart';
 
 /// Free vs Pro. Buying is not open yet (needs Google Play Billing), so the
@@ -33,6 +36,41 @@ class _ProScreenState extends State<ProScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDeep],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.workspace_premium, color: Colors.white, size: 34),
+                const SizedBox(height: 10),
+                const Text('Healthy Pro',
+                    style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                const Text('More AI every day. Your core app stays free.',
+                    style: TextStyle(color: Colors.white, fontSize: 14)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(child: _price('Monthly', 'Rs 99', 'per month', false)),
+              const SizedBox(width: 12),
+              Expanded(child: _price('Yearly', 'Rs 799', 'per year, save 33%', true)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text('Preview prices, not final.',
+              textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted, fontSize: 11)),
+          const SizedBox(height: 14),
           FutureBuilder<PlanInfo>(
             future: _plan,
             builder: (context, snap) {
@@ -106,10 +144,22 @@ class _ProScreenState extends State<ProScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          FilledButton(
-            onPressed: null,
-            child: const Text('Upgrade (coming soon)'),
-          ),
+          Builder(builder: (context) {
+            final s = context.watch<AppState>();
+            final on = s.prefs['proNotify'] == true;
+            return FilledButton.icon(
+              onPressed: on
+                  ? null
+                  : () {
+                      final next = Map<String, dynamic>.from(s.prefs)..['proNotify'] = true;
+                      s.savePrefs(next);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Noted. Pro is not open for payment yet.')));
+                    },
+              icon: Icon(on ? Icons.check : Icons.notifications_active_outlined),
+              label: Text(on ? 'We will tell you when Pro opens' : 'Notify me when Pro opens'),
+            );
+          }),
           const SizedBox(height: 8),
           Text(
             'Payments will open when the app is on Google Play. Plans and prices are not final.',
@@ -120,4 +170,16 @@ class _ProScreenState extends State<ProScreen> {
       ),
     );
   }
+
+  Widget _price(String name, String price, String sub, bool best) => AppCard(
+        borderColor: best ? AppColors.primary : null,
+        child: Column(
+          children: [
+            Text(name, style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text(price, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+            Text(sub, textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted, fontSize: 11)),
+          ],
+        ),
+      );
 }

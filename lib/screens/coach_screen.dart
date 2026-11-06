@@ -6,6 +6,7 @@ import '../config.dart';
 import '../services/health_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/pro_sheet.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 
@@ -94,6 +95,7 @@ class _CoachScreenState extends State<CoachScreen> {
           ? d['message'] as String
           : 'The coach could not answer. Try again.';
       _add(_Msg(false, msg, error: true));
+      if (d is Map && d['error'] == 'limit' && mounted) showProLimitSheet(context, msg);
     } catch (_) {
       _add(const _Msg(false, 'No connection. Check your internet and try again.', error: true));
     }

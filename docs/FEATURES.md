@@ -232,3 +232,6 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 
 ## AI wait card (untested)
 `widgets/ai_wait.dart` `AiWaitCard`: while a photo goes to the AI (report, form check, label scan) shows photo size, 3 steps, seconds and an estimated bar (max 95%). Real upload bytes are not available from supabase `functions.invoke`, so the bar is time based and labelled as usual 10 to 30 s.
+
+## Pro UI preview (untested)
+`pro_screen.dart`: gradient hero, preview prices (Rs 99/month, Rs 799/year, marked not final), "Notify me when Pro opens" (`prefs['proNotify']`). `widgets/pro_sheet.dart` `showProLimitSheet`: shown in the coach when the server answers error "limit". No real payment yet (needs Google Play Billing / RevenueCat).
