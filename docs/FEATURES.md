@@ -229,3 +229,6 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 - `screens/hub_screens.dart`: Nutrition, Health, Library, Community, Daily plan, Challenges hubs with tabs, linking existing screens.
 - `screens/notifications_screen.dart`: friend requests and cheers (bell). `ReminderService` is now a ChangeNotifier.
 - Streak startup checks moved to AppShell (`streakStartupChecks` in streak_card.dart).
+
+## AI wait card (untested)
+`widgets/ai_wait.dart` `AiWaitCard`: while a photo goes to the AI (report, form check, label scan) shows photo size, 3 steps, seconds and an estimated bar (max 95%). Real upload bytes are not available from supabase `functions.invoke`, so the bar is time based and labelled as usual 10 to 30 s.

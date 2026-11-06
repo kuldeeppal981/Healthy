@@ -9,6 +9,7 @@ import '../services/form_ai.dart';
 import '../services/pose_math.dart';
 import 'live_form_screen.dart';
 import '../theme.dart';
+import '../widgets/ai_wait.dart';
 import '../widgets/ui_kit.dart';
 
 /// Take a photo while doing an exercise and get simple form tips, with a
@@ -25,6 +26,7 @@ class FormCheckScreen extends StatefulWidget {
 class _FormCheckScreenState extends State<FormCheckScreen> {
   final ImagePicker _picker = ImagePicker();
   bool _busy = false;
+  int? _size;
   String? _error;
   File? _file;
   double _aspect = 3 / 4;
@@ -41,6 +43,7 @@ class _FormCheckScreenState extends State<FormCheckScreen> {
         _file = File(f.path);
       });
       final bytes = await f.readAsBytes();
+      setState(() => _size = bytes.length);
       final img = await decodeImageFromList(bytes);
       final ui.Image decoded = img;
       _aspect = decoded.width / decoded.height;
@@ -131,9 +134,7 @@ class _FormCheckScreenState extends State<FormCheckScreen> {
           ),
           if (_busy) ...[
             const SizedBox(height: 20),
-            const Center(child: CircularProgressIndicator()),
-            const SizedBox(height: 8),
-            Center(child: Text('Checking your form...', style: TextStyle(color: AppColors.muted))),
+            AiWaitCard(doing: 'Checking your form', sizeBytes: _size),
           ],
           if (_error != null) ...[
             const SizedBox(height: 14),

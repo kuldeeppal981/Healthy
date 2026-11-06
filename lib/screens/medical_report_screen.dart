@@ -6,6 +6,7 @@ import '../services/health_conditions.dart';
 import '../services/report_ai.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/ai_wait.dart';
 import '../widgets/ui_kit.dart';
 
 /// Scan a medical report. The AI reads the numbers and gives simple food
@@ -22,6 +23,7 @@ class MedicalReportScreen extends StatefulWidget {
 class _MedicalReportScreenState extends State<MedicalReportScreen> {
   final ImagePicker _picker = ImagePicker();
   bool _busy = false;
+  int? _size;
   String? _error;
   Map<String, dynamic>? _draft; // read but not saved yet
 
@@ -32,6 +34,7 @@ class _MedicalReportScreenState extends State<MedicalReportScreen> {
       if (f == null) return;
       setState(() => _busy = true);
       final bytes = await f.readAsBytes();
+      setState(() => _size = bytes.length);
       final r = await ReportAi.read(bytes);
       if (!mounted) return;
       setState(() => _draft = r);
@@ -237,9 +240,7 @@ class _MedicalReportScreenState extends State<MedicalReportScreen> {
               style: TextStyle(color: AppColors.muted, fontSize: 12)),
           if (_busy) ...[
             const SizedBox(height: 20),
-            const Center(child: CircularProgressIndicator()),
-            const SizedBox(height: 8),
-            Center(child: Text('Reading your report...', style: TextStyle(color: AppColors.muted))),
+            AiWaitCard(doing: 'Reading your report', sizeBytes: _size),
           ],
           if (_error != null) ...[
             const SizedBox(height: 14),

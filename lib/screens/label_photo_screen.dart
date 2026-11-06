@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../services/label_ai.dart';
 import '../theme.dart';
+import '../widgets/ai_wait.dart';
 import '../widgets/scan_frame.dart';
 import '../widgets/ui_kit.dart';
 import 'scan_result_screen.dart';
@@ -21,6 +22,7 @@ class LabelPhotoScreen extends StatefulWidget {
 class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
   final ImagePicker _picker = ImagePicker();
   bool _busy = false;
+  int? _size;
   String? _error;
 
   Future<void> _go(ImageSource source) async {
@@ -36,6 +38,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
       if (f == null) return;
       setState(() => _busy = true);
       final bytes = await f.readAsBytes();
+      setState(() => _size = bytes.length);
       final item = await LabelAi.read(f.path, bytes);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
@@ -60,19 +63,7 @@ class _LabelPhotoScreenState extends State<LabelPhotoScreen> {
        child: Padding(
         padding: const EdgeInsets.all(20),
         child: _busy
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Reading the label...'),
-                    SizedBox(height: 4),
-                    Text('This can take up to 30 seconds.',
-                        style: TextStyle(color: AppColors.muted, fontSize: 12)),
-                  ],
-                ),
-              )
+            ? Center(child: AiWaitCard(doing: 'Reading the label', sizeBytes: _size))
             : ListView(
                 children: [
                   const ScanFrame(),
