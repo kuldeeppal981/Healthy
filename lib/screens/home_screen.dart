@@ -108,9 +108,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        FadeSlideIn(
-          delayMs: 300,
-          child: IntrinsicHeight(
+        IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -124,7 +122,9 @@ class HomeScreen extends StatelessWidget {
         const SizedBox(height: 16),
         FadeSlideIn(delayMs: 220, child: _workoutCard(context, s, now)),
         const SizedBox(height: 16),
-        IntrinsicHeight(
+        FadeSlideIn(
+          delayMs: 300,
+          child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
