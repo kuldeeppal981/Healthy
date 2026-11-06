@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../services/badges.dart' as b;
+import '../services/missions.dart';
 import '../services/step_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -62,6 +63,10 @@ class BadgesScreen extends StatelessWidget {
           Text('A streak counts every day you log at least one food.',
               style: TextStyle(color: AppColors.muted, fontSize: 12)),
           const SizedBox(height: 20),
+          _milestones(s),
+          const SizedBox(height: 14),
+          _freezes(s),
+          const SizedBox(height: 20),
           Text('Badges  ${a.earnedCount} / ${a.badges.length}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
@@ -76,6 +81,70 @@ class BadgesScreen extends StatelessWidget {
           ),
         ],
        ),
+      ),
+    );
+  }
+
+  /// 7, 30, 90 and 180 day marks of the daily streak (check-in, food or workout).
+  Widget _milestones(AppState s) {
+    final best = Missions.bestStreak(s);
+    const marks = [7, 30, 90, 180];
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Milestones',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text('Best daily streak so far: $best days',
+              style: TextStyle(color: AppColors.muted, fontSize: 12)),
+          const SizedBox(height: 10),
+          for (final m in marks)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: [
+                  Icon(best >= m ? Icons.check_circle : Icons.radio_button_unchecked,
+                      color: best >= m ? AppColors.safe : AppColors.muted),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text('$m day streak',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: best >= m ? AppColors.ink : AppColors.muted)),
+                  ),
+                  Text(best >= m ? 'Reached' : '${m - best} to go',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: best >= m ? AppColors.safe : AppColors.muted)),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Streak freezes: how many are left and on which days one was used.
+  Widget _freezes(AppState s) {
+    final prefix = AppState.dayKey(DateTime.now()).substring(0, 7);
+    final used = s.frozen.where((d) => d.startsWith(prefix)).toList()..sort();
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Streak freezes',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(
+              '${s.freezesLeft} of ${AppState.freezesPerMonth} left this month. If you miss one day after a streak, a freeze covers it by itself.',
+              style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.4)),
+          const SizedBox(height: 8),
+          Text(
+            used.isEmpty ? 'No freeze used this month.' : 'Used on: ${used.join(', ')}',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }

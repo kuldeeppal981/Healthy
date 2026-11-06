@@ -21,6 +21,7 @@ import 'exercise_library_screen.dart';
 import 'health_connect_screen.dart';
 import 'health_screen.dart';
 import 'medical_report_screen.dart';
+import 'missions_screen.dart';
 import 'muscle_screen.dart';
 import 'onboarding_screen.dart';
 import 'privacy_dashboard_screen.dart';
@@ -131,6 +132,12 @@ class ProfileScreen extends StatelessWidget {
             subtitle:
                 '${a.currentStreak} day food streak  |  ${a.earnedCount} of ${a.badges.length} badges',
             onTap: () => _open(context, const BadgesScreen()),
+          ),
+          MenuRow(
+            icon: Icons.flag_outlined,
+            title: 'Missions and challenges',
+            subtitle: 'Weekly missions and your own goals',
+            onTap: () => _open(context, const MissionsScreen()),
           ),
           MenuRow(
             icon: Icons.shield_outlined,

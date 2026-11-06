@@ -15,6 +15,7 @@ import '../widgets/activity_art.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 import '../data/exercise_library.dart';
+import '../widgets/pr_popup.dart';
 import 'exercise_library_screen.dart';
 import 'form_check_screen.dart';
 import 'training_status_screen.dart';
@@ -695,6 +696,11 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
             : 'New PR! ${prs.map((e) => '${e.exercise} ${e.text}').join(', ')}'),
       ),
     );
+    if (prs.isNotEmpty) {
+      Future<void>.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) showPrPopup(context, prs);
+      });
+    }
   }
 
   static const _months = [

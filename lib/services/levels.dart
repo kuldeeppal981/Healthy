@@ -1,5 +1,6 @@
 import '../state/app_state.dart';
 import 'badges.dart';
+import 'missions.dart';
 
 /// XP and level, worked out from what the user has logged. Nothing extra is
 /// stored, so it syncs with the account and never goes down.
@@ -59,6 +60,9 @@ class Progress {
     // Water goal days, check-ins, weigh-ins, badges.
     xp += s.water.values.where((v) => v >= s.waterTarget).length * 10;
     xp += s.checkIns.length * 10;
+    // Weekly missions (30 XP each) and comebacks after a break (25 XP each).
+    xp += Missions.completedCount(s) * 30;
+    xp += Missions.comebacks(s) * 25;
     xp += (s.weights.length > 30 ? 30 : s.weights.length) * 10;
     // The step badge is left out: step history is only kept for 14 days.
     xp += Achievements.of(s).badges.where((b) => b.earned && b.id != 'steps').length * 25;

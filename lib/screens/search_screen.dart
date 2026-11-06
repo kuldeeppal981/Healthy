@@ -15,6 +15,7 @@ import 'exercise_library_screen.dart';
 import 'health_connect_screen.dart';
 import 'health_screen.dart';
 import 'medical_report_screen.dart';
+import 'missions_screen.dart';
 import 'muscle_screen.dart';
 import 'privacy_dashboard_screen.dart';
 import 'reminders_screen.dart';
@@ -77,6 +78,8 @@ final _destinations = <_Dest>[
       'health conditions diabetes bp cholesterol pcos', (c, g) => _push(c, const HealthScreen())),
   _Dest('Reminders', 'Meals, water, workouts', Icons.notifications_active_outlined,
       'reminder notification alarm remind', (c, g) => _push(c, const RemindersScreen())),
+  _Dest('Missions and challenges', 'Weekly missions, your own goals', Icons.flag_outlined,
+      'mission challenge weekly goal', (c, g) => _push(c, const MissionsScreen())),
   _Dest('Streaks and badges', 'Your streak and awards', Icons.emoji_events_outlined, 'streak badge award xp level',
       (c, g) => _push(c, const BadgesScreen())),
   _Dest('Friends and challenges', 'Feed and leaderboards', Icons.groups_outlined, 'friends social challenge feed leaderboard',

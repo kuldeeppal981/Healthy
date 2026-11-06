@@ -35,6 +35,23 @@ class AppState extends ChangeNotifier {
   /// 'budget' (low|medium|high), 'focus' (list of strings).
   Map<String, dynamic> prefs = {};
 
+  /// Challenges the user made: {id, name, kind, target, days, start}.
+  final List<Map<String, dynamic>> customChallenges = [];
+
+  void addChallenge(Map<String, dynamic> c) {
+    customChallenges.add(c);
+    _changed();
+  }
+
+  void deleteChallenge(String id) {
+    customChallenges.removeWhere((c) => c['id'] == id);
+    _changed();
+  }
+
+  /// Days away before today's first activity (0 when it was not a comeback).
+  /// Set when the app checks the user in automatically.
+  int comebackGap = 0;
+
   String? get dietPref => prefs['diet'] as String?;
   String? get experiencePref => prefs['experience'] as String?;
   String? get equipmentPref => prefs['equipment'] as String?;
@@ -119,6 +136,7 @@ class AppState extends ChangeNotifier {
         'conditions': conditions.toList(),
         'medicalNotes': medicalNotes,
         'prefs': prefs,
+        'customChallenges': customChallenges,
         'favFoods': favFoods,
         'mealTemplates': mealTemplates,
         'severity': severity,
@@ -159,6 +177,7 @@ class AppState extends ChangeNotifier {
     _readMaps(favFoods, j['favFoods']);
     _readMaps(mealTemplates, j['mealTemplates']);
     prefs = j['prefs'] is Map ? Map<String, dynamic>.from(j['prefs'] as Map) : {};
+    _readMaps(customChallenges, j['customChallenges']);
     severity
       ..clear()
       ..addAll(Map<String, String>.from((j['severity'] as Map?) ?? const {}));
@@ -379,6 +398,7 @@ class AppState extends ChangeNotifier {
       } catch (_) {}
     }
 
+    _readMaps(customChallenges, _decode(p.getString('customChallenges')));
     prefs = {};
     final pf = p.getString('prefs');
     if (pf != null && pf.isNotEmpty) {
@@ -462,6 +482,7 @@ class AppState extends ChangeNotifier {
       await p.setString('medicalNotes', jsonEncode(medicalNotes));
     }
     await p.setString('prefs', jsonEncode(prefs));
+    await p.setString('customChallenges', jsonEncode(customChallenges));
     await p.setString('severity', jsonEncode(severity));
     await p.setBool('traceWarning', traceWarning);
     await p.setInt('kcalTarget', kcalTarget);
@@ -748,6 +769,17 @@ class AppState extends ChangeNotifier {
   /// user in automatically and tells the app to show a small celebration.
   void _autoCheckIn() {
     if (checkedInToday) return;
+    // Comeback: how long since the last active day before today.
+    final today = dayKey(DateTime.now());
+    final before = [
+      for (final k in activeDays)
+        if (k.compareTo(today) < 0 && DateTime.tryParse(k) != null) DateTime.parse(k),
+    ]..sort();
+    comebackGap = 0;
+    if (before.isNotEmpty) {
+      final gap = DateTime.now().difference(before.last).inDays;
+      if (gap >= 4) comebackGap = gap;
+    }
     checkIns.add(dayKey(DateTime.now()));
     _autoCheckInCtl.add(null);
   }
@@ -863,6 +895,7 @@ class AppState extends ChangeNotifier {
     conditions.clear();
     medicalNotes = null;
     prefs = {};
+    customChallenges.clear();
     favFoods.clear();
     mealTemplates.clear();
     severity.clear();

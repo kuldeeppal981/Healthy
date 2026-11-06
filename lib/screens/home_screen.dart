@@ -23,6 +23,7 @@ import 'scan_screen.dart';
 import 'search_screen.dart';
 import 'social_screen.dart';
 import 'steps_screen.dart';
+import 'missions_screen.dart';
 import 'streak_card.dart';
 import 'workout_data.dart';
 
@@ -125,6 +126,8 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         _coachCards(context, s, now),
+        const SizedBox(height: 16),
+        const FadeSlideIn(delayMs: 200, child: WeeklyMissionsCard()),
         const SizedBox(height: 16),
         FadeSlideIn(delayMs: 220, child: _workoutCard(context, s, now)),
         const SizedBox(height: 16),

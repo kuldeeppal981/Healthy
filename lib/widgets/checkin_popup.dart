@@ -12,6 +12,7 @@ import 'ui_kit.dart';
 /// and confetti. Closes by itself after a few seconds or on tap.
 Future<void> showAutoCheckInPopup(BuildContext context, AppState s) {
   final streak = s.dailyStreak < 1 ? 1 : s.dailyStreak;
+  final comeback = s.comebackGap;
   final p = Progress.of(s);
   Haptic.win();
   Celebrate.show(context);
@@ -26,7 +27,8 @@ Future<void> showAutoCheckInPopup(BuildContext context, AppState s) {
       closer ??= Timer(const Duration(milliseconds: 3200), () {
         if (ctx.mounted && Navigator.of(ctx).canPop()) Navigator.of(ctx).pop();
       });
-      return _CheckInCard(streak: streak, levelTitle: p.title, level: p.level);
+      return _CheckInCard(
+          streak: streak, levelTitle: p.title, level: p.level, comeback: comeback);
     },
     transitionBuilder: (ctx, a1, a2, child) {
       final t = CurvedAnimation(parent: a1, curve: Curves.elasticOut);
@@ -42,7 +44,13 @@ class _CheckInCard extends StatelessWidget {
   final int streak;
   final String levelTitle;
   final int level;
-  const _CheckInCard({required this.streak, required this.levelTitle, required this.level});
+  final int comeback;
+  const _CheckInCard({
+    required this.streak,
+    required this.levelTitle,
+    required this.level,
+    this.comeback = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +81,14 @@ class _CheckInCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
+              if (comeback > 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text('Welcome back! $comeback days away, now you are here.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                ),
               Text('Checked in!',
                   style: TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.ink)),
@@ -94,7 +110,10 @@ class _CheckInCard extends StatelessWidget {
                   color: AppColors.chipBg,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text('+10 XP  |  Level $level $levelTitle',
+                child: Text(
+                    comeback > 0
+                        ? '+10 XP +25 comeback bonus  |  Level $level $levelTitle'
+                        : '+10 XP  |  Level $level $levelTitle',
                     style: TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.chipInk)),
               ),
