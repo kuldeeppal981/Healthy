@@ -31,6 +31,19 @@ import 'report_screen.dart';
 import 'settings_screen.dart';
 import 'social_screen.dart';
 
+/// Opens the profile as its own page (from the avatar on Home).
+void openProfile(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: const AppBackground(child: ProfileScreen()),
+      ),
+    ),
+  );
+}
+
 /// Account, body stats and the menu for everything else.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

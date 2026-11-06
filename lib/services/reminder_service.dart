@@ -34,7 +34,7 @@ class Reminder {
 
 /// Local reminders on this phone: meals, water and workout days.
 /// They are device settings, so they are not part of the cloud backup.
-class ReminderService {
+class ReminderService extends ChangeNotifier {
   ReminderService._();
   static final instance = ReminderService._();
 
@@ -327,6 +327,7 @@ class ReminderService {
   Future<void> apply(AppState state) async {
     await _store();
     await reschedule(state);
+    notifyListeners();
   }
 
   /// Usual time (minutes after midnight) the user logs [meal], from the last

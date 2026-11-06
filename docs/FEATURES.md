@@ -221,3 +221,11 @@ On branch `pose-test` only (to protect main from build breaks): `camera ^0.11.0+
 
 ## Social safety (BUILT, UNTESTED, SQL already applied to the live database)
 Friends screen: more menu (3 dots) on friend rows and other people's feed posts -> Mute / Block / Report (`_showSafetySheet` in `social_screen.dart`). Friends tab bottom: "Safety and privacy" card with Private profile, Show when I am active (opt-in, green dot for friends, updated when numbers are sent), and the blocked/muted list with Unblock. Mute hides their posts and numbers only; block removes the friendship and hides both ways. Reports go to the `reports` table (no admin screen). Needs two accounts to test. Not built from the social list: buddy matching, private groups, group challenges, shared plans, weekly community leaderboard, invite links, accountability partner, PR reaction types.
+
+## Home redesign (branch `home-redesign`, NOT merged, untested)
+- Bottom bar: Home, Diary, + (centre), Workout, Analytics. Profile opens by tapping the avatar on Home (`openProfile`).
+- Home order: header (greeting, search, bell, avatar) -> Calories -> Steps + Water (Water: "+ glass", reminder bell top right) -> Today's plan (compact, next 3, "View all" sheet) -> Workout + AI coach side by side -> Explore your fitness.
+- `widgets/explore_section.dart`: 2x3 tiles, "Customize" saved in `AppState.prefs['explore']`.
+- `screens/hub_screens.dart`: Nutrition, Health, Library, Community, Daily plan, Challenges hubs with tabs, linking existing screens.
+- `screens/notifications_screen.dart`: friend requests and cheers (bell). `ReminderService` is now a ChangeNotifier.
+- Streak startup checks moved to AppShell (`streakStartupChecks` in streak_card.dart).

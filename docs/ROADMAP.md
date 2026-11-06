@@ -65,3 +65,6 @@ Also: ingredient -> allergen dictionary table grown from AI answers to make alle
 - Test on a phone: "+" button, Today's plan ticks and confetti, search, past-day logging, missed workout card, smart reminders (turn on reminders, log lunch, check the next day's alarm), offline banner (airplane mode while signed in), high contrast / reduce motion, privacy dashboard export, new onboarding questions.
 - Ideas not done: reorder Home by time of day, persist the "moved workout", use experience level for plan defaults and budget plan, diet filter in budget plan and voice/photo results, real connectivity check, TalkBack pass.
 - Social ideas from the user's ChatGPT list (buddy matching, private groups, group challenges, shared plans, activity status, PR reactions, weekly community leaderboard, invite links, report/block/mute, private profile, accountability partner): planned, needs SQL.
+
+## Pending: Home redesign
+Branch `home-redesign` is local only (user said do not push). Needs user go-ahead to push, build and merge to main.

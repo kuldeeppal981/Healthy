@@ -9,6 +9,44 @@ import '../widgets/celebrate.dart';
 import '../widgets/ui_kit.dart';
 import 'badges_screen.dart';
 
+// Posted once per app run; the feed also ignores repeats.
+final _sentAnnouncements = <String>{};
+
+void announceProgress(AppState s) {
+  final p = Progress.of(s);
+  if (p.level >= 2 && _sentAnnouncements.add('level-${p.level}')) {
+    SocialService.instance.postAchievement(
+      kind: 'badge',
+      title: 'Reached level ${p.level}: ${p.title}',
+      body: '${p.xp} XP',
+      dedupe: 'level-${p.level}',
+    );
+  }
+  final n = s.dailyStreak;
+  const marks = [7, 14, 30, 50, 100, 200, 365];
+  if (marks.contains(n) &&
+      _sentAnnouncements.add('streak-$n-${AppState.dayKey(DateTime.now())}')) {
+    SocialService.instance.postAchievement(
+      kind: 'streak',
+      title: '$n day streak',
+      body: 'Showing up every single day.',
+      dedupe: 'streak-$n-${AppState.dayKey(DateTime.now())}',
+    );
+  }
+}
+
+/// Runs once when the app opens (from the app shell): spends a streak freeze
+/// if yesterday was missed and posts level / streak milestones to friends.
+void streakStartupChecks(BuildContext context) {
+  final s = context.read<AppState>();
+  if (s.settleFreezes()) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('You missed a day. A streak freeze saved your streak.'),
+    ));
+  }
+  announceProgress(s);
+}
+
 /// Compact home card: daily streak, level and XP, streak freezes, check-in.
 class StreakCard extends StatefulWidget {
   const StreakCard({super.key});
@@ -18,46 +56,7 @@ class StreakCard extends StatefulWidget {
 }
 
 class _StreakCardState extends State<StreakCard> {
-  // Posted once per app run; the feed also ignores repeats.
-  static final _sent = <String>{};
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final s = context.read<AppState>();
-      final saved = s.settleFreezes();
-      if (saved) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('You missed a day. A streak freeze saved your streak.'),
-        ));
-      }
-      _announce(s);
-    });
-  }
-
-  void _announce(AppState s) {
-    final p = Progress.of(s);
-    if (p.level >= 2 && _sent.add('level-${p.level}')) {
-      SocialService.instance.postAchievement(
-        kind: 'badge',
-        title: 'Reached level ${p.level}: ${p.title}',
-        body: '${p.xp} XP',
-        dedupe: 'level-${p.level}',
-      );
-    }
-    final n = s.dailyStreak;
-    const marks = [7, 14, 30, 50, 100, 200, 365];
-    if (marks.contains(n) && _sent.add('streak-$n-${AppState.dayKey(DateTime.now())}')) {
-      SocialService.instance.postAchievement(
-        kind: 'streak',
-        title: '$n day streak',
-        body: 'Showing up every single day.',
-        dedupe: 'streak-$n-${AppState.dayKey(DateTime.now())}',
-      );
-    }
-  }
+  void _announce(AppState s) => announceProgress(s);
 
   void _checkIn(AppState s) {
     final before = Progress.of(s);

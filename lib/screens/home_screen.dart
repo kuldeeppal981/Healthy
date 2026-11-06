@@ -19,6 +19,11 @@ import '../widgets/weight_dialog.dart';
 import 'coach_screen.dart';
 import 'diary_screen.dart';
 import 'health_connect_screen.dart';
+import '../services/reminder_service.dart';
+import '../widgets/explore_section.dart';
+import 'notifications_screen.dart';
+import 'profile_screen.dart';
+import 'reminders_screen.dart';
 import 'scan_screen.dart';
 import 'search_screen.dart';
 import 'social_screen.dart';
@@ -67,88 +72,163 @@ class HomeScreen extends StatelessWidget {
       children: [
         FadeSlideIn(child: _header(context, now, s.displayName)),
         const SizedBox(height: 18),
-        FadeSlideIn(delayMs: 80, child: _nutritionCard(context, s)),
-        const SizedBox(height: 14),
-        FadeSlideIn(delayMs: 140, child: TodaysPlanCard(onGoto: onGoto)),
-        const SizedBox(height: 22),
-        Row(
-          children: [
-            const Expanded(
-              child: Text('Quick actions',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-            ),
-            TextButton(
-              onPressed: () => onGoto(1),
-              style: TextButton.styleFrom(
-                minimumSize: const Size(0, 36),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Track your day',
-                      style: TextStyle(
-                          color: AppColors.link, fontWeight: FontWeight.w700)),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 18, color: AppColors.link),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            _quick(Icons.qr_code_scanner, 'Scan', () => _open(context, const ScanScreen())),
-            const SizedBox(width: 10),
-            _quick(Icons.mic, 'Voice', () => logByVoice(context)),
-            const SizedBox(width: 10),
-            _quick(Icons.water_drop, 'Water', () {
-              Haptic.splash();
-              s.addWater(1);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Water: ${s.waterToday} of ${s.waterTarget} glasses')),
-              );
-            }),
-            const SizedBox(width: 10),
-            _quick(Icons.monitor_weight_outlined, 'Weight', () => showLogWeight(context, s)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: _stepsCard(context, s)),
-              const SizedBox(width: 12),
-              Expanded(child: _waterCard(s)),
-            ],
-          ),
-        ),
-        _coachCards(context, s, now),
-        const SizedBox(height: 16),
-        const FadeSlideIn(delayMs: 200, child: WeeklyMissionsCard()),
-        const SizedBox(height: 16),
-        FadeSlideIn(delayMs: 220, child: _workoutCard(context, s, now)),
+        FadeSlideIn(delayMs: 60, child: _nutritionCard(context, s)),
         const SizedBox(height: 16),
         FadeSlideIn(
-          delayMs: 300,
+          delayMs: 120,
           child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: _insightCard(context, s)),
-              const SizedBox(width: 12),
-              const Expanded(child: StreakCard()),
-            ],
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _stepsCard(context, s)),
+                const SizedBox(width: 12),
+                Expanded(child: _waterCard(context, s)),
+              ],
+            ),
           ),
         ),
+        const SizedBox(height: 16),
+        FadeSlideIn(delayMs: 180, child: TodaysPlanCard(onGoto: onGoto, compact: true)),
+        _coachCards(context, s, now),
+        const SizedBox(height: 16),
+        FadeSlideIn(
+          delayMs: 240,
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _workoutCompact(context, s, now)),
+                const SizedBox(width: 12),
+                Expanded(child: _coachCompact(context)),
+              ],
+            ),
+          ),
         ),
-        if (cloudEnabled) ...[
-          const SizedBox(height: 16),
-          const SocialCard(),
-        ],
+        const SizedBox(height: 22),
+        ExploreSection(onGoto: onGoto),
       ],
+    );
+  }
+
+  /// Number on the bell: friend requests and cheers you have not seen.
+  Widget _bell(BuildContext context) {
+    if (!cloudEnabled) return const SizedBox.shrink();
+    return ListenableBuilder(
+      listenable: SocialService.instance,
+      builder: (context, _) {
+        final soc = SocialService.instance;
+        final n = soc.requests.length + soc.unreadCheers;
+        return IconButton(
+          tooltip: 'Notifications',
+          iconSize: 26,
+          onPressed: () => _open(context, const NotificationsScreen()),
+          icon: Badge(
+            isLabelVisible: n > 0,
+            label: Text('$n'),
+            child: Icon(Icons.notifications_none, color: AppColors.ink),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _workoutCompact(BuildContext context, AppState s, DateTime now) {
+    final plan = s.planFor(now.weekday);
+    final mins = estimateMinutes(plan);
+    final done = s.workouts.any((w) => AppState.sameDay(w.at, now));
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primaryLight, AppColors.primaryDeep],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+              color: AppColors.primary.withOpacity(0.25),
+              blurRadius: 14,
+              offset: const Offset(0, 6)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(done ? 'Workout done' : "Today's workout",
+              style: const TextStyle(color: AppColors.onAccent, fontSize: 12)),
+          const SizedBox(height: 2),
+          Text(plan.rest ? 'Rest day' : plan.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: AppColors.onAccent, fontSize: 21, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 2),
+          Text(plan.rest ? 'Recover and walk' : '${plan.exercises.length} exercises\nabout $mins min',
+              style: const TextStyle(color: AppColors.onAccent, fontSize: 12, height: 1.3)),
+          const Spacer(),
+          const SizedBox(height: 12),
+          Semantics(
+            button: true,
+            label: plan.rest ? 'View plan' : 'Start workout',
+            child: InkWell(
+              onTap: () => onGoto(2),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                height: 42,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(plan.rest ? 'View plan' : (done ? 'Open' : 'Start'),
+                    style: TextStyle(
+                        color: AppColors.primaryDeep, fontWeight: FontWeight.w800)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _coachCompact(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+              const SizedBox(width: 6),
+              const Expanded(
+                child: Text('AI coach',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            cloudEnabled
+                ? 'Ask about food, workout or health.'
+                : 'Tips based on your day.',
+            style: TextStyle(fontSize: 12, color: AppColors.muted, height: 1.35),
+          ),
+          const Spacer(),
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: cloudEnabled ? () => _open(context, const CoachScreen()) : null,
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 42),
+              foregroundColor: AppColors.primary,
+              side: BorderSide(color: AppColors.primary, width: 1.2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: const Text('Chat', style: TextStyle(fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -179,11 +259,12 @@ class HomeScreen extends StatelessWidget {
           onPressed: () => _open(context, SearchScreen(onGoto: onGoto)),
           icon: Icon(Icons.search, color: AppColors.ink),
         ),
+        _bell(context),
         Semantics(
           button: true,
           label: 'Open profile',
           child: InkWell(
-            onTap: () => onGoto(4),
+            onTap: () => openProfile(context),
             borderRadius: BorderRadius.circular(40),
             child: Container(
               width: 52,
@@ -608,7 +689,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _waterCard(AppState s) {
+  Widget _waterCard(BuildContext context, AppState s) {
     const glassMl = 250;
     final shown = s.waterTarget.clamp(1, 10);
     return AppCard(
@@ -633,27 +714,33 @@ class HomeScreen extends StatelessWidget {
               const Text('Water',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
               const Spacer(),
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.chipBg,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text('${s.waterToday}/${s.waterTarget}',
-                      maxLines: 1,
-                      style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700)),
-                ),
+              ListenableBuilder(
+                listenable: ReminderService.instance,
+                builder: (context, _) {
+                  final on = ReminderService.instance.water;
+                  return IconButton(
+                    tooltip: 'Water reminders',
+                    onPressed: () => _open(context, const RemindersScreen()),
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(32, 32), padding: EdgeInsets.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: on ? AppColors.primary : AppColors.chipBg,
+                    ),
+                    icon: Icon(
+                      on ? Icons.notifications_active : Icons.notifications_none,
+                      size: 17,
+                      color: on ? AppColors.onAccent : AppColors.primary,
+                    ),
+                  );
+                },
               ),
             ],
           ),
           const SizedBox(height: 8),
           Text('${_num(s.waterToday * glassMl)} ml',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
-          Text('Goal: ${_num(s.waterTarget * glassMl)} ml',
+          Text('Goal: ${_num(s.waterTarget * glassMl)} ml  ·  ${s.waterToday}/${s.waterTarget}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 12, color: AppColors.muted)),
           const SizedBox(height: 8),
           Wrap(
@@ -668,23 +755,26 @@ class HomeScreen extends StatelessWidget {
           ),
           const Spacer(),
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                Haptic.splash();
-                s.addWater(1);
-              },
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add water'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(0, 38),
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                foregroundColor: AppColors.primary,
-                side: BorderSide(color: AppColors.primary, width: 1.2),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Haptic.splash();
+                    s.addWater(1);
+                  },
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('glass'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(color: AppColors.primary, width: 1.2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

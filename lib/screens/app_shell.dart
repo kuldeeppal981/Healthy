@@ -14,7 +14,7 @@ import 'diary_screen.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
-import 'profile_screen.dart';
+import 'streak_card.dart';
 import 'workout_screen.dart';
 
 /// Bottom navigation: Home, Diary, Workout, Analytics, Profile.
@@ -40,6 +40,7 @@ class _AppShellState extends State<AppShell> {
           .cloud
           ?.passwordRecoveryEvents
           .listen((_) => _askNewPassword());
+      streakStartupChecks(context);
       _checkInSub = context.read<AppState>().autoCheckInEvents.listen((_) {
         // Wait a moment so a closing sheet (add food) is gone first.
         Future<void>.delayed(const Duration(milliseconds: 700), () {
@@ -215,7 +216,6 @@ class _AppShellState extends State<AppShell> {
       const DiaryScreen(),
       const WorkoutScreen(),
       const AnalyticsScreen(),
-      const ProfileScreen(),
     ];
 
     return Scaffold(
@@ -244,7 +244,6 @@ class _AppShellState extends State<AppShell> {
               _addButton(),
               _navItem(2, Icons.fitness_center, Icons.fitness_center, 'Workout'),
               _navItem(3, Icons.bar_chart_outlined, Icons.bar_chart_rounded, 'Analytics'),
-              _navItem(4, Icons.person_outline, Icons.person, 'Profile'),
             ],
           ),
         ),

@@ -23,7 +23,10 @@ class _Item {
 class TodaysPlanCard extends StatefulWidget {
   final void Function(int tab) onGoto;
 
-  const TodaysPlanCard({super.key, required this.onGoto});
+  /// Compact (Home): shows only the next 3 things, "View all" opens the list.
+  final bool compact;
+
+  const TodaysPlanCard({super.key, required this.onGoto, this.compact = false});
 
   @override
   State<TodaysPlanCard> createState() => _TodaysPlanCardState();
@@ -127,10 +130,21 @@ class _TodaysPlanCardState extends State<TodaysPlanCard> {
                     child: Text("Today's plan",
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   ),
-                  Text(all ? 'All done' : '$done of ${items.length}',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: all ? AppColors.safe : AppColors.muted)),
+                  InkWell(
+                    onTap: widget.compact ? () => _showAll(context, items) : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Text(
+                          widget.compact
+                              ? (all ? 'All done  ›' : '$done of ${items.length}  View all ›')
+                              : (all ? 'All done' : '$done of ${items.length}'),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: widget.compact
+                                  ? AppColors.link
+                                  : (all ? AppColors.safe : AppColors.muted))),
+                    ),
+                  ),
                 ],
               ),
               if (!all)
@@ -150,7 +164,7 @@ class _TodaysPlanCardState extends State<TodaysPlanCard> {
                 ),
               ),
               const SizedBox(height: 6),
-              for (final i in items) _row(i),
+              for (final i in (widget.compact ? _shown(items) : items)) _row(i),
             ],
           ),
         );
@@ -158,14 +172,51 @@ class _TodaysPlanCardState extends State<TodaysPlanCard> {
     );
   }
 
-  Widget _row(_Item i) {
+  /// Compact list: the next 3 things to do (or the last done ones when all done).
+  List<_Item> _shown(List<_Item> items) {
+    final open = items.where((i) => !i.done).toList();
+    if (open.isEmpty) return items.take(3).toList();
+    return open.take(3).toList();
+  }
+
+  void _showAll(BuildContext context, List<_Item> items) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.card,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Today's plan",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 6),
+              for (final i in items)
+                _row(i, onDone: () => Navigator.of(ctx).pop()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _row(_Item i, {VoidCallback? onDone}) {
     return Semantics(
       button: i.onTap != null,
       checked: i.done,
       label: '${i.title}. ${i.detail}. ${i.done ? 'Done' : 'Not done'}',
       excludeSemantics: true,
       child: InkWell(
-        onTap: i.onTap,
+        onTap: i.onTap == null
+            ? null
+            : () {
+                onDone?.call();
+                i.onTap!();
+              },
         borderRadius: BorderRadius.circular(12),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 48),
