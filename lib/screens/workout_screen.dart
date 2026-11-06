@@ -106,7 +106,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   /// Machine busy? Shows other exercises for the same muscle and swaps for today.
   Future<void> _pickAlternative(int index, Exercise ex, List<_SetLog> sets) async {
-    final alts = alternativesFor(ex.name);
+    final have = context.read<AppState>().equipmentPref;
+    final alts = alternativesFor(ex.name, equipmentHave: have);
     final muscle = muscleOf(ex.name);
     final plannedName =
         _basePlan(context.read<AppState>(), _weekday).exercises[index].name;
@@ -147,7 +148,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   title: Text(a.name,
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Text(
-                      '${a.equipment}  |  ${a.level}  |  Main: ${a.primary}',
+                      '${a.equipment}  |  ${a.level}  |  Main: ${a.primary}${equipmentFits(a.equipment, have) ? '' : '  |  needs more equipment'}',
                       style: const TextStyle(fontSize: 12)),
                   onTap: () => Navigator.pop(ctx, a.name),
                 ),
@@ -354,6 +355,81 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     if (next.done || next.kg.text.trim().isNotEmpty) return;
     next.kg.text = sets[i].kg.text;
     next.reps.text = sets[i].reps.text;
+  }
+
+  /// Weekdays whose "missed workout" suggestion was dismissed or used.
+  final Set<int> _missedHandled = {};
+
+  /// Most recent earlier day this week with a planned workout and no log.
+  int? _missedWeekday(AppState state) {
+    final now = DateTime.now();
+    final monday = DateTime(now.year, now.month, now.day)
+        .subtract(Duration(days: now.weekday - 1));
+    for (var wd = now.weekday - 1; wd >= 1; wd--) {
+      if (_missedHandled.contains(wd)) continue;
+      final plan = state.planFor(wd);
+      if (plan.rest) continue;
+      final date = monday.add(Duration(days: wd - 1));
+      final done = state.workouts.any((w) => AppState.sameDay(w.at, date));
+      if (!done) return wd;
+    }
+    return null;
+  }
+
+  /// Flexible calendar: a missed workout can be done today instead.
+  Widget _missedCard(AppState state) {
+    final today = DateTime.now().weekday;
+    if (_weekday != today || _logging || _short.containsKey(today)) {
+      return const SizedBox.shrink();
+    }
+    final todayPlan = state.planFor(today);
+    final wd = _missedWeekday(state);
+    if (wd == null) return const SizedBox.shrink();
+    final missed = state.planFor(wd);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: AppCard(
+        color: AppColors.warnBg,
+        borderColor: AppColors.warnBg,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('You missed ${_dayNames[wd - 1]}: ${missed.title}',
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text(
+              todayPlan.rest
+                  ? 'Today is a rest day, so you can do it now.'
+                  : 'No problem. Do it today instead of ${todayPlan.title}, or skip it.',
+              style: TextStyle(fontSize: 13, color: AppColors.muted),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                FilledButton(
+                  style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                  onPressed: () {
+                    _skipRest();
+                    _resetDay(today);
+                    setState(() {
+                      _short[today] = missed;
+                      _missedHandled.add(wd);
+                    });
+                  },
+                  child: const Text('Do it today'),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
+                  onPressed: () => setState(() => _missedHandled.add(wd)),
+                  child: const Text('Skip it'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _resetDay(int weekday) {
@@ -648,6 +724,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               const SizedBox(height: 14),
               _alarmCard(state),
               const SizedBox(height: 14),
+              _missedCard(state),
               if (plan.rest)
                 const AppCard(
                   child: Text(

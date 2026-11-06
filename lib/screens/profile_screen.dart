@@ -23,6 +23,7 @@ import 'health_screen.dart';
 import 'medical_report_screen.dart';
 import 'muscle_screen.dart';
 import 'onboarding_screen.dart';
+import 'privacy_dashboard_screen.dart';
 import 'pro_screen.dart';
 import 'reminders_screen.dart';
 import 'report_screen.dart';
@@ -114,6 +115,12 @@ class ProfileScreen extends StatelessWidget {
             title: 'Reminders',
             subtitle: 'Meals, water and workouts',
             onTap: () => _open(context, const RemindersScreen()),
+          ),
+          MenuRow(
+            icon: Icons.privacy_tip_outlined,
+            title: 'Privacy dashboard',
+            subtitle: 'What is stored, shared, and sent to AI. Export data',
+            onTap: () => _open(context, const PrivacyDashboardScreen()),
           ),
         ]),
         const SizedBox(height: 14),

@@ -2,12 +2,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../services/theme_service.dart';
 import '../theme.dart';
 
 /// Confetti burst over the whole screen for about 1.6 seconds.
 /// Call `Celebrate.show(context)` after a win (check-in, workout done).
 class Celebrate {
   static void show(BuildContext context) {
+    if (ThemeService.instance.reduceMotion) return;
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
     late OverlayEntry entry;

@@ -66,8 +66,12 @@ class _DiaryScreenState extends State<DiaryScreen> {
               const SizedBox(width: 8),
               _roundIcon(Icons.mic, 'Speak', () => logByVoice(context)),
               const SizedBox(width: 8),
-              InkWell(
-                onTap: () => showAddFoodSheet(context),
+            ],
+            Semantics(
+              button: true,
+              label: isToday ? 'Add food' : 'Add food to this day',
+              child: InkWell(
+                onTap: () => showAddFoodSheet(context, forDay: isToday ? null : day),
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
                   width: 46,
@@ -90,9 +94,17 @@ class _DiaryScreenState extends State<DiaryScreen> {
                   child: const Icon(Icons.add, color: Colors.white, size: 26),
                 ),
               ),
-            ],
+            ),
           ],
         ),
+        if (!isToday)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              'Forgot to log? Tap + or a meal to add food to this day.',
+              style: TextStyle(fontSize: 12, color: AppColors.muted),
+            ),
+          ),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -119,7 +131,8 @@ class _DiaryScreenState extends State<DiaryScreen> {
         ),
         const SizedBox(height: 6),
         for (final meal in mealOrder)
-          _mealCard(context, s, meal, items.where((e) => e.meal == meal).toList(), isToday),
+          _mealCard(context, s, meal, items.where((e) => e.meal == meal).toList(), true,
+              forDay: isToday ? null : day),
         if (isToday) ...[
           const SizedBox(height: 4),
           AppCard(
@@ -210,7 +223,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
   }
 
   Widget _mealCard(BuildContext context, AppState s, String meal,
-      List<DiaryEntry> items, bool canAdd) {
+      List<DiaryEntry> items, bool canAdd, {DateTime? forDay}) {
     final kcal = items.fold(0.0, (sum, e) => sum + e.kcal).round();
 
     return Padding(
@@ -242,7 +255,7 @@ class _DiaryScreenState extends State<DiaryScreen> {
                 if (canAdd)
                   IconButton(
                     tooltip: 'Add to ${mealLabels[meal]}',
-                    onPressed: () => showAddFoodSheet(context, meal: meal),
+                    onPressed: () => showAddFoodSheet(context, meal: meal, forDay: forDay),
                     icon: Icon(Icons.add_circle, color: AppColors.primary),
                   ),
               ],

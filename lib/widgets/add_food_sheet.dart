@@ -11,6 +11,8 @@ Future<void> showAddFoodSheet(
   BuildContext context, {
   String? meal,
   bool customMode = false,
+  DateTime? forDay,
+  String? initialQuery,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -22,6 +24,8 @@ Future<void> showAddFoodSheet(
     builder: (_) => _AddFoodForm(
       initialMeal: meal ?? mealForNow(),
       startCustom: customMode,
+      forDay: forDay,
+      initialQuery: initialQuery ?? '',
     ),
   );
 }
@@ -35,8 +39,15 @@ class _Portion {
 class _AddFoodForm extends StatefulWidget {
   final String initialMeal;
   final bool startCustom;
+  final DateTime? forDay;
+  final String initialQuery;
 
-  const _AddFoodForm({required this.initialMeal, required this.startCustom});
+  const _AddFoodForm({
+    required this.initialMeal,
+    required this.startCustom,
+    this.forDay,
+    this.initialQuery = '',
+  });
 
   @override
   State<_AddFoodForm> createState() => _AddFoodFormState();
@@ -46,7 +57,16 @@ class _AddFoodFormState extends State<_AddFoodForm> {
   late bool _custom = widget.startCustom;
   bool _quick = false;
   late String _meal = widget.initialMeal;
-  String _query = '';
+  late String _query = widget.initialQuery;
+  late final _search = TextEditingController(text: widget.initialQuery);
+
+  /// When the user adds food to a past day, the entry is dated on that day.
+  DateTime _stamp() {
+    final now = DateTime.now();
+    final d = widget.forDay;
+    if (d == null || AppState.sameDay(d, now)) return now;
+    return DateTime(d.year, d.month, d.day, now.hour, now.minute);
+  }
 
   final _name = TextEditingController();
   final _kcal = TextEditingController();
@@ -61,6 +81,7 @@ class _AddFoodFormState extends State<_AddFoodForm> {
     _protein.dispose();
     _carbs.dispose();
     _fat.dispose();
+    _search.dispose();
     super.dispose();
   }
 
@@ -85,7 +106,7 @@ class _AddFoodFormState extends State<_AddFoodForm> {
             protein: p,
             carbs: c,
             fat: f,
-            at: DateTime.now(),
+            at: _stamp(),
           ),
         );
   }
@@ -330,7 +351,7 @@ class _AddFoodFormState extends State<_AddFoodForm> {
                   for (final x in (t['items'] as List? ?? const []))
                     if (x is Map) s.reportAvoidHit(x['name'] as String),
                 ].whereType<String>().toList();
-                s.addTemplate(t, _meal);
+                s.addTemplate(t, _meal, at: _stamp());
                 if (hit.isNotEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text('Your report says to limit "${hit.first}". Keep the portion small.')));
@@ -465,6 +486,7 @@ class _AddFoodFormState extends State<_AddFoodForm> {
             Flexible(child: _quickView())
           else ...[
             TextField(
+              controller: _search,
               onChanged: (v) => setState(() => _query = v),
               decoration: const InputDecoration(
                 hintText: 'Search roti, dal, rice, idli...',

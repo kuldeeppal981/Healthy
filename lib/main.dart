@@ -75,6 +75,7 @@ Future<void> main() async {
   }
   unawaited(HealthService.instance.init(state));
   state.addListener(refreshWidget);
+  state.addListener(() => ReminderService.instance.onStateChanged(state));
   StepService.instance.addListener(refreshWidget);
   refreshWidget();
 
@@ -108,6 +109,17 @@ class _HealthAppState extends State<HealthApp> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState lifecycle) {
+    // Back in the app: if the last backup failed (offline), try again.
+    if (lifecycle == AppLifecycleState.resumed) {
+      final app = context.read<AppState>();
+      if (app.signedIn && app.syncError != null) {
+        unawaited(app.syncAfterLogin());
+      }
+    }
+  }
+
   // The phone switched between light and dark: draw the app again.
   @override
   void didChangePlatformBrightness() {
@@ -124,13 +136,15 @@ class _HealthAppState extends State<HealthApp> with WidgetsBindingObserver {
         ts.dark = ts.resolveDark();
         final dark = ts.dark;
         return MaterialApp(
-          key: ValueKey('${ts.accentIndex}-$dark'),
+          key: ValueKey('${ts.accentIndex}-$dark-${ts.highContrast}'),
           title: 'Healthy',
           debugShowCheckedModeBanner: false,
           theme: buildTheme(),
           builder: (context, child) {
             final scaled = MediaQuery(
               data: MediaQuery.of(context).copyWith(
+                disableAnimations: ts.reduceMotion || MediaQuery.disableAnimationsOf(context),
+                boldText: ts.highContrast || MediaQuery.boldTextOf(context),
                 textScaler: TextScaler.linear(
                   MediaQuery.textScalerOf(context).scale(1.0) * ts.textScale,
                 ),

@@ -30,6 +30,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   late final TextEditingController _weight = TextEditingController(
       text: widget.initial == null ? '' : widget.initial!.weightKg.toString());
 
+  // Extra setup answers (used to tailor foods, exercises and plans).
+  late String _experience =
+      (context.read<AppState>().prefs['experience'] as String?) ?? 'beginner';
+  late String _equipment =
+      (context.read<AppState>().prefs['equipment'] as String?) ?? 'gym';
+  late String _diet = (context.read<AppState>().prefs['diet'] as String?) ?? 'veg';
+  late String _budget = (context.read<AppState>().prefs['budget'] as String?) ?? 'medium';
+
+  static const _experienceLabels = {
+    'beginner': 'Beginner: new to exercise or just restarting',
+    'intermediate': 'Intermediate: train regularly for 6+ months',
+    'advanced': 'Advanced: train for years, know my lifts',
+  };
+  static const _equipmentLabels = {
+    'gym': 'Full gym',
+    'home': 'Home: dumbbells or bands',
+    'none': 'No equipment (bodyweight)',
+  };
+  static const _dietLabels = {
+    'veg': 'Vegetarian',
+    'egg': 'Vegetarian + eggs',
+    'nonveg': 'Non-vegetarian',
+    'vegan': 'Vegan (no milk products)',
+  };
+  static const _budgetLabels = {
+    'low': 'Low: simple everyday foods',
+    'medium': 'Medium',
+    'high': 'Flexible: any food is fine',
+  };
+
   @override
   void dispose() {
     _age.dispose();
@@ -65,7 +95,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
       return;
     }
-    context.read<AppState>().saveProfile(p);
+    final app = context.read<AppState>();
+    app.prefs = {
+      ...app.prefs,
+      'experience': _experience,
+      'equipment': _equipment,
+      'diet': _diet,
+      'budget': _budget,
+    };
+    app.saveProfile(p);
     if (widget.editing) Navigator.of(context).pop();
   }
 
@@ -168,6 +206,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             const SizedBox(height: Space.gap),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _label('Training experience'),
+                  for (final e in _experienceLabels.entries)
+                    _choice(e.value, _experience == e.key,
+                        () => setState(() => _experience = e.key)),
+                  const SizedBox(height: 6),
+                  _label('Equipment you have'),
+                  for (final e in _equipmentLabels.entries)
+                    _choice(e.value, _equipment == e.key,
+                        () => setState(() => _equipment = e.key)),
+                ],
+              ),
+            ),
+            const SizedBox(height: Space.gap),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _label('Food preference'),
+                  for (final e in _dietLabels.entries)
+                    _choice(e.value, _diet == e.key, () => setState(() => _diet = e.key)),
+                  const SizedBox(height: 6),
+                  _label('Food budget'),
+                  for (final e in _budgetLabels.entries)
+                    _choice(e.value, _budget == e.key,
+                        () => setState(() => _budget = e.key)),
+                  Text(
+                    'Used only to suggest better foods and exercises. You can change it any time.',
+                    style: TextStyle(fontSize: 12, color: AppColors.muted),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Space.gap),
             if (t != null)
               AppCard(
                 color: AppColors.chipBg,
@@ -213,7 +288,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _choice(String text, bool selected, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
+      child: Semantics(
+       button: true,
+       selected: selected,
+       label: text,
+       excludeSemantics: true,
+       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
         child: Container(
@@ -243,6 +323,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ],
           ),
         ),
+       ),
       ),
     );
   }

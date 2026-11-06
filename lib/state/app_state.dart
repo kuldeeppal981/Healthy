@@ -30,6 +30,21 @@ class AppState extends ChangeNotifier {
   /// prefer, concerns, date. Private to this user (synced with their data).
   Map<String, dynamic>? medicalNotes;
 
+  /// Answers from the setup questions: 'experience' (beginner|intermediate|
+  /// advanced), 'equipment' (gym|home|none), 'diet' (veg|egg|nonveg|vegan),
+  /// 'budget' (low|medium|high), 'focus' (list of strings).
+  Map<String, dynamic> prefs = {};
+
+  String? get dietPref => prefs['diet'] as String?;
+  String? get experiencePref => prefs['experience'] as String?;
+  String? get equipmentPref => prefs['equipment'] as String?;
+  String? get budgetPref => prefs['budget'] as String?;
+
+  void savePrefs(Map<String, dynamic> next) {
+    prefs = Map<String, dynamic>.from(next);
+    _changed();
+  }
+
   /// Quick logging: favourite foods and saved meal templates, both lists of
   /// plain maps. favs: {name,kcal,protein,carbs,fat}. templates: {name, items}.
   final List<Map<String, dynamic>> favFoods = [];
@@ -103,6 +118,7 @@ class AppState extends ChangeNotifier {
         'allergies': allergies.toList(),
         'conditions': conditions.toList(),
         'medicalNotes': medicalNotes,
+        'prefs': prefs,
         'favFoods': favFoods,
         'mealTemplates': mealTemplates,
         'severity': severity,
@@ -142,6 +158,7 @@ class AppState extends ChangeNotifier {
         : null;
     _readMaps(favFoods, j['favFoods']);
     _readMaps(mealTemplates, j['mealTemplates']);
+    prefs = j['prefs'] is Map ? Map<String, dynamic>.from(j['prefs'] as Map) : {};
     severity
       ..clear()
       ..addAll(Map<String, String>.from((j['severity'] as Map?) ?? const {}));
@@ -362,6 +379,14 @@ class AppState extends ChangeNotifier {
       } catch (_) {}
     }
 
+    prefs = {};
+    final pf = p.getString('prefs');
+    if (pf != null && pf.isNotEmpty) {
+      try {
+        prefs = Map<String, dynamic>.from(jsonDecode(pf) as Map);
+      } catch (_) {}
+    }
+
     final sev = p.getString('severity');
     severity.clear();
     if (sev != null) {
@@ -436,6 +461,7 @@ class AppState extends ChangeNotifier {
     } else {
       await p.setString('medicalNotes', jsonEncode(medicalNotes));
     }
+    await p.setString('prefs', jsonEncode(prefs));
     await p.setString('severity', jsonEncode(severity));
     await p.setBool('traceWarning', traceWarning);
     await p.setInt('kcalTarget', kcalTarget);
@@ -583,7 +609,7 @@ class AppState extends ChangeNotifier {
   }
 
   /// Adds every item of a template to the diary for the given meal.
-  void addTemplate(Map<String, dynamic> t, String meal) {
+  void addTemplate(Map<String, dynamic> t, String meal, {DateTime? at}) {
     final items = (t['items'] as List?) ?? const [];
     var n = 0;
     for (final x in items) {
@@ -596,7 +622,7 @@ class AppState extends ChangeNotifier {
         protein: (x['protein'] as num).toDouble(),
         carbs: (x['carbs'] as num).toDouble(),
         fat: (x['fat'] as num).toDouble(),
-        at: DateTime.now(),
+        at: at ?? DateTime.now(),
       ));
     }
   }
@@ -672,7 +698,7 @@ class AppState extends ChangeNotifier {
 
   void addEntry(DiaryEntry e) {
     entries.add(e);
-    _autoCheckIn();
+    if (sameDay(e.at, DateTime.now())) _autoCheckIn();
     _changed();
   }
 
@@ -836,6 +862,7 @@ class AppState extends ChangeNotifier {
     allergies.clear();
     conditions.clear();
     medicalNotes = null;
+    prefs = {};
     favFoods.clear();
     mealTemplates.clear();
     severity.clear();

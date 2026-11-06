@@ -11,6 +11,7 @@ import '../theme.dart';
 import '../widgets/add_food_sheet.dart';
 import '../widgets/food_art.dart';
 import '../widgets/ring.dart';
+import '../widgets/todays_plan_card.dart';
 import '../widgets/activity_art.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_review.dart';
@@ -19,6 +20,7 @@ import 'coach_screen.dart';
 import 'diary_screen.dart';
 import 'health_connect_screen.dart';
 import 'scan_screen.dart';
+import 'search_screen.dart';
 import 'social_screen.dart';
 import 'steps_screen.dart';
 import 'streak_card.dart';
@@ -65,6 +67,8 @@ class HomeScreen extends StatelessWidget {
         FadeSlideIn(child: _header(context, now, s.displayName)),
         const SizedBox(height: 18),
         FadeSlideIn(delayMs: 80, child: _nutritionCard(context, s)),
+        const SizedBox(height: 14),
+        FadeSlideIn(delayMs: 140, child: TodaysPlanCard(onGoto: onGoto)),
         const SizedBox(height: 22),
         Row(
           children: [
@@ -166,19 +170,29 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        InkWell(
-          onTap: () => onGoto(4),
-          borderRadius: BorderRadius.circular(40),
-          child: Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.border, width: 1.5),
+        IconButton(
+          tooltip: 'Search',
+          iconSize: 26,
+          onPressed: () => _open(context, SearchScreen(onGoto: onGoto)),
+          icon: Icon(Icons.search, color: AppColors.ink),
+        ),
+        Semantics(
+          button: true,
+          label: 'Open profile',
+          child: InkWell(
+            onTap: () => onGoto(4),
+            borderRadius: BorderRadius.circular(40),
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.border, width: 1.5),
+              ),
+              padding: const EdgeInsets.all(3),
+              child: const AvatarCircle(size: 46),
             ),
-            padding: const EdgeInsets.all(3),
-            child: const AvatarCircle(size: 46),
           ),
         ),
       ],

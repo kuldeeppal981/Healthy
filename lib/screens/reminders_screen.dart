@@ -143,6 +143,32 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 10),
+                AppCard(
+                  radius: 16,
+                  padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Smart reminders',
+                                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                            Text(
+                                'No reminder for what you already did today. Meal reminders move to the time you usually eat.',
+                                style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: _svc.smart,
+                        activeColor: AppColors.primary,
+                        onChanged: (v) => _toggle(v, (x) => _svc.smart = x),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Reminders are saved on this phone. Android may deliver them a few minutes late to save battery.',

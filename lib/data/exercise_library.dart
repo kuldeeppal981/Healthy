@@ -69,7 +69,18 @@ String? muscleOf(String name) {
 /// Other exercises that train the same muscle, for when a machine is busy.
 /// Closest first (same primary muscle), then the rest of the same muscle,
 /// and entries with different equipment come before the same equipment.
-List<ExerciseInfo> alternativesFor(String name) {
+/// True when an exercise can be done with the equipment the user has
+/// (gym | home | none). Judged from the equipment text.
+bool equipmentFits(String equipment, String? have) {
+  if (have == null || have == 'gym') return true;
+  final e = equipment.toLowerCase();
+  if (have == 'none') return e.contains('bodyweight');
+  // home: dumbbells, bands, bodyweight; no machines, cables or barbells.
+  const gymOnly = ['machine', 'cable', 'barbell', 'smith', 'rack', 'lat pull', 'pulldown'];
+  return !gymOnly.any(e.contains);
+}
+
+List<ExerciseInfo> alternativesFor(String name, {String? equipmentHave}) {
   final info = findExercise(name);
   if (info == null) return const [];
   final muscle = muscleOf(name);
@@ -80,7 +91,9 @@ List<ExerciseInfo> alternativesFor(String name) {
     if (same) out.add(e);
   }
   int score(ExerciseInfo e) =>
-      (e.primary == info.primary ? 0 : 2) + (e.equipment == info.equipment ? 1 : 0);
+      (equipmentFits(e.equipment, equipmentHave) ? 0 : 10) +
+      (e.primary == info.primary ? 0 : 2) +
+      (e.equipment == info.equipment ? 1 : 0);
   out.sort((a, b) => score(a).compareTo(score(b)));
   return out;
 }

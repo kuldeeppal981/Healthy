@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -7,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../models.dart';
 import '../state/app_state.dart';
 
 class Reminder {
@@ -45,6 +47,10 @@ class ReminderService {
   Reminder workout = Reminder(false, const TimeOfDay(hour: 18, minute: 0));
   bool water = false;
   int waterEveryHours = 2; // between 9:00 and 21:00
+
+  /// Smart reminders: no reminder for something already done today, and meal
+  /// reminders move to the time you usually eat (after a few days of logs).
+  bool smart = true;
 
   static const _channel = AndroidNotificationDetails(
     'reminders',
@@ -167,6 +173,7 @@ class ReminderService {
     workout = Reminder.fromJson(j['workout'], workout);
     water = j['water'] as bool? ?? false;
     waterEveryHours = (j['waterEvery'] as num?)?.toInt() ?? 2;
+    smart = j['smart'] as bool? ?? true;
   }
 
   Future<void> _store() async {
@@ -180,25 +187,29 @@ class ReminderService {
         'workout': workout.toJson(),
         'water': water,
         'waterEvery': waterEveryHours,
+        'smart': smart,
       }),
     );
   }
 
-  tz.TZDateTime _next(int hour, int minute, {int? weekday}) {
+  tz.TZDateTime _next(int hour, int minute, {int? weekday, bool skipToday = false}) {
     final now = tz.TZDateTime.now(tz.local);
     var t = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-    while (t.isBefore(now) || (weekday != null && t.weekday != weekday)) {
+    while (t.isBefore(now) ||
+        (weekday != null && t.weekday != weekday) ||
+        (skipToday && t.year == now.year && t.month == now.month && t.day == now.day)) {
       t = t.add(const Duration(days: 1));
     }
     return t;
   }
 
-  Future<void> _daily(int id, String title, String body, TimeOfDay t) {
+  Future<void> _daily(int id, String title, String body, TimeOfDay t,
+      {bool skipToday = false}) {
     return _plugin.zonedSchedule(
       id,
       title,
       body,
-      _next(t.hour, t.minute),
+      _next(t.hour, t.minute, skipToday: skipToday),
       _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
@@ -208,12 +219,12 @@ class ReminderService {
   }
 
   Future<void> _weekly(int id, int weekday, String title, String body, TimeOfDay t,
-      {bool alarm = false}) {
+      {bool alarm = false, bool skipToday = false}) {
     return _plugin.zonedSchedule(
       id,
       title,
       body,
-      _next(t.hour, t.minute, weekday: weekday),
+      _next(t.hour, t.minute, weekday: weekday, skipToday: skipToday),
       alarm ? _gymAlarm : _details,
       androidScheduleMode: (alarm && _exact)
           ? AndroidScheduleMode.exactAllowWhileIdle
@@ -318,10 +329,60 @@ class ReminderService {
     await reschedule(state);
   }
 
+  /// Usual time (minutes after midnight) the user logs [meal], from the last
+  /// two weeks. Null until there are at least 4 logs.
+  int? _usualMinutes(AppState state, String meal) {
+    final since = DateTime.now().subtract(const Duration(days: 14));
+    final mins = <int>[
+      for (final e in state.entries)
+        if (e.meal == meal && e.at.isAfter(since)) e.at.hour * 60 + e.at.minute,
+    ]..sort();
+    if (mins.length < 4) return null;
+    return mins[mins.length ~/ 2];
+  }
+
+  /// Reminder time for a meal: your usual time minus 15 minutes when that is
+  /// more than 45 minutes away from the time you set, else the time you set.
+  TimeOfDay _mealTime(AppState state, String meal, TimeOfDay set) {
+    if (!smart) return set;
+    final usual = _usualMinutes(state, meal);
+    if (usual == null) return set;
+    final target = (usual - 15).clamp(5 * 60, 22 * 60).toInt();
+    final setMin = set.hour * 60 + set.minute;
+    if ((target - setMin).abs() <= 45) return set;
+    return TimeOfDay(hour: target ~/ 60, minute: target % 60);
+  }
+
+  String _lastSignature = '';
+  Timer? _debounce;
+
+  /// Called whenever the app data changes. Plans the reminders again only when
+  /// something that matters changed (a meal, the workout or water goal done).
+  void onStateChanged(AppState state) {
+    if (!_ready || !smart) return;
+    final now = DateTime.now();
+    final sig = [
+      AppState.dayKey(now),
+      for (final m in mealOrder) state.mealEntries(m).isNotEmpty,
+      state.workouts.any((w) => AppState.sameDay(w.at, now)),
+      state.waterToday >= state.waterTarget,
+    ].join('|');
+    if (sig == _lastSignature) return;
+    _lastSignature = sig;
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(seconds: 2), () => reschedule(state));
+  }
+
   Future<void> reschedule(AppState state) async {
     if (!_ready) return;
     try {
-      await _plugin.cancelAll();
+      // Cancel only our own reminders (not the rest timer notification).
+      for (final id in [1, 2, 3, 11, 12, 13, 14, 15, 16, 17]) {
+        await _plugin.cancel(id);
+      }
+      for (var id = 100; id < 125; id++) {
+        await _plugin.cancel(id);
+      }
       final android = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       try {
@@ -329,28 +390,39 @@ class ReminderService {
       } catch (_) {
         _exact = false;
       }
+      final now = DateTime.now();
+      bool logged(String meal) => smart && state.mealEntries(meal).isNotEmpty;
       if (breakfast.enabled) {
-        await _daily(1, 'Breakfast time', 'Log your breakfast in Healthy.', breakfast.time);
+        await _daily(1, 'Breakfast time', 'Log your breakfast in Healthy.',
+            _mealTime(state, 'breakfast', breakfast.time),
+            skipToday: logged('breakfast'));
       }
       if (lunch.enabled) {
-        await _daily(2, 'Lunch time', 'Log your lunch in Healthy.', lunch.time);
+        await _daily(2, 'Lunch time', 'Log your lunch in Healthy.',
+            _mealTime(state, 'lunch', lunch.time),
+            skipToday: logged('lunch'));
       }
       if (dinner.enabled) {
-        await _daily(3, 'Dinner time', 'Log your dinner in Healthy.', dinner.time);
+        await _daily(3, 'Dinner time', 'Log your dinner in Healthy.',
+            _mealTime(state, 'dinner', dinner.time),
+            skipToday: logged('dinner'));
       }
       if (workout.enabled) {
+        final doneToday = smart && state.workouts.any((w) => AppState.sameDay(w.at, now));
         for (var wd = 1; wd <= 7; wd++) {
           final plan = state.planFor(wd);
           if (plan.rest) continue;
           await _weekly(10 + wd, wd, 'Time to hit the gym', "Today: ${plan.title}", workout.time,
-              alarm: true);
+              alarm: true, skipToday: doneToday && wd == now.weekday);
         }
       }
       if (water) {
+        final goalDone = smart && state.waterToday >= state.waterTarget;
         var id = 100;
         for (var h = 9; h <= 21; h += waterEveryHours) {
           await _daily(id++, 'Drink some water',
-              'Have a glass of water and log it.', TimeOfDay(hour: h, minute: 0));
+              'Have a glass of water and log it.', TimeOfDay(hour: h, minute: 0),
+              skipToday: goalDone);
         }
       }
     } catch (_) {}

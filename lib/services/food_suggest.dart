@@ -27,6 +27,34 @@ bool foodHasAllergen(String foodName, Set<String> allergies) {
   return false;
 }
 
+const _meatWords = [
+  'chicken', 'mutton', 'fish', 'prawn', 'shrimp', 'crab', 'keema', 'lamb', 'beef', 'pork',
+  'tuna', 'salmon',
+];
+const _eggWords = ['egg', 'omelette', 'anda'];
+const _dairyWords = [
+  'milk', 'paneer', 'curd', 'dahi', 'lassi', 'chaas', 'buttermilk', 'ghee', 'whey', 'kheer',
+  'raita', 'cheese', 'butter', 'gulab', 'rasmalai', 'yogurt',
+];
+const _costlyWords = [
+  'paneer', 'almond', 'cashew', 'walnut', 'pista', 'fish', 'prawn', 'mutton', 'whey',
+  'cheese', 'salmon',
+];
+
+/// True when the food does not fit the diet the user chose in setup
+/// (veg | egg | nonveg | vegan). Based on the name only.
+bool foodBreaksDiet(String foodName, String? diet) {
+  if (diet == null || diet == 'nonveg') return false;
+  final n = foodName.toLowerCase();
+  bool any(List<String> w) => w.any(n.contains);
+  if (any(_meatWords)) return true;
+  if (diet == 'veg' || diet == 'vegan') {
+    if (any(_eggWords)) return true;
+  }
+  if (diet == 'vegan' && any(_dairyWords)) return true;
+  return false;
+}
+
 /// Foods that fit what is left of today: they fit the calories of the next
 /// meal and help close the protein gap. General ideas, not a medical plan.
 List<FoodPreset> suggestFoods(AppState s, DateTime now, {int count = 4}) {
@@ -44,7 +72,11 @@ List<FoodPreset> suggestFoods(AppState s, DateTime now, {int count = 4}) {
     if (foodHasAllergen(f.name, s.allergies)) continue;
     if (s.reportAvoidHit(f.name) != null) continue;
     if (eaten.contains(f.name.toLowerCase())) continue;
+    if (foodBreaksDiet(f.name, s.dietPref)) continue;
     var score = 0.0;
+    if (s.budgetPref == 'low' && _costlyWords.any(f.name.toLowerCase().contains)) {
+      score -= 2.5;
+    }
     if (proteinGap > 5) {
       score += f.protein / (f.kcal + 20) * 100; // protein per 100 kcal
     } else {

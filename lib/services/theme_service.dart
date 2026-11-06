@@ -65,6 +65,28 @@ class ThemeService extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Accessibility: stronger text and border colours, and less movement.
+  bool highContrast = false;
+  bool reduceMotion = false;
+
+  Future<void> setHighContrast(bool v) async {
+    highContrast = v;
+    notifyListeners();
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setBool('highContrast', v);
+    } catch (_) {}
+  }
+
+  Future<void> setReduceMotion(bool v) async {
+    reduceMotion = v;
+    notifyListeners();
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setBool('reduceMotion', v);
+    } catch (_) {}
+  }
+
   /// Text size multiplier (1.0 normal, 1.15 large, 1.3 extra large).
   double textScale = 1.0;
 
@@ -77,6 +99,8 @@ class ThemeService extends ChangeNotifier {
         _ => ThemeMode.system,
       };
       textScale = p.getDouble('textScale') ?? 1.0;
+      highContrast = p.getBool('highContrast') ?? false;
+      reduceMotion = p.getBool('reduceMotion') ?? false;
       final a = p.getInt('accent') ?? 0;
       accentIndex = (a >= 0 && a < accentPalettes.length) ? a : 0;
     } catch (_) {}

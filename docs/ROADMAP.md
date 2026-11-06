@@ -60,3 +60,7 @@ Also: ingredient -> allergen dictionary table grown from AI answers to make alle
 - Still old style: parts of Friends tabs inside, Allergy sub-dialogs, Reminders, Settings, Health Connect screens. Use ui_kit helpers.
 
 - (picker done, untested) Food illustrations for food/empty states from the design canvas. Needs AppColors accent colours to become non-const; do after the green build is confirmed. Optional black-and-white premium option exists in the design canvas.
+
+## UX batch follow-ups (after the 10-point commit)
+- Test on a phone: "+" button, Today's plan ticks and confetti, search, past-day logging, missed workout card, smart reminders (turn on reminders, log lunch, check the next day's alarm), offline banner (airplane mode while signed in), high contrast / reduce motion, privacy dashboard export, new onboarding questions.
+- Ideas not done: reorder Home by time of day, persist the "moved workout", use experience level for plan defaults and budget plan, diet filter in budget plan and voice/photo results, real connectivity check, TalkBack pass.

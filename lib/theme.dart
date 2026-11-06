@@ -11,7 +11,10 @@ class AppColors {
   static Color get bgTop => _p.bgTop;
   static Color get primaryLight => _p.light;
   static Color get primaryDeep => _p.deep;
-  static Color get border => _p.border;
+  static bool get _hc => ThemeService.instance.highContrast;
+  static Color get border => _hc
+      ? (ThemeService.instance.dark ? const Color(0xFF6E8076) : const Color(0xFF5F6F66))
+      : _p.border;
   static Color get track => _p.border;
   static Color get primary => _p.primary;
   static Color get link => _p.link;
@@ -21,8 +24,12 @@ class AppColors {
   // Surface and text colours: they switch between the light and dark look.
   static bool get _d => ThemeService.instance.dark;
   static Color get card => _d ? const Color(0xFF151A17) : const Color(0xFFFFFFFF);
-  static Color get ink => _d ? const Color(0xFFF1F5F2) : const Color(0xFF0F1222);
-  static Color get muted => _d ? const Color(0xFF9BA9A1) : const Color(0xFF5C6A63);
+  static Color get ink => _hc
+      ? (_d ? const Color(0xFFFFFFFF) : const Color(0xFF000000))
+      : (_d ? const Color(0xFFF1F5F2) : const Color(0xFF0F1222));
+  static Color get muted => _hc
+      ? (_d ? const Color(0xFFD5DFD9) : const Color(0xFF2B3631))
+      : (_d ? const Color(0xFF9BA9A1) : const Color(0xFF5C6A63));
   static Color get danger => _d ? const Color(0xFFFF8A80) : const Color(0xFFB3261E);
   static Color get dangerBg => _d ? const Color(0xFF3B1B19) : const Color(0xFFFCEBE9);
   static Color get warnBg => _d ? const Color(0xFF33280D) : const Color(0xFFFFF1D6);
