@@ -244,3 +244,4 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 
 ## Meal photo to calories (untested)
 `coach` edge function v16 has mode `meal` (photo -> items with kcal/protein/carbs/fat). `services/meal_ai.dart`, `screens/meal_photo_screen.dart` (Home "+" -> Meal photo): AiWaitCard, per item portion +/- (0.5 steps), meal chips, saves to the diary. Counts as 1 daily AI request (free 10, Pro 60). It is NOT Pro-only for now, because payments are not open yet. Pro table row updated. Still not built: weekly AI diet/workout plan (Pro).
+- Meal photo full nutrients (untested): `coach` v17 meal mode also returns fiber, sugar, sat fat, sodium, iron, calcium, potassium, vitamins A, C, B12, D per item. `meal_photo_screen.dart` shows an "All nutrients" card (totals scale with the +/- portions, percent of a typical adult daily need or limit). The diary still saves only kcal, protein, carbs, fat. Idea: save these too and show a daily nutrient view.

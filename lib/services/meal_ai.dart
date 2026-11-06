@@ -19,8 +19,20 @@ class MealItem {
   double fat;
   double qty = 1;
 
-  MealItem(this.name, this.serving, this.kcal, this.protein, this.carbs, this.fat);
+  /// Other nutrients, same keys as the server: fiber, sugar, sat_fat (g),
+  /// sodium_mg, iron_mg, calcium_mg, potassium_mg, vit_a_mcg, vit_c_mg,
+  /// vit_b12_mcg, vit_d_mcg.
+  final Map<String, double> more;
+
+  MealItem(this.name, this.serving, this.kcal, this.protein, this.carbs, this.fat,
+      [Map<String, double>? more])
+      : more = more ?? const {};
 }
+
+const mealMoreKeys = [
+  'fiber', 'sugar', 'sat_fat', 'sodium_mg', 'iron_mg', 'calcium_mg',
+  'potassium_mg', 'vit_a_mcg', 'vit_c_mg', 'vit_b12_mcg', 'vit_d_mcg',
+];
 
 class MealResult {
   final List<MealItem> items;
@@ -57,7 +69,7 @@ class MealAi {
     final items = [
       for (final x in (m['items'] as List? ?? const []))
         MealItem('${x['name']}', '${x['serving'] ?? '1 serving'}', n(x['kcal']), n(x['protein']),
-            n(x['carbs']), n(x['fat'])),
+            n(x['carbs']), n(x['fat']), {for (final k in mealMoreKeys) k: n(x[k])}),
     ];
     if (items.isEmpty) throw MealAiException('I could not see food in that photo.');
     return MealResult(items, '${m['notes'] ?? ''}');

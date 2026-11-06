@@ -89,6 +89,80 @@ class _MealPhotoScreenState extends State<MealPhotoScreen> {
     );
   }
 
+  // label, key, unit, daily reference, isLimit (true = try to stay under)
+  static const _nutri = <List<Object>>[
+    ['Fiber', 'fiber', 'g', 30.0, false],
+    ['Iron', 'iron_mg', 'mg', 18.0, false],
+    ['Calcium', 'calcium_mg', 'mg', 1000.0, false],
+    ['Potassium', 'potassium_mg', 'mg', 3500.0, false],
+    ['Vitamin A', 'vit_a_mcg', 'mcg', 900.0, false],
+    ['Vitamin C', 'vit_c_mg', 'mg', 80.0, false],
+    ['Vitamin B12', 'vit_b12_mcg', 'mcg', 2.4, false],
+    ['Vitamin D', 'vit_d_mcg', 'mcg', 15.0, false],
+    ['Sugar', 'sugar', 'g', 50.0, true],
+    ['Saturated fat', 'sat_fat', 'g', 22.0, true],
+    ['Sodium', 'sodium_mg', 'mg', 2000.0, true],
+  ];
+
+  double _sum(String key) => _result == null
+      ? 0
+      : _result!.items.fold(0.0, (a, i) => a + (i.more[key] ?? 0) * i.qty);
+
+  Widget _nutrients() {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('All nutrients in this meal',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text('Percent is of a typical adult\'s daily need (or daily limit for sugar, saturated fat and sodium).',
+              style: TextStyle(fontSize: 11, color: AppColors.muted)),
+          const SizedBox(height: 10),
+          for (final n in _nutri) _nutriRow(n),
+        ],
+      ),
+    );
+  }
+
+  Widget _nutriRow(List<Object> n) {
+    final v = _sum(n[1] as String);
+    final ref = n[3] as double;
+    final limit = n[4] as bool;
+    final pct = ref == 0 ? 0.0 : v / ref;
+    final over = limit && pct > 0.4;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text(n[0] as String, style: const TextStyle(fontSize: 13))),
+              Text('${v >= 10 ? v.round() : v.toStringAsFixed(1)} ${n[2]}',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              SizedBox(
+                width: 52,
+                child: Text('${(pct * 100).round()}%',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(fontSize: 12, color: over ? AppColors.danger : AppColors.muted)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 3),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: pct.clamp(0.0, 1.0).toDouble(),
+              minHeight: 5,
+              color: over ? AppColors.danger : AppColors.primary,
+              backgroundColor: AppColors.track,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _row(MealItem i) => Padding(
         padding: const EdgeInsets.only(bottom: 8),
         child: AppCard(
@@ -184,12 +258,14 @@ class _MealPhotoScreenState extends State<MealPhotoScreen> {
               const SizedBox(height: 8),
               for (final i in r.items) _row(i),
               const SizedBox(height: 4),
+              _nutrients(),
+              const SizedBox(height: 10),
               AppCard(
                 color: AppColors.warnBg,
                 borderColor: AppColors.warnBg,
                 radius: 14,
                 child: Text(
-                  'This is an estimate from a photo. Portions are a guess and hidden oil, sugar or allergens cannot be seen. Fix the amounts with + and -.${r.notes.isEmpty ? '' : ' ${r.notes}'}',
+                  'This is an estimate from a photo. Portions are a guess and hidden oil, sugar or allergens cannot be seen. Fix the amounts with + and -. Vitamins and minerals are typical values for the dish, so treat them as a rough guide.${r.notes.isEmpty ? '' : ' ${r.notes}'}',
                   style: TextStyle(color: AppColors.warnInk, fontSize: 12),
                 ),
               ),
