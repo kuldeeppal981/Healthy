@@ -327,7 +327,7 @@ class _FeedTabState extends State<_FeedTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('🏆 My personal records',
+            const Text('🏆 My personal records (tap to share)',
                 style: TextStyle(fontWeight: FontWeight.w800)),
             const SizedBox(height: 10),
             Wrap(
@@ -335,9 +335,12 @@ class _FeedTabState extends State<_FeedTab> {
               runSpacing: 8,
               children: [
                 for (final e in best.take(8))
-                  Chip(
+                  ActionChip(
+                    avatar: const Icon(Icons.ios_share, size: 16),
                     label: Text(
                         '${e.key[0].toUpperCase()}${e.key.substring(1)}  ${kg(e.value['kg'] as double)} kg x ${e.value['reps']}'),
+                    onPressed: () => showPrShareCard(context, e.key,
+                        e.value['kg'] as double, e.value['reps'] as int),
                   ),
               ],
             ),

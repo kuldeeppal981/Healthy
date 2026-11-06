@@ -163,3 +163,6 @@ Bell button on each friend row in Social -> Friends calls `SocialService.nudge()
 - `Haptic.win()` (chime) on check-in and finished workout, `Haptic.done()` (pop) on a finished set, `Haptic.splash()` on adding water (`widgets/ui_kit.dart`).
 - `lib/widgets/celebrate.dart`: `Celebrate.show(context)` confetti overlay (check-in, workout finish).
 - `FadeSlideIn` (ui_kit) staggers the Home cards on open. Page transition is still the Material zoom.
+
+## Story-size share cards (BUILT, UNTESTED)
+`widgets/share_card.dart`: progress card is now 9:16 (rendered 4x, story size) and `showPrShareCard()` makes a personal-record card. In Social -> "My personal records" each chip is tappable and opens the PR card. Sharing uses the system share sheet (share_plus), where the user picks Instagram Stories or WhatsApp Status. A one-tap direct "Instagram Story" button would need a native intent with FileProvider (patched in the workflow) or an extra package, not done.
