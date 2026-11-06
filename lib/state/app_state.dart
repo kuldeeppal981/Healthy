@@ -29,6 +29,11 @@ class AppState extends ChangeNotifier {
   /// Food guidance from a scanned medical report: summary, markers, avoid,
   /// prefer, concerns, date. Private to this user (synced with their data).
   Map<String, dynamic>? medicalNotes;
+
+  /// Quick logging: favourite foods and saved meal templates, both lists of
+  /// plain maps. favs: {name,kcal,protein,carbs,fat}. templates: {name, items}.
+  final List<Map<String, dynamic>> favFoods = [];
+  final List<Map<String, dynamic>> mealTemplates = [];
   final Map<String, String> severity = {}; // allergen id -> mild|medium|severe
   bool traceWarning = true;
 
@@ -98,6 +103,8 @@ class AppState extends ChangeNotifier {
         'allergies': allergies.toList(),
         'conditions': conditions.toList(),
         'medicalNotes': medicalNotes,
+        'favFoods': favFoods,
+        'mealTemplates': mealTemplates,
         'severity': severity,
         'traceWarning': traceWarning,
         'kcalTarget': kcalTarget,
@@ -133,6 +140,8 @@ class AppState extends ChangeNotifier {
     medicalNotes = j['medicalNotes'] is Map
         ? Map<String, dynamic>.from(j['medicalNotes'] as Map)
         : null;
+    _readMaps(favFoods, j['favFoods']);
+    _readMaps(mealTemplates, j['mealTemplates']);
     severity
       ..clear()
       ..addAll(Map<String, String>.from((j['severity'] as Map?) ?? const {}));
@@ -343,6 +352,8 @@ class AppState extends ChangeNotifier {
     conditions
       ..clear()
       ..addAll(p.getStringList('conditions') ?? const []);
+    _readMaps(favFoods, _decode(p.getString('favFoods')));
+    _readMaps(mealTemplates, _decode(p.getString('mealTemplates')));
     medicalNotes = null;
     final mn = p.getString('medicalNotes');
     if (mn != null && mn.isNotEmpty) {
@@ -418,6 +429,8 @@ class AppState extends ChangeNotifier {
     await p.setString('weights', jsonEncode(weights.map((e) => e.toJson()).toList()));
     await p.setStringList('allergies', allergies.toList());
     await p.setStringList('conditions', conditions.toList());
+    await p.setString('favFoods', jsonEncode(favFoods));
+    await p.setString('mealTemplates', jsonEncode(mealTemplates));
     if (medicalNotes == null) {
       await p.remove('medicalNotes');
     } else {
@@ -497,6 +510,95 @@ class AppState extends ChangeNotifier {
   void toggleCondition(String id) {
     if (!conditions.remove(id)) conditions.add(id);
     _changed();
+  }
+
+  // ---- Quick logging: recent, favourites, templates ----
+  static Object? _decode(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return jsonDecode(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static void _readMaps(List<Map<String, dynamic>> into, Object? raw) {
+    into.clear();
+    if (raw is List) {
+      for (final x in raw) {
+        if (x is Map) into.add(Map<String, dynamic>.from(x));
+      }
+    }
+  }
+
+  /// Last distinct foods the user logged, newest first.
+  List<DiaryEntry> recentFoods({int limit = 10}) {
+    final seen = <String>{};
+    final out = <DiaryEntry>[];
+    final sorted = [...entries]..sort((a, b) => b.at.compareTo(a.at));
+    for (final e in sorted) {
+      if (seen.add(e.name.toLowerCase())) out.add(e);
+      if (out.length >= limit) break;
+    }
+    return out;
+  }
+
+  bool isFavorite(String name) =>
+      favFoods.any((f) => (f['name'] as String).toLowerCase() == name.toLowerCase());
+
+  void toggleFavorite(DiaryEntry e) {
+    final i = favFoods.indexWhere((f) => (f['name'] as String).toLowerCase() == e.name.toLowerCase());
+    if (i >= 0) {
+      favFoods.removeAt(i);
+    } else {
+      favFoods.add({
+        'name': e.name,
+        'kcal': e.kcal,
+        'protein': e.protein,
+        'carbs': e.carbs,
+        'fat': e.fat,
+      });
+    }
+    _changed();
+  }
+
+  /// Saves the entries of one meal as a template, for example "My breakfast".
+  void saveTemplate(String name, List<DiaryEntry> items, String meal) {
+    mealTemplates.removeWhere((t) => (t['name'] as String).toLowerCase() == name.toLowerCase());
+    mealTemplates.add({
+      'name': name,
+      'meal': meal,
+      'items': [
+        for (final e in items)
+          {'name': e.name, 'kcal': e.kcal, 'protein': e.protein, 'carbs': e.carbs, 'fat': e.fat},
+      ],
+    });
+    _changed();
+  }
+
+  void deleteTemplate(int i) {
+    if (i < 0 || i >= mealTemplates.length) return;
+    mealTemplates.removeAt(i);
+    _changed();
+  }
+
+  /// Adds every item of a template to the diary for the given meal.
+  void addTemplate(Map<String, dynamic> t, String meal) {
+    final items = (t['items'] as List?) ?? const [];
+    var n = 0;
+    for (final x in items) {
+      if (x is! Map) continue;
+      addEntry(DiaryEntry(
+        id: '${DateTime.now().microsecondsSinceEpoch}-${n++}',
+        name: x['name'] as String,
+        meal: meal,
+        kcal: (x['kcal'] as num).toDouble(),
+        protein: (x['protein'] as num).toDouble(),
+        carbs: (x['carbs'] as num).toDouble(),
+        fat: (x['fat'] as num).toDouble(),
+        at: DateTime.now(),
+      ));
+    }
   }
 
   // ---- Medical report notes ----
@@ -734,6 +836,8 @@ class AppState extends ChangeNotifier {
     allergies.clear();
     conditions.clear();
     medicalNotes = null;
+    favFoods.clear();
+    mealTemplates.clear();
     severity.clear();
     entries.clear();
     water.clear();

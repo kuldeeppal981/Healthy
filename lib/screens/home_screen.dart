@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../config.dart';
+import '../models.dart';
 import '../services/avatar_service.dart';
+import '../services/food_suggest.dart';
 import '../services/step_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -118,7 +120,7 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        _proteinTip(s, now),
+        _coachCards(context, s, now),
         const SizedBox(height: 16),
         FadeSlideIn(delayMs: 220, child: _workoutCard(context, s, now)),
         const SizedBox(height: 16),
@@ -370,6 +372,116 @@ class HomeScreen extends StatelessWidget {
   }
 
   /// Amber tip card with a drawn apple, only when protein is low in the afternoon.
+  IconData _alertIcon(String k) => switch (k) {
+        'protein' => Icons.egg_alt_outlined,
+        'water' => Icons.water_drop_outlined,
+        'kcal' => Icons.local_fire_department_outlined,
+        _ => Icons.grass_outlined,
+      };
+
+  /// Friendly notes about today and ideas for the next meal.
+  Widget _coachCards(BuildContext context, AppState s, DateTime now) {
+    final alerts = coachAlerts(s, now);
+    final ideas = suggestFoods(s, now);
+    if (alerts.isEmpty && ideas.isEmpty) return const SizedBox.shrink();
+    final meal = mealForNow(now);
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final a in alerts)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.warnBg,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(_alertIcon(a.icon), color: AppColors.warnInk, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(a.title,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                  color: AppColors.warnInk)),
+                          const SizedBox(height: 2),
+                          Text(a.body,
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  height: 1.35,
+                                  color: AppColors.warnInk.withOpacity(0.85))),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (ideas.isNotEmpty)
+            AppCard(
+              radius: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text('Ideas for your ${mealLabels[meal] ?? 'next meal'}',
+                            style: const TextStyle(fontWeight: FontWeight.w800)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text('Based on what is left today. Tap to add.',
+                      style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final f in ideas)
+                        ActionChip(
+                          label: Text('${f.name}  ${f.kcal.round()} kcal  ${f.protein.round()}g P'),
+                          onPressed: () {
+                            Haptic.done();
+                            final hit = s.reportAvoidHit(f.name);
+                            s.addEntry(entryFromPreset(f, meal));
+                            ScaffoldMessenger.of(context)
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(SnackBar(
+                                content: Text(hit == null
+                                    ? 'Added ${f.name}'
+                                    : 'Added ${f.name}. Your report says to limit "$hit".'),
+                              ));
+                          },
+                        ),
+                    ],
+                  ),
+                  if (s.allergies.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                        'Ideas skip your allergens by name, but always check the ingredients yourself.',
+                        style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                  ],
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _proteinTip(AppState s, DateTime now) {
     if (now.hour < 12 || s.proteinTarget <= 0 || s.proteinToday >= s.proteinTarget * 0.5) {
       return const SizedBox.shrink();

@@ -26,6 +26,12 @@ Future<void> showAddFoodSheet(
   );
 }
 
+class _Portion {
+  final String label;
+  final double kcal, protein, carbs, fat;
+  const _Portion(this.label, this.kcal, this.protein, this.carbs, this.fat);
+}
+
 class _AddFoodForm extends StatefulWidget {
   final String initialMeal;
   final bool startCustom;
@@ -38,6 +44,7 @@ class _AddFoodForm extends StatefulWidget {
 
 class _AddFoodFormState extends State<_AddFoodForm> {
   late bool _custom = widget.startCustom;
+  bool _quick = false;
   late String _meal = widget.initialMeal;
   String _query = '';
 
@@ -96,61 +103,284 @@ class _AddFoodFormState extends State<_AddFoodForm> {
   }
 
   Future<void> _pickPreset(FoodPreset f) async {
+    final gm = RegExp(r'\((\d+)\s*g\)').firstMatch(f.serving);
+    final baseGrams = gm == null ? null : double.tryParse(gm.group(1)!);
     var servings = 1.0;
-    final count = await showDialog<double>(
+    var size = 1; // 0 small, 1 medium, 2 large
+    var useGrams = false;
+    var ghee = 0.0; // teaspoons of extra ghee or oil
+    final gramsCtl = TextEditingController(text: baseGrams == null ? '' : _fmt(baseGrams));
+    const sizeFactor = [0.75, 1.0, 1.3];
+    const sizeName = ['Small', 'Medium', 'Large'];
+
+    final res = await showDialog<_Portion>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (ctx, setLocal) => AlertDialog(
-            title: Text(f.name),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('1 serving = ${f.serving}',
-                    style: TextStyle(color: AppColors.muted)),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          builder: (ctx, setLocal) {
+            final grams = double.tryParse(gramsCtl.text.trim()) ?? 0;
+            final factor = (useGrams && baseGrams != null)
+                ? grams / baseGrams
+                : servings * sizeFactor[size];
+            final kcal = f.kcal * factor + ghee * 45;
+            final protein = f.protein * factor;
+            final carbs = f.carbs * factor;
+            final fat = f.fat * factor + ghee * 5;
+            return AlertDialog(
+              title: Text(f.name),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconButton.outlined(
-                      tooltip: 'Fewer servings',
-                      onPressed: servings > 0.5 ? () => setLocal(() => servings -= 0.5) : null,
-                      icon: const Icon(Icons.remove),
+                    Text('1 serving = ${f.serving}',
+                        style: TextStyle(color: AppColors.muted)),
+                    const SizedBox(height: 10),
+                    if (baseGrams != null)
+                      SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<bool>(
+                          showSelectedIcon: false,
+                          segments: const [
+                            ButtonSegment(value: false, label: Text('Pieces')),
+                            ButtonSegment(value: true, label: Text('Grams')),
+                          ],
+                          selected: {useGrams},
+                          onSelectionChanged: (v) => setLocal(() => useGrams = v.first),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    if (useGrams && baseGrams != null)
+                      TextField(
+                        controller: gramsCtl,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(labelText: 'Weight in grams'),
+                        onChanged: (_) => setLocal(() {}),
+                      )
+                    else ...[
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          for (var i = 0; i < 3; i++)
+                            ChoiceChip(
+                              label: Text(sizeName[i]),
+                              selected: size == i,
+                              onSelected: (_) => setLocal(() => size = i),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton.outlined(
+                            tooltip: 'Fewer',
+                            onPressed:
+                                servings > 0.5 ? () => setLocal(() => servings -= 0.5) : null,
+                            icon: const Icon(Icons.remove),
+                          ),
+                          SizedBox(
+                            width: 90,
+                            child: Text(_fmt(servings),
+                                textAlign: TextAlign.center,
+                                style:
+                                    const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                          ),
+                          IconButton.outlined(
+                            tooltip: 'More',
+                            onPressed: () => setLocal(() => servings += 0.5),
+                            icon: const Icon(Icons.add),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Expanded(child: Text('Extra ghee / oil (tsp)')),
+                        IconButton(
+                          onPressed: ghee > 0 ? () => setLocal(() => ghee -= 0.5) : null,
+                          icon: const Icon(Icons.remove_circle_outline),
+                        ),
+                        Text(_fmt(ghee), style: const TextStyle(fontWeight: FontWeight.w700)),
+                        IconButton(
+                          onPressed: () => setLocal(() => ghee += 0.5),
+                          icon: const Icon(Icons.add_circle_outline),
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      width: 90,
-                      child: Text(_fmt(servings),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
-                    ),
-                    IconButton.outlined(
-                      tooltip: 'More servings',
-                      onPressed: () => setLocal(() => servings += 0.5),
-                      icon: const Icon(Icons.add),
-                    ),
+                    const SizedBox(height: 6),
+                    Text('${kcal.round()} kcal',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    Text('P ${protein.round()} g  |  C ${carbs.round()} g  |  F ${fat.round()} g',
+                        style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    Text(
+                        'Size and ghee change the calories a lot. Homemade often has more oil than shown.',
+                        style: TextStyle(color: AppColors.muted, fontSize: 11, height: 1.3)),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text('${(f.kcal * servings).round()} kcal',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              ],
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-              FilledButton(
-                style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
-                onPressed: () => Navigator.pop(ctx, servings),
-                child: const Text('Add'),
               ),
-            ],
-          ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                FilledButton(
+                  style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
+                  onPressed: factor <= 0
+                      ? null
+                      : () {
+                          final extra = ghee > 0 ? ', +${_fmt(ghee)} tsp ghee' : '';
+                          final String label;
+                          if (useGrams && baseGrams != null) {
+                            label = '${f.name} (${_fmt(grams)} g$extra)';
+                          } else {
+                            final sz = size == 1 ? '' : '${sizeName[size]}, ';
+                            label = servings == 1 && size == 1 && ghee == 0
+                                ? '${f.name} (${f.serving})'
+                                : '${_fmt(servings)} x ${f.name} ($sz${f.serving}$extra)';
+                          }
+                          Navigator.pop(ctx, _Portion(label, kcal, protein, carbs, fat));
+                        },
+                  child: const Text('Add'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
-    if (count == null || !mounted) return;
-    final label = count == 1 ? '${f.name} (${f.serving})' : '${_fmt(count)} x ${f.name} (${f.serving})';
-    _addEntry(label, f.kcal * count, f.protein * count, f.carbs * count, f.fat * count);
+    gramsCtl.dispose();
+    if (res == null || !mounted) return;
+    _addEntry(res.label, res.kcal, res.protein, res.carbs, res.fat);
     Navigator.of(context).pop();
+  }
+
+  Future<void> _askTemplateName(List<DiaryEntry> items) async {
+    final c = TextEditingController(text: 'My ${mealLabels[_meal]?.toLowerCase() ?? 'meal'}');
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Save as template'),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Template name'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
+            onPressed: () => Navigator.pop(ctx, c.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    c.dispose();
+    if (name == null || name.isEmpty || !mounted) return;
+    context.read<AppState>().saveTemplate(name, items, _meal);
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Saved "$name". Tap it any day to add it.')));
+  }
+
+  void _addMap(Map<String, dynamic> x) {
+    _addEntry(x['name'] as String, (x['kcal'] as num).toDouble(),
+        (x['protein'] as num).toDouble(), (x['carbs'] as num).toDouble(),
+        (x['fat'] as num).toDouble());
+    Navigator.of(context).pop();
+  }
+
+  Widget _quickView() {
+    final s = context.watch<AppState>();
+    final mealToday = s.today.where((e) => e.meal == _meal).toList();
+    final recent = s.recentFoods();
+    Widget head(String t) => Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          child: Text(t, style: const TextStyle(fontWeight: FontWeight.w800)),
+        );
+    return SizedBox(
+      height: 340,
+      child: ListView(
+        children: [
+          if (mealToday.isNotEmpty)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ActionChip(
+                avatar: const Icon(Icons.bookmark_add_outlined, size: 18),
+                label: Text('Save today\'s ${mealLabels[_meal]?.toLowerCase()} as template'),
+                onPressed: () => _askTemplateName(mealToday),
+              ),
+            ),
+          if (s.mealTemplates.isNotEmpty) head('My meals'),
+          for (var i = 0; i < s.mealTemplates.length; i++)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.restaurant_menu, color: AppColors.primary),
+              title: Text(s.mealTemplates[i]['name'] as String,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text(
+                  '${((s.mealTemplates[i]['items'] as List?) ?? const []).length} items, one tap adds all'),
+              trailing: IconButton(
+                tooltip: 'Delete template',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => s.deleteTemplate(i),
+              ),
+              onTap: () {
+                final t = s.mealTemplates[i];
+                final hit = [
+                  for (final x in (t['items'] as List? ?? const []))
+                    if (x is Map) s.reportAvoidHit(x['name'] as String),
+                ].whereType<String>().toList();
+                s.addTemplate(t, _meal);
+                if (hit.isNotEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('Your report says to limit "${hit.first}". Keep the portion small.')));
+                }
+                Navigator.of(context).pop();
+              },
+            ),
+          if (s.favFoods.isNotEmpty) head('Favourites'),
+          for (final f in s.favFoods)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(f['name'] as String,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text('${(f['kcal'] as num).round()} kcal'),
+              trailing: const Icon(Icons.star, color: Color(0xFFF59E0B)),
+              onTap: () => _addMap(f),
+            ),
+          if (recent.isNotEmpty) head('Recent'),
+          for (final e in recent)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(e.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text('${e.kcal.round()} kcal'),
+              trailing: IconButton(
+                tooltip: 'Favourite',
+                icon: Icon(s.isFavorite(e.name) ? Icons.star : Icons.star_border,
+                    color: const Color(0xFFF59E0B)),
+                onPressed: () => s.toggleFavorite(e),
+              ),
+              onTap: () => _addMap({
+                'name': e.name,
+                'kcal': e.kcal,
+                'protein': e.protein,
+                'carbs': e.carbs,
+                'fat': e.fat,
+              }),
+            ),
+          if (recent.isEmpty && s.favFoods.isEmpty && s.mealTemplates.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 30),
+              child: Center(
+                child: Text(
+                    'Foods you log will show up here for one-tap adding. Star your favourites and save meals as templates.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.muted, height: 1.4)),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _field(String label, TextEditingController c, {bool number = true}) {
@@ -192,14 +422,18 @@ class _AddFoodFormState extends State<_AddFoodForm> {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: SegmentedButton<bool>(
+            child: SegmentedButton<int>(
               showSelectedIcon: false,
               segments: const [
-                ButtonSegment(value: false, label: Text('Indian foods')),
-                ButtonSegment(value: true, label: Text('Custom')),
+                ButtonSegment(value: 0, label: Text('Foods')),
+                ButtonSegment(value: 1, label: Text('Quick')),
+                ButtonSegment(value: 2, label: Text('Custom')),
               ],
-              selected: {_custom},
-              onSelectionChanged: (v) => setState(() => _custom = v.first),
+              selected: {_custom ? 2 : (_quick ? 1 : 0)},
+              onSelectionChanged: (v) => setState(() {
+                _custom = v.first == 2;
+                _quick = v.first == 1;
+              }),
             ),
           ),
           const SizedBox(height: 12),
@@ -227,6 +461,8 @@ class _AddFoodFormState extends State<_AddFoodForm> {
                 ),
               ),
             )
+          else if (_quick)
+            Flexible(child: _quickView())
           else ...[
             TextField(
               onChanged: (v) => setState(() => _query = v),
