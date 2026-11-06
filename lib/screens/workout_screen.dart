@@ -74,6 +74,58 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     });
   }
 
+  String _kgText(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
+
+  /// Best set of this exercise from earlier workouts, or null.
+  Map<String, dynamic>? _lastBest(String name) =>
+      bestSetsOf(context.read<AppState>().workouts)[name.toLowerCase()];
+
+  /// Fills the sets that are not done yet with the weight and reps of last time.
+  bool _useLast(Exercise ex, List<_SetLog> sets) {
+    final b = _lastBest(ex.name);
+    if (b == null) return false;
+    for (final l in sets) {
+      if (l.done) continue;
+      l.kg.text = _kgText(b['kg'] as double);
+      l.reps.text = '${b['reps']}';
+    }
+    return true;
+  }
+
+  /// Copies the weight and reps of the first set into every set not done yet.
+  void _repeatFirst(List<_SetLog> sets) {
+    if (sets.length < 2) return;
+    final first = sets.first;
+    for (var i = 1; i < sets.length; i++) {
+      if (sets[i].done) continue;
+      sets[i].kg.text = first.kg.text;
+      sets[i].reps.text = first.reps.text;
+    }
+    setState(() {});
+  }
+
+  void _copyLastWorkout(DayPlan plan, List<List<_SetLog>> logs) {
+    var filled = 0;
+    for (var i = 0; i < plan.exercises.length; i++) {
+      if (_useLast(plan.exercises[i], logs[i])) filled++;
+    }
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(filled == 0
+          ? 'No earlier workout to copy yet.'
+          : 'Filled $filled exercises from last time.'),
+    ));
+  }
+
+  /// After a set is ticked, the next empty set gets the same weight and reps.
+  void _prefillNext(List<_SetLog> sets, int i) {
+    if (i + 1 >= sets.length) return;
+    final next = sets[i + 1];
+    if (next.done || next.kg.text.trim().isNotEmpty) return;
+    next.kg.text = sets[i].kg.text;
+    next.reps.text = sets[i].reps.text;
+  }
+
   void _resetDay(int weekday) {
     final day = _logs.remove(weekday);
     if (day == null) return;
@@ -370,6 +422,18 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
               else ...[
                 _banner(plan, done, total),
                 const SizedBox(height: 14),
+                if (_logging)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ActionChip(
+                        avatar: Icon(Icons.history, size: 18, color: AppColors.primary),
+                        label: const Text('Copy last workout'),
+                        onPressed: () => _copyLastWorkout(plan, logs),
+                      ),
+                    ),
+                  ),
                 if (_logging)
                   for (var i = 0; i < plan.exercises.length; i++)
                     _exerciseCard(plan.exercises[i], logs[i])
@@ -872,7 +936,35 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                if (_lastBest(ex.name) != null)
+                  ActionChip(
+                    visualDensity: VisualDensity.compact,
+                    avatar: const Icon(Icons.history, size: 16),
+                    label: Text(
+                        'Last time ${_kgText(_lastBest(ex.name)!['kg'] as double)} kg x ${_lastBest(ex.name)!['reps']}'),
+                    onPressed: () {
+                      Haptic.tap();
+                      _useLast(ex, sets);
+                      setState(() {});
+                    },
+                  ),
+                if (sets.length > 1)
+                  ActionChip(
+                    visualDensity: VisualDensity.compact,
+                    avatar: const Icon(Icons.content_copy, size: 15),
+                    label: const Text('Same as set 1'),
+                    onPressed: () {
+                      Haptic.tap();
+                      _repeatFirst(sets);
+                    },
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
             Row(
               children: [
                 SizedBox(width: 36, child: Text('Set', style: _head)),
@@ -905,6 +997,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           setState(() => sets[i].done = v ?? false);
                           if (v == true) {
                             Haptic.done();
+                            _prefillNext(sets, i);
                             _startRest();
                           }
                         },

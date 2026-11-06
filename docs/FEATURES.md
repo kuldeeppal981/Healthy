@@ -166,3 +166,6 @@ Bell button on each friend row in Social -> Friends calls `SocialService.nudge()
 
 ## Story-size share cards (BUILT, UNTESTED)
 `widgets/share_card.dart`: progress card is now 9:16 (rendered 4x, story size) and `showPrShareCard()` makes a personal-record card. In Social -> "My personal records" each chip is tappable and opens the PR card. Sharing uses the system share sheet (share_plus), where the user picks Instagram Stories or WhatsApp Status. A one-tap direct "Instagram Story" button would need a native intent with FileProvider (patched in the workflow) or an extra package, not done.
+
+## Tap repeat in workout logging (BUILT, UNTESTED)
+`screens/workout_screen.dart`: "Copy last workout" chip above the exercises (fills every exercise from the best set of its last workout, via `bestSetsOf`), per exercise chips "Last time X kg x Y" and "Same as set 1", and ticking a set auto-fills the next empty set with the same kg/reps. Only the best set per exercise is stored in history, so "last time" is that best set, not every set. Superset (pairing two exercises with a shared rest) is NOT built.
