@@ -172,3 +172,6 @@ Bell button on each friend row in Social -> Friends calls `SocialService.nudge()
 
 ## Alternative exercise when a machine is busy (BUILT, UNTESTED)
 Swap icon on each exercise card while logging opens a sheet of other library exercises for the same muscle (`alternativesFor()` in `data/exercise_library.dart`, sorted closest first, different equipment before same). Tapping one swaps it for TODAY only (`_swaps` map in `workout_screen.dart`, cleared when the day is reset/finished); the saved plan is unchanged. Kg of unfinished sets is cleared on swap. "Back to planned" is in the same sheet. Only works for exercises that exist in the library (custom names have no swap icon).
+
+## Auto check-in with popup (BUILT, UNTESTED)
+The first thing logged each day (food entry, water +, finished workout, weight) checks the user in by itself: `AppState._autoCheckIn()` adds today to `checkIns` and fires `autoCheckInEvents`. `AppShell` listens and shows `showAutoCheckInPopup()` (`widgets/checkin_popup.dart`): bouncing flame, counting streak number, +10 XP / level chip, confetti, chime, auto closes after ~3 s. Merely opening the app does not check in. Data coming from cloud sync or old data does not trigger it. The manual Check in button still exists and is greyed out after an auto check-in. There is no switch to turn the popup off yet.

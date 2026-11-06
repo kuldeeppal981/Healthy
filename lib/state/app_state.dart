@@ -467,6 +467,7 @@ class AppState extends ChangeNotifier {
   // ---- Weight ----
   void logWeight(double kg) {
     weights.add(WeightEntry(DateTime.now(), kg));
+    _autoCheckIn();
     final pr = profile;
     if (pr != null) profile = pr.copyWith(weightKg: kg);
     _changed();
@@ -519,6 +520,7 @@ class AppState extends ChangeNotifier {
 
   void addEntry(DiaryEntry e) {
     entries.add(e);
+    _autoCheckIn();
     _changed();
   }
 
@@ -558,6 +560,18 @@ class AppState extends ChangeNotifier {
     if (checkedInToday) return;
     checkIns.add(dayKey(DateTime.now()));
     _changed();
+  }
+
+  /// Fires after the app checked the user in by itself (first log of the day).
+  final StreamController<void> _autoCheckInCtl = StreamController<void>.broadcast();
+  Stream<void> get autoCheckInEvents => _autoCheckInCtl.stream;
+
+  /// The first thing logged each day (food, water, workout, weight) checks the
+  /// user in automatically and tells the app to show a small celebration.
+  void _autoCheckIn() {
+    if (checkedInToday) return;
+    checkIns.add(dayKey(DateTime.now()));
+    _autoCheckInCtl.add(null);
   }
 
   int get freezesLeft {
@@ -608,6 +622,7 @@ class AppState extends ChangeNotifier {
   void addWater(int delta) {
     final k = dayKey(DateTime.now());
     water[k] = (waterToday + delta).clamp(0, 30);
+    if (delta > 0) _autoCheckIn();
     _changed();
   }
 
@@ -641,6 +656,7 @@ class AppState extends ChangeNotifier {
 
   void addWorkout(WorkoutLog w) {
     workouts.add(w);
+    _autoCheckIn();
     _changed();
   }
 

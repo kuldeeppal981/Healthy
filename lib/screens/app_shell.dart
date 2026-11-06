@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/app_state.dart';
+import '../widgets/checkin_popup.dart';
 import '../theme.dart';
 import 'analytics_screen.dart';
 import 'diary_screen.dart';
@@ -24,6 +25,7 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
   StreamSubscription<void>? _recoverySub;
+  StreamSubscription<void>? _checkInSub;
 
   @override
   void initState() {
@@ -35,12 +37,20 @@ class _AppShellState extends State<AppShell> {
           .cloud
           ?.passwordRecoveryEvents
           .listen((_) => _askNewPassword());
+      _checkInSub = context.read<AppState>().autoCheckInEvents.listen((_) {
+        // Wait a moment so a closing sheet (add food) is gone first.
+        Future<void>.delayed(const Duration(milliseconds: 700), () {
+          if (!mounted) return;
+          showAutoCheckInPopup(context, context.read<AppState>());
+        });
+      });
     });
   }
 
   @override
   void dispose() {
     _recoverySub?.cancel();
+    _checkInSub?.cancel();
     super.dispose();
   }
 
