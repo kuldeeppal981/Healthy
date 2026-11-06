@@ -26,6 +26,7 @@ import 'muscle_screen.dart';
 import 'onboarding_screen.dart';
 import 'privacy_dashboard_screen.dart';
 import 'pro_screen.dart';
+import 'tour_screen.dart';
 import 'reminders_screen.dart';
 import 'report_screen.dart';
 import 'settings_screen.dart';
@@ -167,6 +168,12 @@ class ProfileScreen extends StatelessWidget {
                 ? 'Scan a report, get food to limit and eat more of'
                 : 'Report saved, your food is checked against it',
             onTap: () => _open(context, const MedicalReportScreen()),
+          ),
+          MenuRow(
+            icon: Icons.help_outline,
+            title: 'App tour',
+            subtitle: 'A quick look at what Healthy can do',
+            onTap: () => _open(context, const TourScreen()),
           ),
           MenuRow(
             icon: Icons.workspace_premium_outlined,

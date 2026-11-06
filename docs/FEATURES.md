@@ -238,3 +238,6 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 
 ## Social part 2 (untested)
 `services/community_service.dart`, `screens/groups_screen.dart` (Explore, Community, Friends tab, "League and groups"): tabs League (weekly points of friends), Groups (create, join by code, share invite text, group league, group challenges, leave), Partner (pick a friend, accept/decline, today's check-in, nudge, end), Buddies (goal/level/time profile, matches, Add friend). PR reactions already exist on feed posts (fire, clap, muscle, heart).
+
+## First-run app tour (untested)
+`screens/tour_screen.dart`: 7 slides with Next, Back, Skip. Shown once after onboarding (`prefs['tourDone']`, checked in AppShell.build); replay from Profile -> App tour. Existing users also see it once.

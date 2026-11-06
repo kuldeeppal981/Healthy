@@ -14,6 +14,7 @@ import 'diary_screen.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
+import 'tour_screen.dart';
 import 'streak_card.dart';
 import 'workout_screen.dart';
 
@@ -27,6 +28,7 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _index = 0;
+  bool _tourChecked = false;
   StreamSubscription<void>? _recoverySub;
   StreamSubscription<void>? _checkInSub;
 
@@ -210,6 +212,14 @@ class _AppShellState extends State<AppShell> {
     final app = context.watch<AppState>();
     if (app.needsAuth) return const AuthScreen();
     if (app.needsOnboarding) return const OnboardingScreen();
+    if (!_tourChecked && app.prefs['tourDone'] != true) {
+      _tourChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.of(context).push(MaterialPageRoute<void>(
+            fullscreenDialog: true, builder: (_) => const TourScreen()));
+      });
+    }
 
     final pages = <Widget>[
       HomeScreen(onGoto: _goto),
