@@ -169,3 +169,6 @@ Bell button on each friend row in Social -> Friends calls `SocialService.nudge()
 
 ## Tap repeat in workout logging (BUILT, UNTESTED)
 `screens/workout_screen.dart`: "Copy last workout" chip above the exercises (fills every exercise from the best set of its last workout, via `bestSetsOf`), per exercise chips "Last time X kg x Y" and "Same as set 1", and ticking a set auto-fills the next empty set with the same kg/reps. Only the best set per exercise is stored in history, so "last time" is that best set, not every set. Superset (pairing two exercises with a shared rest) is NOT built.
+
+## Alternative exercise when a machine is busy (BUILT, UNTESTED)
+Swap icon on each exercise card while logging opens a sheet of other library exercises for the same muscle (`alternativesFor()` in `data/exercise_library.dart`, sorted closest first, different equipment before same). Tapping one swaps it for TODAY only (`_swaps` map in `workout_screen.dart`, cleared when the day is reset/finished); the saved plan is unchanged. Kg of unfinished sets is cleared on swap. "Back to planned" is in the same sheet. Only works for exercises that exist in the library (custom names have no swap icon).

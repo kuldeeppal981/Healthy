@@ -74,6 +74,96 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     });
   }
 
+  /// Exercises swapped for today only: weekday -> (exercise index -> new name).
+  final Map<int, Map<int, String>> _swaps = {};
+
+  /// The plan for a day with today's swaps applied.
+  DayPlan _plan(AppState state, int weekday) {
+    final base = state.planFor(weekday);
+    final sw = _swaps[weekday];
+    if (sw == null || sw.isEmpty) return base;
+    return DayPlan(
+      base.title,
+      [
+        for (var i = 0; i < base.exercises.length; i++)
+          sw[i] == null
+              ? base.exercises[i]
+              : Exercise(sw[i]!, base.exercises[i].sets, base.exercises[i].reps,
+                  unit: base.exercises[i].unit),
+      ],
+      rest: base.rest,
+    );
+  }
+
+  /// Machine busy? Shows other exercises for the same muscle and swaps for today.
+  Future<void> _pickAlternative(int index, Exercise ex, List<_SetLog> sets) async {
+    final alts = alternativesFor(ex.name);
+    final muscle = muscleOf(ex.name);
+    final plannedName =
+        context.read<AppState>().planFor(_weekday).exercises[index].name;
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.75),
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            children: [
+              Text('Machine busy?',
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+              const SizedBox(height: 4),
+              Text(
+                  alts.isEmpty
+                      ? 'No alternatives found for ${ex.name}.'
+                      : 'Other exercises for ${muscle ?? findExercise(ex.name)?.group ?? 'the same muscle'}. Only for today, your plan stays the same.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 13)),
+              const SizedBox(height: 10),
+              if (ex.name != plannedName)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.undo, color: AppColors.primary),
+                  title: Text('Back to planned: $plannedName'),
+                  onTap: () => Navigator.pop(ctx, plannedName),
+                ),
+              for (final a in alts)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.swap_horiz, color: AppColors.primary),
+                  title: Text(a.name,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text(
+                      '${a.equipment}  |  ${a.level}  |  Main: ${a.primary}',
+                      style: const TextStyle(fontSize: 12)),
+                  onTap: () => Navigator.pop(ctx, a.name),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      final day = _swaps.putIfAbsent(_weekday, () => {});
+      if (picked == plannedName) {
+        day.remove(index);
+      } else {
+        day[index] = picked;
+      }
+      // Weights differ between exercises, so clear the kg of sets not done yet.
+      for (final l in sets) {
+        if (!l.done) l.kg.clear();
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Using $picked for today.')));
+  }
+
   String _kgText(double v) => v == v.roundToDouble() ? '${v.round()}' : '$v';
 
   /// Best set of this exercise from earlier workouts, or null.
@@ -127,6 +217,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   }
 
   void _resetDay(int weekday) {
+    _swaps.remove(weekday);
     final day = _logs.remove(weekday);
     if (day == null) return;
     // Dispose after the frame so text fields are no longer using them.
@@ -141,7 +232,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   /// "bench press 40 kilo 8 reps" fills the next open set of that exercise.
   Future<void> _voiceSet(AppState state) async {
-    final plan = state.planFor(_weekday);
+    final plan = _plan(state, _weekday);
     if (plan.rest || plan.exercises.isEmpty) return;
     final text = await showVoiceCapture(context, hint: 'Say your set');
     if (text == null || !mounted) return;
@@ -393,7 +484,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    final plan = state.planFor(_weekday);
+    final plan = _plan(state, _weekday);
     final logs = _logsFor(_weekday, plan);
     final total = logs.fold<int>(0, (n, e) => n + e.length);
     final done = logs.fold<int>(0, (n, e) => n + e.where((l) => l.done).length);
@@ -436,7 +527,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                   ),
                 if (_logging)
                   for (var i = 0; i < plan.exercises.length; i++)
-                    _exerciseCard(plan.exercises[i], logs[i])
+                    _exerciseCard(i, plan.exercises[i], logs[i])
                 else
                   _planCard(plan, logs),
                 const SizedBox(height: 14),
@@ -900,7 +991,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     );
   }
 
-  Widget _exerciseCard(Exercise ex, List<_SetLog> sets) {
+  Widget _exerciseCard(int index, Exercise ex, List<_SetLog> sets) {
     final allDone = sets.every((l) => l.done);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -928,6 +1019,12 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                     ],
                   ),
                 ),
+                if (findExercise(ex.name) != null)
+                  IconButton(
+                    tooltip: 'Machine busy? Find an alternative',
+                    icon: Icon(Icons.swap_horiz, color: AppColors.primary),
+                    onPressed: () => _pickAlternative(index, ex, sets),
+                  ),
                 if (findExercise(ex.name) != null)
                   IconButton(
                     tooltip: 'How to do it',

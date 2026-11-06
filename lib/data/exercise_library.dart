@@ -66,6 +66,25 @@ String? muscleOf(String name) {
   }
 }
 
+/// Other exercises that train the same muscle, for when a machine is busy.
+/// Closest first (same primary muscle), then the rest of the same muscle,
+/// and entries with different equipment come before the same equipment.
+List<ExerciseInfo> alternativesFor(String name) {
+  final info = findExercise(name);
+  if (info == null) return const [];
+  final muscle = muscleOf(name);
+  final out = <ExerciseInfo>[];
+  for (final e in exerciseLibrary) {
+    if (e.name == info.name) continue;
+    final same = muscle != null ? muscleOf(e.name) == muscle : e.group == info.group;
+    if (same) out.add(e);
+  }
+  int score(ExerciseInfo e) =>
+      (e.primary == info.primary ? 0 : 2) + (e.equipment == info.equipment ? 1 : 0);
+  out.sort((a, b) => score(a).compareTo(score(b)));
+  return out;
+}
+
 const exerciseLibrary = <ExerciseInfo>[
   ExerciseInfo(
     name: 'Bench press',
