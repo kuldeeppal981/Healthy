@@ -246,6 +246,73 @@ class ReminderService {
     } catch (_) {}
   }
 
+  // ---- Rest timer shown on the lock screen / notification shade ----
+  static const _restId = 9001;
+  static const _restDoneId = 9002;
+
+  /// Starts a countdown notification. The phone itself draws the ticking time
+  /// (chronometer), so it keeps running with the screen off and shows on the
+  /// lock screen. A second notification rings when the rest is over.
+  Future<void> startRestTimer(int seconds, {String? exercise}) async {
+    if (!_ready) return;
+    try {
+      final end = DateTime.now().add(Duration(seconds: seconds));
+      await _plugin.show(
+        _restId,
+        'Rest timer',
+        exercise == null ? 'Next set when the timer ends' : 'Next: $exercise',
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'rest_timer',
+            'Rest timer',
+            channelDescription: 'Countdown between sets',
+            importance: Importance.low,
+            priority: Priority.low,
+            ongoing: true,
+            autoCancel: false,
+            onlyAlertOnce: true,
+            showWhen: true,
+            when: end.millisecondsSinceEpoch,
+            usesChronometer: true,
+            chronometerCountDown: true,
+            timeoutAfter: seconds * 1000,
+            visibility: NotificationVisibility.public,
+          ),
+        ),
+      );
+      await _plugin.zonedSchedule(
+        _restDoneId,
+        'Rest over',
+        exercise == null ? 'Time for your next set' : 'Time for your next set of $exercise',
+        tz.TZDateTime.now(tz.local).add(Duration(seconds: seconds)),
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'rest_done',
+            'Rest over',
+            channelDescription: 'Rings when your rest between sets is over',
+            importance: Importance.high,
+            priority: Priority.high,
+            visibility: NotificationVisibility.public,
+          ),
+        ),
+        androidScheduleMode: _exact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (_) {}
+  }
+
+  /// Removes the countdown and the "rest over" ring (skip, finish or app open).
+  Future<void> stopRestTimer() async {
+    if (!_ready) return;
+    try {
+      await _plugin.cancel(_restId);
+      await _plugin.cancel(_restDoneId);
+    } catch (_) {}
+  }
+
   Future<void> apply(AppState state) async {
     await _store();
     await reschedule(state);

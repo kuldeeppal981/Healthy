@@ -256,7 +256,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       if (v.reps != null) l.reps.text = '${v.reps}';
       l.done = true;
     });
-    _startRest();
+    _startRest(exercise: plan.exercises[v.exerciseIndex].name);
     msg.showSnackBar(SnackBar(
       content: Text('${plan.exercises[v.exerciseIndex].name}: ${v.kg ?? 0} kg x ${v.reps ?? l.reps.text} logged'),
     ));
@@ -375,8 +375,9 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
   ];
 
-  void _startRest() {
+  void _startRest({String? exercise}) {
     _timer?.cancel();
+    ReminderService.instance.startRestTimer(_restSeconds, exercise: exercise);
     setState(() => _rest = _restSeconds);
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) {
@@ -385,6 +386,8 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       }
       if (_rest <= 1) {
         t.cancel();
+        // App is open and showing the timer, so no need to ring the notification.
+        ReminderService.instance.stopRestTimer();
         setState(() => _rest = 0);
       } else {
         setState(() => _rest--);
@@ -394,6 +397,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
 
   void _skipRest() {
     _timer?.cancel();
+    ReminderService.instance.stopRestTimer();
     setState(() => _rest = 0);
   }
 
@@ -1095,7 +1099,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
                           if (v == true) {
                             Haptic.done();
                             _prefillNext(sets, i);
-                            _startRest();
+                            _startRest(exercise: ex.name);
                           }
                         },
                       ),
