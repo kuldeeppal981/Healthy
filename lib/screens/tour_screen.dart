@@ -13,19 +13,21 @@ class _Slide {
 
 const _slides = [
   _Slide(Icons.waving_hand_outlined, 'Welcome to Healthy',
-      'A free health app made for India. A quick look at what you can do. It takes 30 seconds.'),
-  _Slide(Icons.restaurant_outlined, 'Log your food',
-      'Tap the + button to add a meal, scan a barcode, use your voice or take a photo. Indian foods are included.'),
+      'A free health app made for India. A quick look at the main things you can do. It takes 30 seconds.'),
+  _Slide(Icons.photo_camera_outlined, 'Log food with a photo',
+      'Tap the + button, then Meal photo. Take a picture of your plate and AI estimates the calories. Fix the portions, then add it to your diary. You can also use voice, barcode or type.'),
+  _Slide(Icons.medical_information_outlined, 'Add your health report',
+      'Open Profile, then Medical report, and take a photo of your lab report. Healthy tells you which foods to limit and eat more of, and checks your meals against it. General guidance, not medical advice.'),
+  _Slide(Icons.accessibility_new, 'Check your workout form',
+      'While you log a workout, tap form check on an exercise. Send a photo or use the live camera and get simple tips to fix your form.'),
   _Slide(Icons.shield_outlined, 'Allergy alerts',
       'Set your allergies once. Every scan is checked against them. Always read the label too.'),
   _Slide(Icons.fitness_center, 'Workouts and streaks',
       'Plan your week in the Workout tab, log sets, and keep your streak alive for XP and badges.'),
-  _Slide(Icons.smart_toy_outlined, 'AI coach',
-      'Ask the coach about food and fitness. It gives general guidance, not medical advice.'),
   _Slide(Icons.groups_outlined, 'Friends and groups',
       'Add friends, join a group, compete in the weekly league and cheer each other on. Sharing is always your choice.'),
   _Slide(Icons.explore_outlined, 'Explore your fitness',
-      'On Home, scroll down to Explore for nutrition, health reports, the exercise library, community and challenges. Your profile opens from your picture at the top.'),
+      'On Home, scroll down to Explore for nutrition, health reports, the exercise library, community and challenges. The AI coach is on Home too. Your profile opens from your picture at the top.'),
 ];
 
 /// First-run walkthrough. Next, Back and Skip. Shown once; can be replayed
