@@ -489,7 +489,7 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final a in alerts)
+          for (final a in alerts.take(1))
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Container(
@@ -528,51 +528,60 @@ class HomeScreen extends StatelessWidget {
           if (ideas.isNotEmpty)
             AppCard(
               radius: 20,
+              padding: const EdgeInsets.fromLTRB(14, 10, 0, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text('Ideas for your ${mealLabels[meal] ?? 'next meal'}',
-                            style: const TextStyle(fontWeight: FontWeight.w800)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text('Based on what is left today. Tap to add.',
-                      style: TextStyle(fontSize: 12, color: AppColors.muted)),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final f in ideas)
-                        ActionChip(
-                          label: Text('${f.name}  ${f.kcal.round()} kcal  ${f.protein.round()}g P'),
-                          onPressed: () {
-                            Haptic.done();
-                            final hit = s.reportAvoidHit(f.name);
-                            s.addEntry(entryFromPreset(f, meal));
-                            ScaffoldMessenger.of(context)
-                              ..hideCurrentSnackBar()
-                              ..showSnackBar(SnackBar(
-                                content: Text(hit == null
-                                    ? 'Added ${f.name}'
-                                    : 'Added ${f.name}. Your report says to limit "$hit".'),
-                              ));
-                          },
+                  Padding(
+                    padding: const EdgeInsets.only(right: 14),
+                    child: Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text('Ideas for your ${mealLabels[meal] ?? 'next meal'}',
+                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
                         ),
-                    ],
+                        Text('Tap to add', style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                      ],
+                    ),
                   ),
-                  if (s.allergies.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                        'Ideas skip your allergens by name, but always check the ingredients yourself.',
-                        style: TextStyle(fontSize: 11, color: AppColors.muted)),
-                  ],
+                  const SizedBox(height: 6),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(right: 14),
+                    child: Row(
+                      children: [
+                        for (final f in ideas)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ActionChip(
+                              visualDensity: VisualDensity.compact,
+                              label: Text('${f.name}  ${f.kcal.round()} kcal',
+                                  style: const TextStyle(fontSize: 12)),
+                              onPressed: () {
+                                Haptic.done();
+                                final hit = s.reportAvoidHit(f.name);
+                                s.addEntry(entryFromPreset(f, meal));
+                                ScaffoldMessenger.of(context)
+                                  ..hideCurrentSnackBar()
+                                  ..showSnackBar(SnackBar(
+                                    content: Text(hit == null
+                                        ? 'Added ${f.name}'
+                                        : 'Added ${f.name}. Your report says to limit "$hit".'),
+                                  ));
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (s.allergies.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, right: 14),
+                      child: Text('Allergens skipped by name. Still check the ingredients.',
+                          style: TextStyle(fontSize: 10, color: AppColors.muted)),
+                    ),
                 ],
               ),
             ),
