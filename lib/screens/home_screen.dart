@@ -16,6 +16,7 @@ import '../widgets/activity_art.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_review.dart';
 import '../widgets/weight_dialog.dart';
+import 'calories_detail_screen.dart';
 import 'coach_screen.dart';
 import 'diary_screen.dart';
 import 'health_connect_screen.dart';
@@ -307,7 +308,10 @@ class HomeScreen extends StatelessWidget {
     final remaining = (s.kcalTarget - s.kcalToday).round();
     final over = remaining < 0;
     final pct = s.kcalTarget <= 0 ? 0 : (s.kcalToday / s.kcalTarget * 100).round();
-    return AppCard(
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: () => _open(context, const CaloriesDetailScreen()),
+      child: AppCard(
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
@@ -356,6 +360,7 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

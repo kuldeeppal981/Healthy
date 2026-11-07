@@ -71,3 +71,5 @@ Merged to main and pushed (c704f08 and later). Still untested on a phone.
 
 - Hindi: only main headings are translated; extend `_hi` in `services/l10n.dart` screen by screen.
 - Feedback inbox: messages are read in the Supabase `feedback` table (no in-app admin view yet).
+
+- Ideas left: allergies/conditions "Add" list style, calories "burned" in detail screen, Home quick tiles (Meal photo/Scan/Voice) and "+" sheet in two groups (design shown, user has not chosen yet).

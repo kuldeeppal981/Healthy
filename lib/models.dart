@@ -56,6 +56,9 @@ class DiaryEntry {
   final double fat;
   final DateTime at;
 
+  /// Other nutrients (fiber, sugar, sodium_mg ...), same keys as meal photo. Empty for most foods.
+  final Map<String, double> more;
+
   const DiaryEntry({
     required this.id,
     required this.name,
@@ -65,6 +68,7 @@ class DiaryEntry {
     required this.carbs,
     required this.fat,
     required this.at,
+    this.more = const {},
   });
 
   Map<String, dynamic> toJson() => {
@@ -76,6 +80,7 @@ class DiaryEntry {
         'carbs': carbs,
         'fat': fat,
         'at': at.toIso8601String(),
+        if (more.isNotEmpty) 'more': more,
       };
 
   factory DiaryEntry.fromJson(Map<String, dynamic> j) => DiaryEntry(
@@ -87,8 +92,29 @@ class DiaryEntry {
         carbs: (j['carbs'] as num).toDouble(),
         fat: (j['fat'] as num).toDouble(),
         at: DateTime.parse(j['at'] as String),
+        more: j['more'] is Map
+            ? {
+                for (final e in (j['more'] as Map).entries)
+                  e.key.toString(): (e.value as num).toDouble()
+              }
+            : const {},
       );
 }
+
+/// Label, key, unit, daily reference, isLimit (true = try to stay under).
+const nutrientRows = <List<Object>>[
+  ['Fiber', 'fiber', 'g', 30.0, false],
+  ['Iron', 'iron_mg', 'mg', 18.0, false],
+  ['Calcium', 'calcium_mg', 'mg', 1000.0, false],
+  ['Potassium', 'potassium_mg', 'mg', 3500.0, false],
+  ['Vitamin A', 'vit_a_mcg', 'mcg', 900.0, false],
+  ['Vitamin C', 'vit_c_mg', 'mg', 80.0, false],
+  ['Vitamin B12', 'vit_b12_mcg', 'mcg', 2.4, false],
+  ['Vitamin D', 'vit_d_mcg', 'mcg', 15.0, false],
+  ['Sugar', 'sugar', 'g', 50.0, true],
+  ['Saturated fat', 'sat_fat', 'g', 22.0, true],
+  ['Sodium', 'sodium_mg', 'mg', 2000.0, true],
+];
 
 const mealOrder = ['breakfast', 'lunch', 'snacks', 'dinner'];
 

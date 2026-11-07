@@ -81,6 +81,7 @@ class _MealPhotoScreenState extends State<MealPhotoScreen> {
         carbs: i.carbs * i.qty,
         fat: i.fat * i.qty,
         at: now,
+        more: {for (final e in i.more.entries) if (e.value > 0) e.key: e.value * i.qty},
       ));
     }
     Navigator.of(context).pop();

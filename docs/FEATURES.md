@@ -259,3 +259,9 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 ## Profile illustrations (BUILT, UNTESTED)
 - `lib/widgets/illustrations.dart`: `HeroArt` / `HeroHeader` draw shield, heart, report, flame, crown with CustomPaint (no image files, follows theme colour). Used on Allergies, Health conditions, Medical report, Streaks and badges (flame + streak) and Healthy Pro (crown). Profile stat tiles (streak, best streak, badges) now have icons.
 - Idea from a ChatGPT concept image, not done yet: month tabs and weekly bar chart on Monthly report; swipeable "Quick access" is NOT wanted (Profile already has categories).
+
+## Calories detail, report chart, nutrients in diary, smaller APK (BUILT, UNTESTED)
+- `calories_detail_screen.dart`: tap the calorie card on Home. Ring (goal, eaten, left), protein/carbs/fat rings, by meal, other nutrients (sum of `DiaryEntry.more`, only from foods that have it), 7/30/90 day bar trend with goal line. No "burned" number yet (not tracked).
+- `DiaryEntry.more` (optional map, saved in toJson only when not empty, so old data still loads). Meal photo now saves all nutrients per item (scaled by portion). `nutrientRows` in models.dart is the shared list with daily references.
+- Monthly report: last 4 months as tabs (plus the old arrows) and a bar per day of calories with the goal line.
+- APK size: workflow now builds `--target-platform android-arm64` only (single APK, about one third of the fat APK). Old 32-bit phones will not install it. If still big: check google_mlkit_text_recognition (all script models) and pose detection.

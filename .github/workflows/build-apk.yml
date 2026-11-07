@@ -308,7 +308,7 @@ jobs:
           FIREBASE_SENDER_ID: ${{ secrets.FIREBASE_SENDER_ID }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
         run: >
-          flutter build apk --release --no-shrink
+          flutter build apk --release --no-shrink --target-platform android-arm64
           --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
           --dart-define=FIREBASE_API_KEY="$FIREBASE_API_KEY"
           --dart-define=FIREBASE_APP_ID="$FIREBASE_APP_ID"

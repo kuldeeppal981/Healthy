@@ -63,6 +63,104 @@ class _ReportScreenState extends State<ReportScreen> {
         ),
       );
 
+  static const _mn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  /// Last 4 months as tabs, newest on the right.
+  Widget _monthTabs() {
+    final n = DateTime.now();
+    final months = [for (var i = 3; i >= 0; i--) DateTime(n.year, n.month - i)];
+    return Row(
+      children: [
+        for (final m in months)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: ChoiceChip(
+                showCheckmark: false,
+                label: SizedBox(
+                    width: double.infinity,
+                    child: Text(_mn[m.month - 1], textAlign: TextAlign.center)),
+                selected: m.year == _month.year && m.month == _month.month,
+                selectedColor: AppColors.primary,
+                labelStyle: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: (m.year == _month.year && m.month == _month.month)
+                        ? AppColors.onAccent
+                        : AppColors.ink),
+                onSelected: (_) => setState(() => _month = m),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// One bar per day of the month: calories eaten, with the goal as a line.
+  Widget _kcalChart(AppState s, MonthReport r) {
+    final days = <double>[
+      for (var d = 1; d <= r.daysInMonth; d++)
+        s.entriesOn(DateTime(_month.year, _month.month, d)).fold(0.0, (a, e) => a + e.kcal)
+    ];
+    final target = s.kcalTarget.toDouble();
+    final top = [target * 1.25, ...days].reduce((a, b) => a > b ? a : b);
+    const h = 110.0;
+    final anyLogged = days.any((v) => v > 0);
+    return AppCard(
+      radius: 22,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Calories each day', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: h,
+            child: Stack(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    for (final v in days)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 0.7),
+                          child: Container(
+                            height: top <= 0 ? 0 : (v / top * h).clamp(0.0, h),
+                            decoration: BoxDecoration(
+                              color: v > target ? AppColors.warnInk : AppColors.primaryLight,
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: top <= 0 ? 0 : (target / top * h).clamp(0.0, h),
+                  child: Container(height: 1.5, color: AppColors.muted.withOpacity(0.6)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('1', style: TextStyle(fontSize: 11, color: AppColors.muted)),
+              Text('${r.daysInMonth}', style: TextStyle(fontSize: 11, color: AppColors.muted)),
+            ],
+          ),
+          Text(
+              anyLogged
+                  ? 'Line is your goal (${s.kcalTarget} kcal). Darker bars are days over the goal.'
+                  : 'No food logged this month.',
+              style: TextStyle(fontSize: 12, color: AppColors.muted)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
@@ -88,6 +186,8 @@ class _ReportScreenState extends State<ReportScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 4),
+          _monthTabs(),
           const SizedBox(height: 12),
           GridView.count(
             crossAxisCount: 2,
@@ -109,6 +209,8 @@ class _ReportScreenState extends State<ReportScreen> {
               _tile('${r.volumeKg.round()} kg', 'Total lifted'),
             ],
           ),
+          const SizedBox(height: 16),
+          _kcalChart(s, r),
           const SizedBox(height: 20),
           const Text('Personal records',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
