@@ -96,7 +96,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final p = _build();
     if (p == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(Units.instance.imperial
               ? 'Please enter age 18-90, height 47-91 in and weight 66-550 lb.'
               : 'Please enter age 18-90, height 120-230 cm and weight 30-250 kg.'),
