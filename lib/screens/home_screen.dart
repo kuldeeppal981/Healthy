@@ -640,7 +640,7 @@ class HomeScreen extends StatelessWidget {
                   right: -14,
                   top: -14,
                   child: IgnorePointer(
-                    child: const ShoeArt(width: 64),
+                    child: const Opacity(opacity: 0.35, child: ShoeArt(width: 64)),
                   ),
                 ),
                 Column(
@@ -702,7 +702,7 @@ class HomeScreen extends StatelessWidget {
             right: -12,
             top: 22,
             child: IgnorePointer(
-              child: const GlassArt(width: 46),
+              child: const Opacity(opacity: 0.35, child: GlassArt(width: 46)),
             ),
           ),
           Column(
