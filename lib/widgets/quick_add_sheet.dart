@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../screens/meal_photo_screen.dart';
+import '../screens/recipes_screen.dart';
 import '../screens/scan_screen.dart';
 import '../screens/search_screen.dart';
+import '../screens/weekly_review_screen.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import 'add_food_sheet.dart';
@@ -106,6 +108,16 @@ Future<void> showQuickAdd(
                     Haptic.done();
                     s.checkIn();
                   }
+                }),
+                tile(ctx, Icons.menu_book_outlined, 'My recipes', () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const RecipesScreen()),
+                  );
+                }),
+                tile(ctx, Icons.insights_outlined, 'Weekly review', () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const WeeklyReviewScreen()),
+                  );
                 }),
                 tile(ctx, Icons.search, 'Search', () {
                   Navigator.of(context).push(

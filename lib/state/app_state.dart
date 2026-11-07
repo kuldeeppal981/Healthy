@@ -69,6 +69,8 @@ class AppState extends ChangeNotifier {
   /// plain maps. favs: {name,kcal,protein,carbs,fat}. templates: {name, items}.
   final List<Map<String, dynamic>> favFoods = [];
   final List<Map<String, dynamic>> mealTemplates = [];
+  /// "My recipes": {id, name, servings, items:[{name, serving, qty, kcal, p, c, f}]} (item numbers are totals for that line).
+  final List<Map<String, dynamic>> recipes = [];
   final Map<String, String> severity = {}; // allergen id -> mild|medium|severe
   bool traceWarning = true;
 
@@ -142,6 +144,7 @@ class AppState extends ChangeNotifier {
         'customChallenges': customChallenges,
         'favFoods': favFoods,
         'mealTemplates': mealTemplates,
+        'recipes': recipes,
         'severity': severity,
         'traceWarning': traceWarning,
         'kcalTarget': kcalTarget,
@@ -179,6 +182,7 @@ class AppState extends ChangeNotifier {
         : null;
     _readMaps(favFoods, j['favFoods']);
     _readMaps(mealTemplates, j['mealTemplates']);
+    _readMaps(recipes, j['recipes']);
     prefs = j['prefs'] is Map ? Map<String, dynamic>.from(j['prefs'] as Map) : {};
     _readMaps(customChallenges, j['customChallenges']);
     severity
@@ -393,6 +397,7 @@ class AppState extends ChangeNotifier {
       ..addAll(p.getStringList('conditions') ?? const []);
     _readMaps(favFoods, _decode(p.getString('favFoods')));
     _readMaps(mealTemplates, _decode(p.getString('mealTemplates')));
+    _readMaps(recipes, _decode(p.getString('recipes')));
     medicalNotes = null;
     final mn = p.getString('medicalNotes');
     if (mn != null && mn.isNotEmpty) {
@@ -479,6 +484,7 @@ class AppState extends ChangeNotifier {
     await p.setStringList('conditions', conditions.toList());
     await p.setString('favFoods', jsonEncode(favFoods));
     await p.setString('mealTemplates', jsonEncode(mealTemplates));
+    await p.setString('recipes', jsonEncode(recipes));
     if (medicalNotes == null) {
       await p.remove('medicalNotes');
     } else {
@@ -623,6 +629,22 @@ class AppState extends ChangeNotifier {
           {'name': e.name, 'kcal': e.kcal, 'protein': e.protein, 'carbs': e.carbs, 'fat': e.fat},
       ],
     });
+    _changed();
+  }
+
+  /// Adds or replaces a recipe (matched by id).
+  void saveRecipe(Map<String, dynamic> r) {
+    final i = recipes.indexWhere((x) => x['id'] == r['id']);
+    if (i >= 0) {
+      recipes[i] = r;
+    } else {
+      recipes.add(r);
+    }
+    _changed();
+  }
+
+  void deleteRecipe(String id) {
+    recipes.removeWhere((x) => x['id'] == id);
     _changed();
   }
 
@@ -901,6 +923,7 @@ class AppState extends ChangeNotifier {
     customChallenges.clear();
     favFoods.clear();
     mealTemplates.clear();
+    recipes.clear();
     severity.clear();
     entries.clear();
     water.clear();

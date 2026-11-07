@@ -265,3 +265,9 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 - `DiaryEntry.more` (optional map, saved in toJson only when not empty, so old data still loads). Meal photo now saves all nutrients per item (scaled by portion). `nutrientRows` in models.dart is the shared list with daily references.
 - Monthly report: last 4 months as tabs (plus the old arrows) and a bar per day of calories with the goal line.
 - APK size: workflow now builds `--target-platform android-arm64` only (single APK, about one third of the fat APK). Old 32-bit phones will not install it. If still big: check google_mlkit_text_recognition (all script models) and pose detection.
+
+## My Recipes, quick logging, Weekly AI review (BUILT, UNTESTED, edge function `coach` v18 deployed)
+- `AppState.recipes` (synced): {id, name, servings, items:[{name, serving, qty, kcal, p, c, f}]}, item numbers are totals for that line. `services/recipes.dart` has 30+ raw ingredients (oil, ghee, dals, atta, veg, paneer, chicken...) plus `indianFoods` as choices, and per-serving maths.
+- `recipes_screen.dart`: list (tap = log), New/Edit recipe (name, servings, ingredients by search with quantity or "enter numbers"), per-serving card. `showLogRecipeSheet`: servings stepper (0.5 steps) + chips, meal chips, adds one DiaryEntry scaled. Tiles "My recipes" and "Weekly review" in the "+" sheet.
+- Weekly review: `services/weekly_review.dart` builds numbers from the last 7 diary days (no name, email or photos sent), calls `coach` mode `weekly` (JSON: headline, went_well, improve, 3 steps; safe prompt, no crash diets). `weekly_review_screen.dart` shows stats + review. Free: one review per week (stored in `prefs['weeklyReview']`, client side), Pro (from `my_plan`): "Make it again". Counts as 1 AI request.
+- Not done: recipe photo/AI estimate, edit a logged recipe, recipes shared with friends, nutrients beyond kcal/macros in recipes.
