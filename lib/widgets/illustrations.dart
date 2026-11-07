@@ -81,10 +81,12 @@ class _ArtPainter extends CustomPainter {
     final w = size.width, h = size.height;
     final mid = Offset(w / 2, h / 2);
     // soft blobs and dots behind every picture
-    final blob = Paint()..color = soft.withOpacity(0.9);
+    final blob = Paint()
+      ..color = kind == ArtKind.crown ? Colors.white.withOpacity(0.14) : soft.withOpacity(0.9);
     canvas.drawCircle(Offset(mid.dx - h * 0.42, mid.dy + h * 0.08), h * 0.34, blob);
     canvas.drawCircle(Offset(mid.dx + h * 0.4, mid.dy - h * 0.02), h * 0.3, blob);
-    final dot = Paint()..color = c.withOpacity(0.35);
+    final dot = Paint()
+      ..color = kind == ArtKind.crown ? Colors.white.withOpacity(0.4) : c.withOpacity(0.35);
     canvas.drawCircle(Offset(mid.dx - h * 0.62, mid.dy - h * 0.2), 5, dot);
     canvas.drawCircle(Offset(mid.dx + h * 0.66, mid.dy - h * 0.3), 4, dot);
     canvas.drawCircle(Offset(mid.dx + h * 0.55, mid.dy + h * 0.34), 6, dot);
