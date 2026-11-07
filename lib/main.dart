@@ -153,7 +153,7 @@ class _HealthAppState extends State<HealthApp> with WidgetsBindingObserver {
             );
             return AnnotatedRegion<SystemUiOverlayStyle>(
               value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-              child: scaled,
+              child: ColoredBox(color: AppColors.bg, child: scaled),
             );
           },
           home: const AppShell(),
