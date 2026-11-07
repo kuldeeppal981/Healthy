@@ -13,7 +13,7 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import 'health_connect_screen.dart';
 import 'privacy_screen.dart';
-import 'settings_screen.dart';
+import 'delete_data_screen.dart';
 
 /// One place to see what Healthy stores, what is shared, what the AI sees,
 /// and to export or delete your data.
@@ -260,8 +260,8 @@ class PrivacyDashboardScreen extends StatelessWidget {
               MenuRow(
                 icon: Icons.delete_outline,
                 title: 'Delete data or account',
-                subtitle: 'In Settings',
-                onTap: () => _open(context, const SettingsScreen()),
+                subtitle: 'Cannot be undone',
+                onTap: () => _open(context, const DeleteDataScreen()),
               ),
               MenuRow(
                 icon: Icons.policy_outlined,

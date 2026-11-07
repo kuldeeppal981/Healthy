@@ -1,289 +1,154 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../services/sound_service.dart';
-import '../services/theme_service.dart';
+import '../config.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/edit_identity.dart';
+import 'appearance_screen.dart';
+import 'delete_data_screen.dart';
+import 'privacy_dashboard_screen.dart';
 import 'privacy_screen.dart';
+import 'reminders_screen.dart';
+import 'tour_screen.dart';
 
-/// Appearance (mode, theme colour, text size), daily targets and account actions.
+/// Settings: account on top, then categories. Each category opens its own screen.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  void _open(BuildContext context, Widget page) =>
+      Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+
+  Widget _title(String text) => Padding(
+        padding: const EdgeInsets.only(top: 20, bottom: 8, left: 4),
+        child: Text(text, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+      );
 
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final name = (s.displayName ?? '').trim();
+    final signedIn = s.signedIn;
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(backgroundColor: Colors.transparent, title: const Text('Settings')),
       body: AppBackground(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
           children: [
-        ListenableBuilder(
-          listenable: ThemeService.instance,
-          builder: (context, _) => AppCard(
-            radius: 22,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            InkWell(
+              borderRadius: BorderRadius.circular(22),
+              onTap: () => showEditIdentity(context, s),
+              child: AppCard(
+                radius: 22,
+                child: Row(
                   children: [
-                    Icon(Icons.dark_mode_outlined, color: AppColors.primary),
-                    SizedBox(width: 12),
-                    Text('Appearance',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<ThemeMode>(
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(value: ThemeMode.system, label: Text('Auto')),
-                      ButtonSegment(value: ThemeMode.light, label: Text('Light')),
-                      ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
-                    ],
-                    selected: {ThemeService.instance.mode},
-                    onSelectionChanged: (v) => ThemeService.instance.set(v.first),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                ListenableBuilder(
-                  listenable: SoundService.instance,
-                  builder: (context, _) => SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Sounds',
-                        style: TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: const Text('Chime on check-in, pop on a finished set',
-                        style: TextStyle(fontSize: 12)),
-                    value: SoundService.instance.enabled,
-                    activeColor: AppColors.primary,
-                    onChanged: SoundService.instance.setEnabled,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text('Theme colour', style: TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 14,
-                  runSpacing: 10,
-                  children: [
-                    for (var i = 0; i < accentPalettes.length; i++)
-                      GestureDetector(
-                        onTap: () => ThemeService.instance.setAccent(i),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [accentPalettes[i].light, accentPalettes[i].deep],
-                                ),
-                                border: Border.all(
-                                  color: ThemeService.instance.accentIndex == i
-                                      ? AppColors.ink
-                                      : Colors.transparent,
-                                  width: 2.5,
-                                ),
-                              ),
-                              child: ThemeService.instance.accentIndex == i
-                                  ? const Icon(Icons.check, color: Colors.white, size: 22)
-                                  : null,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(accentPalettes[i].name, style: const TextStyle(fontSize: 11)),
-                          ],
-                        ),
+                    Container(
+                      width: 56,
+                      height: 56,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDeep]),
                       ),
+                      child: Text(name.isEmpty ? '?' : name.characters.first.toUpperCase(),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(name.isEmpty ? 'Add your name' : name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                          Text(
+                              signedIn
+                                  ? (s.accountEmail ?? 'Signed in')
+                                  : 'Data is only on this phone',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: AppColors.muted, fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: AppColors.muted),
                   ],
                 ),
-                const SizedBox(height: 14),
-                const Text('Text size', style: TextStyle(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<double>(
-                    showSelectedIcon: false,
-                    segments: const [
-                      ButtonSegment(value: 1.0, label: Text('Normal')),
-                      ButtonSegment(value: 1.15, label: Text('Large')),
-                      ButtonSegment(value: 1.3, label: Text('Extra')),
-                    ],
-                    selected: {ThemeService.instance.textScale},
-                    onSelectionChanged: (v) => ThemeService.instance.setTextScale(v.first),
-                  ),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('High contrast',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: const Text('Darker text, stronger borders, bold text',
-                      style: TextStyle(fontSize: 12)),
-                  value: ThemeService.instance.highContrast,
-                  activeColor: AppColors.primary,
-                  onChanged: ThemeService.instance.setHighContrast,
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Reduce motion',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: const Text('Fewer animations and no confetti',
-                      style: TextStyle(fontSize: 12)),
-                  value: ThemeService.instance.reduceMotion,
-                  activeColor: AppColors.primary,
-                  onChanged: ThemeService.instance.setReduceMotion,
-                ),
-              ],
-            ),
-          ),
-        ),
-            const SizedBox(height: 22),
-            const Text('Daily targets',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 10),
-            _stepper('Calories', '${s.kcalTarget} kcal', 50,
-                (d) => s.setTargets(kcal: (s.kcalTarget + d).clamp(1000, 5000))),
-            _stepper('Protein', '${s.proteinTarget} g', 5,
-                (d) => s.setTargets(protein: (s.proteinTarget + d).clamp(20, 300))),
-            _stepper('Carbs', '${s.carbsTarget} g', 10,
-                (d) => s.setTargets(carbs: (s.carbsTarget + d).clamp(20, 600))),
-            _stepper('Fat', '${s.fatTarget} g', 5,
-                (d) => s.setTargets(fat: (s.fatTarget + d).clamp(10, 200))),
-            if (s.profile != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: OutlinedButton(
-                  onPressed: () {
-                    s.recalculateTargets();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Targets recalculated from your profile')),
-                    );
-                  },
-                  child: const Text('Recalculate targets from profile'),
-                ),
               ),
-            const SizedBox(height: 24),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
-              onPressed: () async {
-                final ok = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Delete all data?'),
-                    content: const Text(
-                        'Your profile, allergies, diary and workouts will be removed from this phone and your account.'),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(ctx, false),
-                          child: const Text('Cancel')),
-                      TextButton(
-                          onPressed: () => Navigator.pop(ctx, true),
-                          child: const Text('Delete')),
-                    ],
-                  ),
-                );
-                if (ok == true) {
-                  await s.clearAll(deleteCloud: true);
-                  if (context.mounted) Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Delete all data'),
             ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const PrivacyScreen()),
+            _title('Preferences'),
+            MenuCard(rows: [
+              MenuRow(
+                icon: Icons.palette_outlined,
+                title: 'Appearance',
+                subtitle: 'Theme, colours, text size, sounds',
+                onTap: () => _open(context, const AppearanceScreen()),
               ),
-              child: const Text('Privacy policy'),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => showLicensePage(
-                context: context,
-                applicationName: 'Healthy',
+              MenuRow(
+                icon: Icons.notifications_active_outlined,
+                title: 'Notifications',
+                subtitle: 'Meals, water, workouts, gym alarm',
+                onTap: () => _open(context, const RemindersScreen()),
               ),
-              child: const Text('Open source licences'),
-            ),
-            if (s.signedIn) ...[
-              const SizedBox(height: 12),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
-                onPressed: () async {
-                  final ok = await showDialog<bool>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Delete your account?'),
-                      content: const Text(
-                          'This permanently deletes your account, friends, posts and all saved data. It cannot be undone.'),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel')),
-                        TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Delete account')),
-                      ],
-                    ),
-                  );
-                  if (ok != true) return;
-                  final done = await s.deleteAccount();
-                  if (!context.mounted) return;
-                  if (done) {
-                    Navigator.of(context).pop();
+            ]),
+            _title('Privacy and security'),
+            MenuCard(rows: [
+              MenuRow(
+                icon: Icons.privacy_tip_outlined,
+                title: 'Privacy and data',
+                subtitle: 'What is stored, who sees it, export',
+                onTap: () => _open(context, const PrivacyDashboardScreen()),
+              ),
+              MenuRow(
+                icon: Icons.policy_outlined,
+                title: 'Privacy policy',
+                subtitle: 'In plain language',
+                onTap: () => _open(context, const PrivacyScreen()),
+              ),
+              MenuRow(
+                icon: Icons.delete_outline,
+                title: 'Delete data or account',
+                subtitle: 'Cannot be undone',
+                onTap: () => _open(context, const DeleteDataScreen()),
+              ),
+            ]),
+            _title('Support'),
+            MenuCard(rows: [
+              MenuRow(
+                icon: Icons.help_outline,
+                title: 'App tour',
+                subtitle: 'See the quick intro again',
+                onTap: () => _open(context, const TourScreen()),
+              ),
+              MenuRow(
+                icon: Icons.info_outline,
+                title: 'About and licences',
+                subtitle: 'Healthy, open source licences',
+                onTap: () => showLicensePage(context: context, applicationName: 'Healthy'),
+              ),
+            ]),
+            if (cloudEnabled) ...[
+              const SizedBox(height: 20),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: BorderSide(color: AppColors.danger.withOpacity(0.5)),
+                ),
+                onPressed: () {
+                  if (signedIn) {
+                    s.signOut();
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Could not delete the account. Try again later.')),
-                    );
+                    s.leaveGuest();
                   }
+                  Navigator.of(context).popUntil((r) => r.isFirst);
                 },
-                child: const Text('Delete account'),
+                icon: Icon(signedIn ? Icons.logout : Icons.login),
+                label: Text(signedIn ? 'Sign out' : 'Sign in'),
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _stepper(String label, String value, int step, void Function(int delta) onChange) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: AppCard(
-        radius: 20,
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: TextStyle(fontSize: 13, color: AppColors.muted)),
-                  Text(value,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                ],
-              ),
-            ),
-            IconButton.outlined(
-              tooltip: 'Decrease $label',
-              onPressed: () => onChange(-step),
-              icon: const Icon(Icons.remove),
-            ),
-            const SizedBox(width: 4),
-            IconButton.outlined(
-              tooltip: 'Increase $label',
-              onPressed: () => onChange(step),
-              icon: const Icon(Icons.add),
-            ),
           ],
         ),
       ),

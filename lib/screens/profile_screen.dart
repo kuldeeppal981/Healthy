@@ -113,8 +113,11 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
           )
-        else
+        else ...[
           _bodyCard(context, s),
+          const SizedBox(height: 12),
+          _targetsCard(context, s),
+        ],
         const SizedBox(height: 14),
         MenuCard(rows: [
           MenuRow(
@@ -386,6 +389,168 @@ class ProfileScreen extends StatelessWidget {
             Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _targetsCard(BuildContext context, AppState s) {
+    Widget tile(String label, String value, String unit) => Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            decoration: BoxDecoration(
+              color: AppColors.chipBg,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text.rich(TextSpan(children: [
+                    TextSpan(
+                        text: value,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    TextSpan(
+                        text: ' $unit',
+                        style: TextStyle(fontSize: 11, color: AppColors.muted)),
+                  ])),
+                ),
+              ],
+            ),
+          ),
+        );
+    return AppCard(
+      radius: 22,
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+      child: InkWell(
+        onTap: () => _editTargets(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text('Daily targets',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                ),
+                Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
+                const SizedBox(width: 4),
+                Text('Edit',
+                    style: TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                tile('Calories', '${s.kcalTarget}', 'kcal'),
+                const SizedBox(width: 8),
+                tile('Protein', '${s.proteinTarget}', 'g'),
+                const SizedBox(width: 8),
+                tile('Carbs', '${s.carbsTarget}', 'g'),
+                const SizedBox(width: 8),
+                tile('Fat', '${s.fatTarget}', 'g'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _editTargets(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card,
+      builder: (ctx) => Consumer<AppState>(
+        builder: (ctx, s, _) {
+          Widget row(String label, String value, int step, void Function(int d) change) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(label, style: TextStyle(fontSize: 12, color: AppColors.muted)),
+                        Text(value,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                      ],
+                    ),
+                  ),
+                  IconButton.outlined(
+                    tooltip: 'Decrease $label',
+                    onPressed: () => change(-step),
+                    icon: const Icon(Icons.remove),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton.outlined(
+                    tooltip: 'Increase $label',
+                    onPressed: () => change(step),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Daily targets',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 6),
+                  row('Calories', '${s.kcalTarget} kcal', 50,
+                      (d) => s.setTargets(kcal: (s.kcalTarget + d).clamp(1000, 5000))),
+                  row('Protein', '${s.proteinTarget} g', 5,
+                      (d) => s.setTargets(protein: (s.proteinTarget + d).clamp(20, 300))),
+                  row('Carbs', '${s.carbsTarget} g', 10,
+                      (d) => s.setTargets(carbs: (s.carbsTarget + d).clamp(20, 600))),
+                  row('Fat', '${s.fatTarget} g', 5,
+                      (d) => s.setTargets(fat: (s.fatTarget + d).clamp(10, 200))),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      if (s.profile != null)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(minimumSize: const Size(0, 44)),
+                            onPressed: () {
+                              s.recalculateTargets();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Targets recalculated from your profile')),
+                              );
+                            },
+                            icon: const Icon(Icons.autorenew, size: 18),
+                            label: const Text('Recalculate'),
+                          ),
+                        ),
+                      if (s.profile != null) const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Done'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
