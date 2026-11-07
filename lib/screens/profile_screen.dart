@@ -92,11 +92,11 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            _statTile('${a.currentStreak}', 'Day streak'),
+            _statTile('${a.currentStreak}', 'Day streak', Icons.local_fire_department, const Color(0xFFF4511E)),
             const SizedBox(width: 8),
-            _statTile('${a.bestStreak}', 'Best streak'),
+            _statTile('${a.bestStreak}', 'Best streak', Icons.emoji_events, const Color(0xFFFFA000)),
             const SizedBox(width: 8),
-            _statTile('${a.earnedCount}', 'Badges'),
+            _statTile('${a.earnedCount}', 'Badges', Icons.military_tech, AppColors.primary),
           ],
         ),
         const SizedBox(height: 14),
@@ -374,7 +374,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _statTile(String value, String label) {
+  Widget _statTile(String value, String label, IconData icon, Color iconColor) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -384,6 +384,8 @@ class ProfileScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
+            Icon(icon, size: 22, color: iconColor),
+            const SizedBox(height: 2),
             Text(value,
                 style: TextStyle(
                     fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.primary)),

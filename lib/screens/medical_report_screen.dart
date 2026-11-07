@@ -6,6 +6,7 @@ import '../services/health_conditions.dart';
 import '../services/report_ai.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/illustrations.dart';
 import '../widgets/ai_wait.dart';
 import '../widgets/ui_kit.dart';
 
@@ -206,6 +207,12 @@ class _MedicalReportScreenState extends State<MedicalReportScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          HeroHeader(
+            kind: ArtKind.report,
+            title: saved == null ? 'Your medical report' : 'Report saved',
+            subtitle: 'Scan a lab report to see foods to limit and foods to eat more of.',
+          ),
+          const SizedBox(height: 8),
           AppCard(
             color: AppColors.warnBg,
             borderColor: AppColors.warnBg,

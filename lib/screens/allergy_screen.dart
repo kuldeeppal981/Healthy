@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/allergy_checker.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/illustrations.dart';
 import '../widgets/ui_kit.dart';
 
 /// Pick allergies, set severity, and control "may contain" warnings.
@@ -30,6 +31,12 @@ class _AllergyScreenState extends State<AllergyScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
+        HeroHeader(
+          kind: ArtKind.shield,
+          title: s.allergies.isEmpty ? 'Your allergies' : '${s.allergies.length} allergies set',
+          subtitle: 'Pick your allergies. Every scan and diary entry is checked against them.',
+        ),
+        const SizedBox(height: 8),
         Row(
           children: [
             Container(

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../services/plan_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/illustrations.dart';
 
 /// Free vs Pro. Buying is not open yet (needs Google Play Billing), so the
 /// button says so honestly. Pro can already be granted by the server.
@@ -49,7 +50,7 @@ class _ProScreenState extends State<ProScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.workspace_premium, color: Colors.white, size: 34),
+                const Center(child: HeroArt(ArtKind.crown, size: 96)),
                 const SizedBox(height: 10),
                 const Text('Healthy Pro',
                     style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),

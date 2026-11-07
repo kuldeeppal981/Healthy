@@ -6,6 +6,7 @@ import '../services/missions.dart';
 import '../services/step_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/illustrations.dart';
 import '../widgets/ui_kit.dart';
 
 /// Home row that opens the badges screen.
@@ -52,6 +53,12 @@ class BadgesScreen extends StatelessWidget {
        child: ListView(
         padding: Space.pagePadding,
         children: [
+          HeroHeader(
+            kind: ArtKind.flame,
+            title: '${a.currentStreak} day streak',
+            subtitle: a.currentStreak == 0 ? 'Log a food today to start your streak.' : 'Keep going, you are doing great!',
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(child: _stat('${a.currentStreak}', 'Current streak (days)')),

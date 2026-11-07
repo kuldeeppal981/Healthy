@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/health_conditions.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/illustrations.dart';
 
 /// Pick health conditions. Scanned products are then checked against them.
 class HealthScreen extends StatelessWidget {
@@ -21,6 +22,12 @@ class HealthScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          HeroHeader(
+            kind: ArtKind.heart,
+            title: chosen.isEmpty ? 'Your health conditions' : '${chosen.length} switched on',
+            subtitle: 'Get better warnings and tips for what you eat.',
+          ),
+          const SizedBox(height: 8),
           Text(
             'Switch on what applies to you. Scanned products will show a warning when they are high in sugar, salt or bad fats for you.',
             style: TextStyle(color: AppColors.muted, height: 1.4),

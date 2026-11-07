@@ -255,3 +255,7 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 - `units_language_screen.dart`: `Units` (kg/lb, cm/ft; gym lifts stay kg) and `AppLang` (Hindi partial via `tr()` in `services/l10n.dart`). Rebuild through `AppState.refreshUi()`.
 - `help_feedback_screen.dart`: FAQ, tour replay, feedback form -> rpc `send_feedback` (table `feedback`, max 5/day).
 - `appVersion` in `lib/config.dart` (bump on release).
+
+## Profile illustrations (BUILT, UNTESTED)
+- `lib/widgets/illustrations.dart`: `HeroArt` / `HeroHeader` draw shield, heart, report, flame, crown with CustomPaint (no image files, follows theme colour). Used on Allergies, Health conditions, Medical report, Streaks and badges (flame + streak) and Healthy Pro (crown). Profile stat tiles (streak, best streak, badges) now have icons.
+- Idea from a ChatGPT concept image, not done yet: month tabs and weekly bar chart on Monthly report; swipeable "Quick access" is NOT wanted (Profile already has categories).
