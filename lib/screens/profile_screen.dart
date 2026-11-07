@@ -8,6 +8,8 @@ import '../services/nutrition_calc.dart';
 import '../services/social_service.dart';
 import '../services/theme_service.dart';
 import '../state/app_state.dart';
+import '../services/l10n.dart';
+import '../services/units.dart';
 import '../theme.dart';
 import '../widgets/ui_kit.dart';
 import '../services/avatar_service.dart';
@@ -67,7 +69,7 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Profile',
+                  Text(tr('Profile'),
                       style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800)),
                   Text('Manage your account & preferences',
                       style: TextStyle(color: AppColors.muted, fontSize: 15)),
@@ -432,13 +434,13 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Expanded(
-                  child: Text('Daily targets',
+                Expanded(
+                  child: Text(tr('Daily targets'),
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                 ),
                 Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
                 const SizedBox(width: 4),
-                Text('Edit',
+                Text(tr('Edit'),
                     style: TextStyle(
                         fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
               ],
@@ -446,13 +448,13 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                tile('Calories', '${s.kcalTarget}', 'kcal'),
+                tile(tr('Calories'), '${s.kcalTarget}', 'kcal'),
                 const SizedBox(width: 8),
-                tile('Protein', '${s.proteinTarget}', 'g'),
+                tile(tr('Protein'), '${s.proteinTarget}', 'g'),
                 const SizedBox(width: 8),
-                tile('Carbs', '${s.carbsTarget}', 'g'),
+                tile(tr('Carbs'), '${s.carbsTarget}', 'g'),
                 const SizedBox(width: 8),
-                tile('Fat', '${s.fatTarget}', 'g'),
+                tile(tr('Fat'), '${s.fatTarget}', 'g'),
               ],
             ),
           ],
@@ -583,14 +585,14 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Current weight',
+                    Text(tr('Current weight'),
                         style: TextStyle(fontSize: 13, color: AppColors.muted)),
-                    Text('${p.weightKg.toStringAsFixed(1)} kg',
+                    Text(Units.instance.weight(p.weightKg),
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800)),
                     Text(
                       change == 0
                           ? 'No change yet'
-                          : '${change > 0 ? '+' : ''}${change.toStringAsFixed(1)} kg since start',
+                          : '${Units.instance.weightChange(change)} since start',
                       style: TextStyle(
                           fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
                     ),
@@ -628,7 +630,7 @@ class ProfileScreen extends StatelessWidget {
           ],
           const SizedBox(height: 12),
           Text(
-            '${p.heightCm.round()} cm  |  ${p.age} yrs  |  ${goalLabels[p.goal] ?? ''}',
+            '${Units.instance.height(p.heightCm)}  |  ${p.age} yrs  |  ${goalLabels[p.goal] ?? ''}',
             style: TextStyle(fontSize: 14, color: AppColors.muted),
           ),
           const SizedBox(height: 14),

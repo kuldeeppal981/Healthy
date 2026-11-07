@@ -57,6 +57,9 @@ class AppState extends ChangeNotifier {
   String? get equipmentPref => prefs['equipment'] as String?;
   String? get budgetPref => prefs['budget'] as String?;
 
+  /// Rebuilds screens that watch the app state (used after units or language change).
+  void refreshUi() => notifyListeners();
+
   void savePrefs(Map<String, dynamic> next) {
     prefs = Map<String, dynamic>.from(next);
     _changed();

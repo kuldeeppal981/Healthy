@@ -10,6 +10,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../models.dart';
 import '../state/app_state.dart';
+import 'notify_prefs.dart';
 
 class Reminder {
   bool enabled;
@@ -204,7 +205,9 @@ class ReminderService extends ChangeNotifier {
   }
 
   Future<void> _daily(int id, String title, String body, TimeOfDay t,
-      {bool skipToday = false}) {
+      {bool skipToday = false}) async {
+    // Quiet hours: do not schedule reminders that would ring during them.
+    if (NotifyPrefs.instance.quietAt(t.hour * 60 + t.minute)) return;
     return _plugin.zonedSchedule(
       id,
       title,
@@ -237,8 +240,9 @@ class ReminderService extends ChangeNotifier {
 
   /// Saves the settings and schedules everything again from scratch.
   /// Shows a notification straight away (used for friends' cheers).
-  Future<void> showNow(int id, String title, String body) async {
+  Future<void> showNow(int id, String title, String body, {String kind = 'other'}) async {
     if (!_ready) return;
+    if (!NotifyPrefs.instance.allows(kind)) return;
     try {
       await _plugin.show(
         id,

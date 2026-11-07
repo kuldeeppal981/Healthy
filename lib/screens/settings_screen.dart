@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../config.dart';
+import '../services/l10n.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/edit_identity.dart';
 import 'appearance_screen.dart';
 import 'delete_data_screen.dart';
+import 'health_connect_screen.dart';
+import 'help_feedback_screen.dart';
+import 'notification_settings_screen.dart';
+import 'units_language_screen.dart';
 import 'privacy_dashboard_screen.dart';
 import 'privacy_screen.dart';
-import 'reminders_screen.dart';
-import 'tour_screen.dart';
 
 /// Settings: account on top, then categories. Each category opens its own screen.
 class SettingsScreen extends StatelessWidget {
@@ -19,10 +22,41 @@ class SettingsScreen extends StatelessWidget {
   void _open(BuildContext context, Widget page) =>
       Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
 
-  Widget _title(String text) => Padding(
+  Widget _title(String text, {Color? color}) => Padding(
         padding: const EdgeInsets.only(top: 20, bottom: 8, left: 4),
-        child: Text(text, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+        child: Text(text,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
       );
+
+  Future<void> _changePassword(BuildContext context, AppState s) async {
+    final c = TextEditingController();
+    final pw = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr('Change password')),
+        content: TextField(
+          controller: c,
+          obscureText: true,
+          decoration: const InputDecoration(hintText: 'New password (6+ characters)'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, c.text), child: const Text('Save')),
+        ],
+      ),
+    );
+    if (pw == null || !context.mounted) return;
+    String msg;
+    if (pw.length < 6) {
+      msg = 'Password must be at least 6 characters.';
+    } else {
+      final err = await s.cloud?.updatePassword(pw);
+      msg = err ?? 'Password changed.';
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +65,7 @@ class SettingsScreen extends StatelessWidget {
     final signedIn = s.signedIn;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(backgroundColor: Colors.transparent, title: const Text('Settings')),
+      appBar: AppBar(backgroundColor: Colors.transparent, title: Text(tr('Settings'))),
       body: AppBackground(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
@@ -79,7 +113,38 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            _title('Preferences'),
+            if (cloudEnabled) ...[
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () {
+                  if (signedIn) {
+                    s.signOut();
+                  } else {
+                    s.leaveGuest();
+                  }
+                  Navigator.of(context).popUntil((r) => r.isFirst);
+                },
+                icon: Icon(signedIn ? Icons.logout : Icons.login),
+                label: Text(signedIn ? tr('Sign out') : 'Sign in'),
+              ),
+            ],
+            _title(tr('Account')),
+            MenuCard(rows: [
+              if (signedIn)
+                MenuRow(
+                  icon: Icons.lock_outline,
+                  title: tr('Change password'),
+                  subtitle: 'Email login',
+                  onTap: () => _changePassword(context, s),
+                ),
+              MenuRow(
+                icon: Icons.person_outline,
+                title: 'Name and photo',
+                subtitle: 'How friends see you',
+                onTap: () => showEditIdentity(context, s),
+              ),
+            ]),
+            _title(tr('Preferences')),
             MenuCard(rows: [
               MenuRow(
                 icon: Icons.palette_outlined,
@@ -89,9 +154,24 @@ class SettingsScreen extends StatelessWidget {
               ),
               MenuRow(
                 icon: Icons.notifications_active_outlined,
-                title: 'Notifications',
-                subtitle: 'Meals, water, workouts, gym alarm',
-                onTap: () => _open(context, const RemindersScreen()),
+                title: tr('Notifications'),
+                subtitle: 'Reminders, friends, cheers, quiet hours',
+                onTap: () => _open(context, const NotificationSettingsScreen()),
+              ),
+              MenuRow(
+                icon: Icons.translate,
+                title: '${tr('Units')} / ${tr('Language')}',
+                subtitle: 'kg or lb, cm or ft, English or Hindi',
+                onTap: () => _open(context, const UnitsLanguageScreen()),
+              ),
+            ]),
+            _title(tr('Connected apps')),
+            MenuCard(rows: [
+              MenuRow(
+                icon: Icons.favorite_border,
+                title: 'Health Connect',
+                subtitle: 'Steps and workouts from your phone',
+                onTap: () => _open(context, const HealthConnectScreen()),
               ),
             ]),
             _title('Privacy and security'),
@@ -103,11 +183,38 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () => _open(context, const PrivacyDashboardScreen()),
               ),
               MenuRow(
+                icon: Icons.group_outlined,
+                title: 'Friends privacy',
+                subtitle: 'Be found, share achievements',
+                onTap: () => _open(context, const PrivacyDashboardScreen()),
+              ),
+              MenuRow(
                 icon: Icons.policy_outlined,
                 title: 'Privacy policy',
                 subtitle: 'In plain language',
                 onTap: () => _open(context, const PrivacyScreen()),
               ),
+            ]),
+            _title(tr('Support')),
+            MenuCard(rows: [
+              MenuRow(
+                icon: Icons.support_agent,
+                title: tr('Help and feedback'),
+                subtitle: 'Questions, ideas, problems',
+                onTap: () => _open(context, const HelpFeedbackScreen()),
+              ),
+              MenuRow(
+                icon: Icons.info_outline,
+                title: 'About and licences',
+                subtitle: 'Healthy $appVersion, open source licences',
+                onTap: () => showLicensePage(
+                    context: context,
+                    applicationName: 'Healthy',
+                    applicationVersion: appVersion),
+              ),
+            ]),
+            _title(tr('Danger zone'), color: AppColors.danger),
+            MenuCard(rows: [
               MenuRow(
                 icon: Icons.delete_outline,
                 title: 'Delete data or account',
@@ -115,40 +222,11 @@ class SettingsScreen extends StatelessWidget {
                 onTap: () => _open(context, const DeleteDataScreen()),
               ),
             ]),
-            _title('Support'),
-            MenuCard(rows: [
-              MenuRow(
-                icon: Icons.help_outline,
-                title: 'App tour',
-                subtitle: 'See the quick intro again',
-                onTap: () => _open(context, const TourScreen()),
-              ),
-              MenuRow(
-                icon: Icons.info_outline,
-                title: 'About and licences',
-                subtitle: 'Healthy, open source licences',
-                onTap: () => showLicensePage(context: context, applicationName: 'Healthy'),
-              ),
-            ]),
-            if (cloudEnabled) ...[
-              const SizedBox(height: 20),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.danger,
-                  side: BorderSide(color: AppColors.danger.withOpacity(0.5)),
-                ),
-                onPressed: () {
-                  if (signedIn) {
-                    s.signOut();
-                  } else {
-                    s.leaveGuest();
-                  }
-                  Navigator.of(context).popUntil((r) => r.isFirst);
-                },
-                icon: Icon(signedIn ? Icons.logout : Icons.login),
-                label: Text(signedIn ? 'Sign out' : 'Sign in'),
-              ),
-            ],
+            const SizedBox(height: 18),
+            Center(
+              child: Text('Healthy $appVersion',
+                  style: TextStyle(fontSize: 12, color: AppColors.muted)),
+            ),
           ],
         ),
       ),

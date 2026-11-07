@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config.dart';
+import 'notify_prefs.dart';
 import 'reminder_service.dart';
 
 /// Push notifications through Firebase Cloud Messaging.
@@ -46,6 +47,7 @@ class PushService {
           (m.messageId ?? DateTime.now().toIso8601String()).hashCode & 0x3fffffff,
           n.title ?? 'Healthy',
           n.body ?? '',
+          kind: NotifyPrefs.kindOf(n.title ?? ''),
         ));
       });
       fm.onTokenRefresh.listen((t) {

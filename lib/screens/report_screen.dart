@@ -8,6 +8,7 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/share_card.dart';
 import '../widgets/ui_kit.dart';
+import '../services/units.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -101,7 +102,7 @@ class _ReportScreenState extends State<ReportScreen> {
               _tile('${(r.proteinConsistency * 100).round()}%',
                   'Protein target hit (${r.proteinDays} of ${r.loggedDays} days)'),
               _tile(
-                wc == null ? '-' : '${wc > 0 ? '+' : ''}${wc.toStringAsFixed(1)} kg',
+                wc == null ? '-' : Units.instance.weightChange(wc),
                 'Weight change',
               ),
               _tile('${r.loggedDays} / ${r.daysInMonth}', 'Days food logged'),

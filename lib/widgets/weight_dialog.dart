@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../state/app_state.dart';
+import '../services/units.dart';
 
 /// Asks for today's weight and saves it.
 Future<void> showLogWeight(BuildContext context, AppState s) async {
   final c = TextEditingController(
-    text: s.weights.isEmpty ? '' : s.weights.last.kg.toString(),
+    text: s.weights.isEmpty
+        ? ''
+        : Units.instance.weightValue(s.weights.last.kg).toStringAsFixed(1),
   );
   final kg = await showDialog<double>(
     context: context,
@@ -15,7 +18,7 @@ Future<void> showLogWeight(BuildContext context, AppState s) async {
         controller: c,
         autofocus: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(labelText: 'Weight', suffixText: 'kg'),
+        decoration: InputDecoration(labelText: 'Weight', suffixText: Units.instance.weightUnit),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
@@ -23,7 +26,9 @@ Future<void> showLogWeight(BuildContext context, AppState s) async {
           style: FilledButton.styleFrom(minimumSize: const Size(90, 44)),
           onPressed: () {
             final v = double.tryParse(c.text.trim());
-            if (v != null && v >= 30 && v <= 250) Navigator.pop(ctx, v);
+            if (v == null) return;
+            final kg = Units.instance.kgFromInput(v);
+            if (kg >= 30 && kg <= 250) Navigator.pop(ctx, kg);
           },
           child: const Text('Save'),
         ),

@@ -29,3 +29,6 @@ bool get pushEnabled =>
     firebaseAppId.isNotEmpty &&
     firebaseSenderId.isNotEmpty &&
     firebaseProjectId.isNotEmpty;
+
+/// Shown in Settings and sent with feedback. Change it when you release.
+const appVersion = '1.0.0';

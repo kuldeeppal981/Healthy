@@ -6,6 +6,7 @@ import '../services/nutrition_calc.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/ui_kit.dart';
+import '../services/units.dart';
 
 /// First-run setup (also used to edit the profile later). Works out daily
 /// calorie and macro targets from age, height, weight, activity and goal.
@@ -26,9 +27,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   late final TextEditingController _age =
       TextEditingController(text: widget.initial?.age.toString() ?? '');
   late final TextEditingController _height = TextEditingController(
-      text: widget.initial == null ? '' : widget.initial!.heightCm.round().toString());
+      text: widget.initial == null
+          ? ''
+          : Units.instance.heightValue(widget.initial!.heightCm).round().toString());
   late final TextEditingController _weight = TextEditingController(
-      text: widget.initial == null ? '' : widget.initial!.weightKg.toString());
+      text: widget.initial == null
+          ? ''
+          : Units.instance.weightValue(widget.initial!.weightKg).toStringAsFixed(1));
 
   // Extra setup answers (used to tailor foods, exercises and plans).
   late String _experience =
@@ -70,8 +75,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   UserProfile? _build() {
     final age = int.tryParse(_age.text.trim());
-    final h = double.tryParse(_height.text.trim());
-    final w = double.tryParse(_weight.text.trim());
+    final hIn = double.tryParse(_height.text.trim());
+    final wIn = double.tryParse(_weight.text.trim());
+    final h = hIn == null ? null : Units.instance.cmFromInput(hIn);
+    final w = wIn == null ? null : Units.instance.kgFromInput(wIn);
     if (age == null || age < 18 || age > 90) return null;
     if (h == null || h < 120 || h > 230) return null;
     if (w == null || w < 30 || w > 250) return null;
@@ -90,7 +97,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (p == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter age 18-90, height 120-230 cm and weight 30-250 kg.'),
+          content: Text(Units.instance.imperial
+              ? 'Please enter age 18-90, height 47-91 in and weight 66-550 lb.'
+              : 'Please enter age 18-90, height 120-230 cm and weight 30-250 kg.'),
         ),
       );
       return;
@@ -175,9 +184,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               children: [
                 Expanded(child: _field('Age', _age, 'yrs')),
                 const SizedBox(width: 8),
-                Expanded(child: _field('Height', _height, 'cm')),
+                Expanded(child: _field('Height', _height, Units.instance.heightUnit)),
                 const SizedBox(width: 8),
-                Expanded(child: _field('Weight', _weight, 'kg')),
+                Expanded(child: _field('Weight', _weight, Units.instance.weightUnit)),
               ],
             ),
                 ],

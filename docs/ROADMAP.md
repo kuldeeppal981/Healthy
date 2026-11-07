@@ -68,3 +68,6 @@ Also: ingredient -> allergen dictionary table grown from AI answers to make alle
 
 ## Home redesign
 Merged to main and pushed (c704f08 and later). Still untested on a phone.
+
+- Hindi: only main headings are translated; extend `_hi` in `services/l10n.dart` screen by screen.
+- Feedback inbox: messages are read in the Supabase `feedback` table (no in-app admin view yet).

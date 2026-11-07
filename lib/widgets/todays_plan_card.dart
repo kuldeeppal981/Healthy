@@ -8,6 +8,7 @@ import '../theme.dart';
 import 'add_food_sheet.dart';
 import 'celebrate.dart';
 import 'ui_kit.dart';
+import '../services/l10n.dart';
 
 class _Item {
   final String id;
@@ -126,8 +127,8 @@ class _TodaysPlanCardState extends State<TodaysPlanCard> {
             children: [
               Row(
                 children: [
-                  const Expanded(
-                    child: Text("Today's plan",
+                  Expanded(
+                    child: Text(tr("Today's plan"),
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   ),
                   InkWell(
@@ -192,7 +193,7 @@ class _TodaysPlanCardState extends State<TodaysPlanCard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Today's plan",
+              Text(tr("Today's plan"),
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
               const SizedBox(height: 6),
               for (final i in items)

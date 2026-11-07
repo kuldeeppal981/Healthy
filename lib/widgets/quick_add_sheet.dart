@@ -9,6 +9,7 @@ import 'add_food_sheet.dart';
 import 'ui_kit.dart';
 import 'voice_review.dart';
 import 'weight_dialog.dart';
+import '../services/l10n.dart';
 
 /// The big "+" button: log anything from one place.
 Future<void> showQuickAdd(
@@ -21,7 +22,7 @@ Future<void> showQuickAdd(
   Widget tile(BuildContext ctx, IconData icon, String label, VoidCallback action) {
     return Semantics(
       button: true,
-      label: label,
+      label: tr(label),
       excludeSemantics: true,
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -43,7 +44,7 @@ Future<void> showQuickAdd(
             children: [
               Icon(icon, color: AppColors.primary, size: 28),
               const SizedBox(height: 6),
-              Text(label,
+              Text(tr(label),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),

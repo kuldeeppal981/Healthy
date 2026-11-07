@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../screens/hub_screens.dart';
+import '../services/l10n.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 
@@ -143,13 +144,13 @@ class ExploreSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(
-              child: Text('Explore your fitness',
+            Expanded(
+              child: Text(tr('Explore your fitness'),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             ),
             TextButton(
               onPressed: () => _customize(context, s),
-              child: Text('Customize', style: TextStyle(color: AppColors.primary)),
+              child: Text(tr('Customize'), style: TextStyle(color: AppColors.primary)),
             ),
           ],
         ),
@@ -187,11 +188,11 @@ class ExploreSection extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(t.label,
+                            Text(tr(t.label),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-                            Text(t.sub,
+                            Text(tr(t.sub),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 11, color: AppColors.muted)),

@@ -8,6 +8,7 @@ import '../theme.dart';
 import '../widgets/bar_chart.dart';
 import '../widgets/muscle_activity.dart';
 import '../widgets/sparkline.dart';
+import '../services/units.dart';
 
 /// The Analytics tab: calories, macros, protein, weight, workouts, steps,
 /// water and muscle volume, for the last 7 or 30 days.
@@ -338,8 +339,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   ),
                   child: Text(
                     shown.length >= 2
-                        ? '${change >= 0 ? '+' : ''}${change.toStringAsFixed(1)} kg'
-                        : '${shown.last.kg.toStringAsFixed(1)} kg',
+                        ? Units.instance.weightChange(change)
+                        : Units.instance.weight(shown.last.kg),
                     style: TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.chipInk),
                   ),

@@ -17,6 +17,7 @@ import 'onboarding_screen.dart';
 import 'tour_screen.dart';
 import 'streak_card.dart';
 import 'workout_screen.dart';
+import '../services/l10n.dart';
 
 /// Bottom navigation: Home, Diary, Workout, Analytics, Profile.
 class AppShell extends StatefulWidget {
@@ -125,7 +126,7 @@ class _AppShellState extends State<AppShell> {
       child: Semantics(
        button: true,
        selected: selected,
-       label: label,
+       label: tr(label),
        excludeSemantics: true,
        child: InkWell(
         onTap: () => _goto(i),
@@ -139,7 +140,7 @@ class _AppShellState extends State<AppShell> {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  label,
+                  tr(label),
                   maxLines: 1,
                   style: TextStyle(
                     fontSize: 12,

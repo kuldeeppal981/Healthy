@@ -20,6 +20,9 @@ import 'services/theme_service.dart';
 import 'services/widget_service.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
+import 'services/l10n.dart';
+import 'services/notify_prefs.dart';
+import 'services/units.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +55,9 @@ Future<void> main() async {
   await state.load();
   await ThemeService.instance.load();
   await SoundService.instance.load();
+  await NotifyPrefs.instance.load();
+  await Units.instance.load();
+  await AppLang.instance.load();
   await AvatarService.instance.load();
 
   if (cloudEnabled) {

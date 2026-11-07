@@ -627,6 +627,7 @@ class SocialService extends ChangeNotifier {
           7001,
           '${c.emoji} ${c.who} cheered you$more',
           c.postTitle,
+          kind: 'cheer',
         );
       }
       notifyListeners();

@@ -248,3 +248,10 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 
 ## Settings redesign (untested)
 `settings_screen.dart` is now a category list (account card -> edit name; Preferences: Appearance, Notifications; Privacy and security: Privacy and data, Privacy policy, Delete data or account; Support: App tour, About and licences; Sign out/in at the bottom). Each opens its own screen: `appearance_screen.dart` (moved from Settings), `reminders_screen.dart`, `privacy_dashboard_screen.dart`, `delete_data_screen.dart` (new, holds the two delete actions). Daily targets moved to Profile: compact 4-tile card (`_targetsCard`) with an Edit bottom sheet (`_editTargets`). NOT built (ideas only): units, language, change password, quiet hours, feedback form.
+
+## Settings v2: categories, notifications, units, language, help (BUILT, UNTESTED)
+- `settings_screen.dart`: account card, big Sign out on top, Account (Change password via `CloudSync.updatePassword`, Name and photo), Preferences (Appearance, Notifications, Units/Language), Connected apps (Health Connect), Privacy and security (Privacy and data, Friends privacy, Privacy policy), Support (Help and feedback, About with `appVersion`), red Danger zone (Delete data or account), version text.
+- `notification_settings_screen.dart`: Reminders link, friend requests/nudges and cheers switches (`NotifyPrefs`, synced to the `notif_prefs` table so the server also skips those pushes), Quiet hours with From/To. Gym alarm is exempt from quiet hours.
+- `units_language_screen.dart`: `Units` (kg/lb, cm/ft; gym lifts stay kg) and `AppLang` (Hindi partial via `tr()` in `services/l10n.dart`). Rebuild through `AppState.refreshUi()`.
+- `help_feedback_screen.dart`: FAQ, tour replay, feedback form -> rpc `send_feedback` (table `feedback`, max 5/day).
+- `appVersion` in `lib/config.dart` (bump on release).

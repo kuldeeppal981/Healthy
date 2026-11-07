@@ -32,6 +32,7 @@ import 'steps_screen.dart';
 import 'missions_screen.dart';
 import 'streak_card.dart';
 import 'workout_data.dart';
+import '../services/l10n.dart';
 
 class HomeScreen extends StatelessWidget {
   final void Function(int tab) onGoto;
@@ -156,7 +157,7 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(done ? 'Workout done' : "Today's workout",
+          Text(done ? 'Workout done' : tr("Today's workout"),
               style: const TextStyle(color: AppColors.onAccent, fontSize: 12)),
           const SizedBox(height: 2),
           Text(plan.rest ? 'Rest day' : plan.title,
@@ -203,8 +204,8 @@ class HomeScreen extends StatelessWidget {
             children: [
               Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
               const SizedBox(width: 6),
-              const Expanded(
-                child: Text('AI coach',
+              Expanded(
+                child: Text(tr('AI coach'),
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
               ),
             ],
@@ -655,11 +656,11 @@ class HomeScreen extends StatelessWidget {
                 Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Text('\u{1F463}', style: TextStyle(fontSize: 22)),
-                    SizedBox(width: 8),
-                    Text('Steps',
+                    const Text('\u{1F463}', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 8),
+                    Text(tr('Steps'),
                         style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                   ],
                 ),
@@ -721,7 +722,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               const Icon(Icons.water_drop, color: AppColors.blue, size: 22),
               const SizedBox(width: 6),
-              const Text('Water',
+              Text(tr('Water'),
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
               const Spacer(),
               ListenableBuilder(
@@ -816,7 +817,7 @@ class HomeScreen extends StatelessWidget {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    const Text("Today's workout",
+                    Text(tr("Today's workout"),
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
