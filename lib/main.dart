@@ -17,6 +17,7 @@ import 'services/social_service.dart';
 import 'services/step_service.dart';
 import 'services/sound_service.dart';
 import 'services/theme_service.dart';
+import 'services/widget_actions.dart';
 import 'services/widget_service.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
@@ -79,6 +80,7 @@ Future<void> main() async {
     unawaited(WidgetService.instance.update(state));
     SocialService.instance.schedulePush(state);
   }
+  WidgetActions.instance.start(state);
   unawaited(HealthService.instance.init(state));
   state.addListener(refreshWidget);
   state.addListener(() => ReminderService.instance.onStateChanged(state));
@@ -143,6 +145,7 @@ class _HealthAppState extends State<HealthApp> with WidgetsBindingObserver {
         final dark = ts.dark;
         return MaterialApp(
           key: ValueKey('${ts.accentIndex}-$dark-${ts.highContrast}'),
+          navigatorKey: rootNavKey,
           title: 'Healthy',
           debugShowCheckedModeBanner: false,
           theme: buildTheme(),

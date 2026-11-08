@@ -118,9 +118,22 @@ jobs:
           import android.appwidget.AppWidgetManager
           import android.appwidget.AppWidgetProvider
           import android.content.Context
+          import android.content.Intent
+          import android.net.Uri
           import android.widget.RemoteViews
 
           class HealthyWidgetProvider : AppWidgetProvider() {
+              private fun open(context: Context, host: String, code: Int): PendingIntent {
+                  val i = Intent(context, MainActivity::class.java)
+                  i.action = "es.antonborri.home_widget.action.LAUNCH"
+                  i.data = Uri.parse("healthy://" + host)
+                  i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                  return PendingIntent.getActivity(
+                      context, code, i,
+                      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                  )
+              }
+
               override fun onUpdate(
                   context: Context,
                   appWidgetManager: AppWidgetManager,
@@ -140,8 +153,12 @@ jobs:
                                   context, 0, launch,
                                   PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                               )
-                              views.setOnClickPendingIntent(R.id.w_root, pi)
+                              views.setOnClickPendingIntent(R.id.w_top, pi)
                           }
+                          views.setOnClickPendingIntent(R.id.w_b_meal, open(context, "meal", 11))
+                          views.setOnClickPendingIntent(R.id.w_b_water, open(context, "water", 12))
+                          views.setOnClickPendingIntent(R.id.w_b_scan, open(context, "scan", 13))
+                          views.setOnClickPendingIntent(R.id.w_b_yoga, open(context, "yoga", 14))
                       } catch (e: Exception) {
                       }
                       appWidgetManager.updateAppWidget(id, views)
@@ -158,39 +175,108 @@ jobs:
               android:orientation="vertical"
               android:padding="14dp"
               android:background="@drawable/widget_bg">
-              <TextView
-                  android:layout_width="wrap_content"
+              <LinearLayout
+                  android:id="@+id/w_top"
+                  android:layout_width="match_parent"
+                  android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:orientation="vertical">
+                  <TextView
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Today"
+                      android:textColor="#D5F5E0"
+                      android:textSize="12sp" />
+                  <TextView
+                      android:id="@+id/w_kcal"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:text="Open Healthy"
+                      android:textColor="#FFFFFF"
+                      android:textSize="22sp"
+                      android:textStyle="bold" />
+                  <TextView
+                      android:id="@+id/w_protein"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textColor="#FFFFFF"
+                      android:textSize="13sp" />
+                  <TextView
+                      android:id="@+id/w_steps"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:textColor="#FFFFFF"
+                      android:textSize="13sp" />
+                  <TextView
+                      android:id="@+id/w_streak"
+                      android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="2dp"
+                      android:textColor="#FFD9CC"
+                      android:textSize="12sp" />
+              </LinearLayout>
+              <LinearLayout
+                  android:layout_width="match_parent"
                   android:layout_height="wrap_content"
-                  android:text="Today"
-                  android:textColor="#D5F5E0"
-                  android:textSize="12sp" />
-              <TextView
-                  android:id="@+id/w_kcal"
-                  android:text="Open Healthy"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:textColor="#FFFFFF"
-                  android:textSize="22sp"
-                  android:textStyle="bold" />
-              <TextView
-                  android:id="@+id/w_protein"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:textColor="#FFFFFF"
-                  android:textSize="13sp" />
-              <TextView
-                  android:id="@+id/w_steps"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:textColor="#FFFFFF"
-                  android:textSize="13sp" />
-              <TextView
-                  android:id="@+id/w_streak"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:layout_marginTop="4dp"
-                  android:textColor="#FFD9CC"
-                  android:textSize="12sp" />
+                  android:layout_marginTop="8dp"
+                  android:orientation="horizontal">
+                  <TextView
+                      android:id="@+id/w_b_meal"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_marginEnd="6dp"
+                      android:background="@drawable/widget_btn"
+                      android:gravity="center"
+                      android:paddingTop="9dp"
+                      android:paddingBottom="9dp"
+                      android:text="+ Meal"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp"
+                      android:textStyle="bold" />
+                  <TextView
+                      android:id="@+id/w_b_water"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_marginEnd="6dp"
+                      android:background="@drawable/widget_btn"
+                      android:gravity="center"
+                      android:paddingTop="9dp"
+                      android:paddingBottom="9dp"
+                      android:text="+ Water"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp"
+                      android:textStyle="bold" />
+                  <TextView
+                      android:id="@+id/w_b_scan"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_marginEnd="6dp"
+                      android:background="@drawable/widget_btn"
+                      android:gravity="center"
+                      android:paddingTop="9dp"
+                      android:paddingBottom="9dp"
+                      android:text="Scan"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp"
+                      android:textStyle="bold" />
+                  <TextView
+                      android:id="@+id/w_b_yoga"
+                      android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:layout_weight="1"
+                      android:layout_marginEnd="6dp"
+                      android:background="@drawable/widget_btn"
+                      android:gravity="center"
+                      android:paddingTop="9dp"
+                      android:paddingBottom="9dp"
+                      android:text="Yoga"
+                      android:textColor="#FFFFFF"
+                      android:textSize="12sp"
+                      android:textStyle="bold" />
+              </LinearLayout>
           </LinearLayout>
           EOF
           cat > $main/res/drawable/widget_bg.xml <<'EOF'
@@ -200,11 +286,18 @@ jobs:
               <corners android:radius="20dp" />
           </shape>
           EOF
+          cat > $main/res/drawable/widget_btn.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+              <solid android:color="#3DBE6C" />
+              <corners android:radius="14dp" />
+          </shape>
+          EOF
           cat > $main/res/xml/healthy_widget_info.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
               android:minWidth="180dp"
-              android:minHeight="110dp"
+              android:minHeight="150dp"
               android:updatePeriodMillis="1800000"
               android:initialLayout="@layout/healthy_widget"
               android:resizeMode="horizontal|vertical"

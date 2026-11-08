@@ -49,7 +49,9 @@ Color _levelColor(String level) => switch (level) {
     };
 
 class ExerciseLibraryScreen extends StatefulWidget {
-  const ExerciseLibraryScreen({super.key});
+  final String initialGroup;
+
+  const ExerciseLibraryScreen({super.key, this.initialGroup = 'All'});
 
   @override
   State<ExerciseLibraryScreen> createState() => _ExerciseLibraryScreenState();
@@ -57,7 +59,7 @@ class ExerciseLibraryScreen extends StatefulWidget {
 
 class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
   String _query = '';
-  String _group = 'All';
+  late String _group = widget.initialGroup;
   String _level = 'All';
   String _equip = 'All';
 

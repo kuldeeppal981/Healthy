@@ -58,6 +58,7 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
   (`data/exercise_library.dart`, `screens/exercise_library_screen.dart`). No in-app images or videos.
 
 ## Steps, widget
+- Widget quick actions (UNTESTED): 4 buttons on the widget (+ Meal, + Water, Scan, Yoga) open the app on `healthy://meal|water|scan|yoga` (home_widget launch intent built by hand in the workflow Kotlin); handled in `services/widget_actions.dart` (meal = quick add sheet, water = +1 glass, scan, yoga = exercise library on the Yoga chip). `rootNavKey` is the app navigator key.
 - Phone step sensor (`services/step_service.dart`), steps screen, goal
 - Android home screen widget (first build showed only 'Today', provider did not fill the text; now a plain AppWidgetProvider reading HomeWidgetPreferences, UNTESTED) (`services/widget_service.dart`; native files are created by the workflow)
 
