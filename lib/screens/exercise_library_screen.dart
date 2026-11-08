@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/exercise_library.dart';
+import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/yoga_figure.dart';
 
 /// Home row that opens the exercise library.
 class ExerciseLibraryCard extends StatelessWidget {
@@ -229,6 +232,21 @@ class ExerciseDetailScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (hasYogaFigure(info.name)) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.chipBg,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              alignment: Alignment.center,
+              child: YogaFigure(
+                name: info.name,
+                woman: context.watch<AppState>().profile?.sex == 'female',
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () => _demo(context),
