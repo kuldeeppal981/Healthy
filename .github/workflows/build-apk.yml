@@ -114,30 +114,35 @@ jobs:
           cat > $main/kotlin/com/kuldeep/healthy_app/HealthyWidgetProvider.kt <<'EOF'
           package com.kuldeep.healthy_app
 
+          import android.app.PendingIntent
           import android.appwidget.AppWidgetManager
+          import android.appwidget.AppWidgetProvider
           import android.content.Context
-          import android.content.SharedPreferences
           import android.widget.RemoteViews
-          import es.antonborri.home_widget.HomeWidgetLaunchIntent
-          import es.antonborri.home_widget.HomeWidgetProvider
 
-          class HealthyWidgetProvider : HomeWidgetProvider() {
+          class HealthyWidgetProvider : AppWidgetProvider() {
               override fun onUpdate(
                   context: Context,
                   appWidgetManager: AppWidgetManager,
-                  appWidgetIds: IntArray,
-                  widgetData: SharedPreferences
+                  appWidgetIds: IntArray
               ) {
-                  appWidgetIds.forEach { id ->
-                      val views = RemoteViews(context.packageName, R.layout.healthy_widget).apply {
-                          setTextViewText(R.id.w_kcal, widgetData.getString("w_kcal", "Open Healthy"))
-                          setTextViewText(R.id.w_protein, widgetData.getString("w_protein", ""))
-                          setTextViewText(R.id.w_steps, widgetData.getString("w_steps", ""))
-                          setTextViewText(R.id.w_streak, widgetData.getString("w_streak", ""))
-                          setOnClickPendingIntent(
-                              R.id.w_root,
-                              HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java)
-                          )
+                  val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+                  for (id in appWidgetIds) {
+                      val views = RemoteViews(context.packageName, R.layout.healthy_widget)
+                      try {
+                          views.setTextViewText(R.id.w_kcal, prefs.getString("w_kcal", null) ?: "Open Healthy")
+                          views.setTextViewText(R.id.w_protein, prefs.getString("w_protein", null) ?: "")
+                          views.setTextViewText(R.id.w_steps, prefs.getString("w_steps", null) ?: "")
+                          views.setTextViewText(R.id.w_streak, prefs.getString("w_streak", null) ?: "")
+                          val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                          if (launch != null) {
+                              val pi = PendingIntent.getActivity(
+                                  context, 0, launch,
+                                  PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                              )
+                              views.setOnClickPendingIntent(R.id.w_root, pi)
+                          }
+                      } catch (e: Exception) {
                       }
                       appWidgetManager.updateAppWidget(id, views)
                   }
@@ -161,6 +166,7 @@ jobs:
                   android:textSize="12sp" />
               <TextView
                   android:id="@+id/w_kcal"
+                  android:text="Open Healthy"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
                   android:textColor="#FFFFFF"

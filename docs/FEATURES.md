@@ -59,7 +59,7 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
 
 ## Steps, widget
 - Phone step sensor (`services/step_service.dart`), steps screen, goal
-- Android home screen widget (`services/widget_service.dart`; native files are created by the workflow)
+- Android home screen widget (first build showed only 'Today', provider did not fill the text; now a plain AppWidgetProvider reading HomeWidgetPreferences, UNTESTED) (`services/widget_service.dart`; native files are created by the workflow)
 
 ## Habits and rewards
 - Daily check-in, daily streak (check-in OR food log OR workout), 2 streak freezes per month used
