@@ -207,7 +207,7 @@ class ProfileScreen extends StatelessWidget {
           MenuRow(
             icon: Icons.menu_book_outlined,
             title: 'Exercise library',
-            subtitle: '${exerciseLibrary.length} exercises: muscles, form, mistakes',
+            subtitle: '${exerciseLibrary.length} exercises, yoga, stretches: form, mistakes',
             onTap: () => _open(context, const ExerciseLibraryScreen()),
           ),
           MenuRow(

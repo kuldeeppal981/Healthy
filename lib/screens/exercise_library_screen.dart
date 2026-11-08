@@ -17,7 +17,7 @@ class ExerciseLibraryCard extends StatelessWidget {
         leading: Icon(Icons.menu_book_outlined, color: AppColors.primary),
         title: const Text('Exercise library',
             style: TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text('${exerciseLibrary.length} exercises: muscles, form, mistakes'),
+        subtitle: Text('${exerciseLibrary.length} exercises, yoga and stretches: form, mistakes'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const ExerciseLibraryScreen()),
@@ -34,6 +34,8 @@ IconData _groupIcon(String g) => switch (g) {
       'Arms' => Icons.sports_martial_arts,
       'Legs' => Icons.directions_run,
       'Core' => Icons.self_improvement,
+      'Yoga' => Icons.spa_outlined,
+      'Stretch' => Icons.emoji_people,
       _ => Icons.favorite_outline,
     };
 

@@ -53,7 +53,7 @@ of the bottom bar with an underline on the active tab (`theme.dart`, `screens/ap
   (`services/reminder_service.dart`, `screens/reminders_screen.dart`) (untested)
 - Personal records: a PR is a heavier set (or same weight, more reps) than anything logged before;
   first time logging an exercise is not a PR (`findNewPrs` in `services/social_service.dart`)
-- Exercise library: 39 exercises with muscles, equipment, steps, mistakes, beginner/intermediate/advanced
+- Exercise library: 39 gym exercises + 19 yoga poses/breathing + 8 stretches (groups 'Yoga' and 'Stretch', text steps only, no drawings, UNTESTED; muscleOf returns null for them so muscle volume is unaffected). 66 total, each with muscles, equipment, steps, mistakes, beginner/intermediate/advanced
   variations, filters, YouTube search button for a video demo; "?" button in the workout screen
   (`data/exercise_library.dart`, `screens/exercise_library_screen.dart`). No in-app images or videos.
 
