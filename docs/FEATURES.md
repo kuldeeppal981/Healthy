@@ -282,3 +282,9 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 - `services/pose_math.dart`: `FormRule` now has `limb` (arm/leg/hip/raise), `flip`, `fullAngle/fullNote`. New generic rules: `arm_press` (bench, overhead, dips, triceps), `arm_pull` (pulldown, rows, pull-up, face pull), `leg` (leg press, step-ups, leg curl), `hinge` (deadlifts, hip thrust, glute bridge), `raise` (lateral/front raise). `ruleFor()` maps names. Generic rules only count reps, check range and left/right difference (front view); no exercise-specific form checks.
 - NOT covered (no Live button): plank, side plank, crunches, leg raise, calf raise, cable fly, rear delt fly, Russian twist, cardio, yoga, stretches.
 - Risks: flutter_tts may break the build (JVM/Kotlin); thresholds for new rules are guesses and need real-world tuning.
+
+## Live form: trainer-style coaching + form score (UNTESTED)
+- More exercises with the Live button: plank / side plank (hold timer, hips sagging/high), crunch, leg raise, mountain climbers, jumping jacks, cable fly and rear delt fly (via 'raise' rule). Still NOT covered: calf raise, Russian twist, burpees, skipping, treadmill/cycling, yoga, stretches (the Live button is hidden for them).
+- Tempo tip ("Too fast") from rep duration; off for jumping/crunch/climber rules (`FormRule.tempo`).
+- Voice: intro when analysing starts, "N seconds" every 10 s in holds, "keep going" every 5 reps, spoken form score at the end.
+- Stopping the analysis opens the Summary with a Form score /100 (`RepTracker.score`: 100 minus 22 per tip per rep, min 30; holds = % time with straight body line), per-rep ticks and a "Fix this next set" tip (`topIssue`). Thresholds for crunch/leg raise/climber/plank are guesses.

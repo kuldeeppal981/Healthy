@@ -59,9 +59,20 @@ class FormRule {
   final double? fullAngle;
   final String? fullNote;
 
+  /// Hold moves (plank): measured in seconds of good body line, not reps.
+  final bool hold;
+
+  /// Whether a rep that is too fast gets a "slow down" tip (off for jumping moves).
+  final bool tempo;
+
   const FormRule(this.id, this.title, this.downAngle, this.upAngle, this.jointLabel,
       this.sideHint, this.frontHint,
-      {this.limb = 'arm', this.flip = false, this.fullAngle, this.fullNote});
+      {this.limb = 'arm',
+      this.flip = false,
+      this.fullAngle,
+      this.fullNote,
+      this.hold = false,
+      this.tempo = true});
 
   List<String> get points => switch (limb) {
         'leg' => const ['hip', 'knee', 'ankle'],
@@ -106,13 +117,45 @@ const formRules = <FormRule>[
       'Side or front view: counts reps from how high your arm lifts. Show your whole arm.',
       'Front view: shows left/right difference. Show both arms.',
       limb: 'raise', flip: true, fullAngle: 100, fullNote: 'Lift to about shoulder height.'),
+  FormRule('jack', 'Jumping jacks', 105, 150, 'Shoulder',
+      'Front view: counts a rep each time your arms go up. Show your whole body.',
+      'Front view: counts a rep each time your arms go up. Show your whole body.',
+      limb: 'raise', flip: true, tempo: false),
+  FormRule('climber', 'Mountain climbers', 120, 160, 'Hip',
+      'Side view: counts each knee drive. Show your whole body.',
+      'Side view works best.',
+      limb: 'hip', tempo: false),
+  FormRule('crunch', 'Crunch', 105, 130, 'Hip',
+      'Side view, lying down: counts reps from your hip/torso angle. Show shoulder, hip and knee.',
+      'Side view works best.',
+      limb: 'hip', tempo: false),
+  FormRule('legraise', 'Leg raise', 120, 160, 'Hip',
+      'Side view, lying down: counts reps from your hip angle. Show shoulder, hip and knee.',
+      'Side view works best.',
+      limb: 'hip'),
+  FormRule('plank', 'Plank hold', 0, 0, 'Body line',
+      'Side view on the floor: checks that shoulder, hip and ankle make a straight line. Show your whole body.',
+      'Side view works best for planks.',
+      limb: 'hip', hold: true),
 ];
 
 /// Maps a library exercise name to a live rule, or null if not supported.
 FormRule? ruleFor(String exercise) {
   final n = exercise.toLowerCase();
   String? id;
-  if (n.contains('garland') || n.contains('malasana') || n.contains('child')) {
+  if (n.contains('plank') && !n.contains('chaturanga')) {
+    id = 'plank';
+  } else if (n.contains('mountain climber')) {
+    id = 'climber';
+  } else if (n.contains('jumping jack')) {
+    id = 'jack';
+  } else if (n.contains('crunch')) {
+    id = 'crunch';
+  } else if (n.contains('leg raise')) {
+    id = 'legraise';
+  } else if (n.contains('cable fly') || n.contains('rear delt')) {
+    id = 'raise';
+  } else if (n.contains('garland') || n.contains('malasana') || n.contains('child')) {
     id = null;
   } else if (n.contains('leg press') || n.contains('step-up') || n.contains('leg curl') ||
       n.contains('leg extension')) {
@@ -155,7 +198,8 @@ class RepResult {
   final double minAngle;
   final double maxAngle;
   final List<String> notes;
-  const RepResult(this.number, this.minAngle, this.maxAngle, this.notes);
+  final double seconds;
+  const RepResult(this.number, this.minAngle, this.maxAngle, this.notes, {this.seconds = 0});
   bool get clean => notes.isEmpty;
 }
 
@@ -172,6 +216,10 @@ class RepTracker {
   double _min = 999;
   double _max = 0;
   Map<String, double> _bottom = {};
+  DateTime _repStart = DateTime.now();
+  DateTime? _lastT;
+  double holdTotal = 0;
+  double holdGood = 0;
   FrameInfo last = const FrameInfo(null, 'Step into the frame', '', {});
 
   int get reps => results.length;
@@ -183,6 +231,79 @@ class RepTracker {
     _min = 999;
     _max = 0;
     _bottom = {};
+    _lastT = null;
+    holdTotal = 0;
+    holdGood = 0;
+  }
+
+  /// Form score 0 to 100: share of the set that looked clean. Null when too little data.
+  int? get score {
+    if (rule.hold) {
+      if (holdTotal < 3) return null;
+      return (100 * holdGood / holdTotal).round();
+    }
+    if (results.isEmpty) return null;
+    var sum = 0.0;
+    for (final r in results) {
+      sum += (100 - 22 * r.notes.length).clamp(30, 100).toDouble();
+    }
+    return (sum / results.length).round();
+  }
+
+  /// The tip that came up most often, for "fix this next set".
+  String? get topIssue {
+    final count = <String, int>{};
+    final full = <String, String>{};
+    for (final r in results) {
+      for (final n in r.notes) {
+        final k = n.length > 14 ? n.substring(0, 14) : n;
+        count[k] = (count[k] ?? 0) + 1;
+        full[k] = n;
+      }
+    }
+    if (count.isEmpty) return null;
+    final best = count.entries.reduce((a, b) => a.value >= b.value ? a : b);
+    return full[best.key];
+  }
+
+  FrameInfo _updateHold(Pts p) {
+    const needs = ['shoulder', 'hip', 'ankle'];
+    final s = _side(p, needs);
+    final pts = [for (final n in needs) p['${s}_$n']];
+    if (pts.any((x) => !_ok(x))) {
+      _lastT = null;
+      last = const FrameInfo(null,
+          'Cannot see your whole body clearly. Use a side view, check light and that you are fully in frame. Feedback is uncertain until then.',
+          '', {});
+      return last;
+    }
+    final sh = p['${s}_shoulder']!, hip = p['${s}_hip']!, ank = p['${s}_ankle']!;
+    final body = angleDeg(sh, hip, ank);
+    final now = DateTime.now();
+    final prev = _lastT;
+    if (prev != null) {
+      final dt = now.difference(prev).inMilliseconds / 1000.0;
+      if (dt < 1) {
+        holdTotal += dt;
+        if (body >= 165) holdGood += dt;
+      }
+    }
+    _lastT = now;
+    var cue = 'Good, hold steady';
+    final flagged = <String>{};
+    if (body < 165) {
+      final dx = ank.x - sh.x;
+      final t = dx.abs() < 1 ? 0.5 : (hip.x - sh.x) / dx;
+      final lineY = sh.y + t * (ank.y - sh.y);
+      if (hip.y > lineY) {
+        cue = 'Hips are sagging. Lift your hips and tighten your core';
+      } else {
+        cue = 'Hips too high. Lower them in line with your shoulders';
+      }
+      flagged.addAll(['${s}_hip', '${s}_shoulder', '${s}_ankle']);
+    }
+    last = FrameInfo(body, null, cue, flagged);
+    return last;
   }
 
   static const _minConf = 0.5;
@@ -197,6 +318,7 @@ class RepTracker {
   }
 
   FrameInfo update(Pts p) {
+    if (rule.hold) return _updateHold(p);
     final lower = rule.limb == 'leg';
     final needs = rule.id == 'pushup' ? ['shoulder', 'elbow', 'wrist', 'hip'] : rule.points;
     final s = _side(p, needs);
@@ -228,6 +350,7 @@ class RepTracker {
       }
       if (_wasTop && angle < rule.downAngle) {
         _down = true;
+        _repStart = DateTime.now();
         _min = angle;
         _bottom = _metrics(p, s);
       }
@@ -237,9 +360,10 @@ class RepTracker {
         _bottom = _metrics(p, s);
       }
       if (angle >= rule.upAngle) {
-        final notes = _judge(_min, _bottom);
+        final secs = DateTime.now().difference(_repStart).inMilliseconds / 1000.0;
+        final notes = _judge(_min, _bottom, secs);
         results.add(RepResult(results.length + 1, rule.flip ? 180 - _min : _min,
-            rule.flip ? 180 - angle : angle, notes));
+            rule.flip ? 180 - angle : angle, notes, seconds: secs));
         _down = false;
         _min = 999;
         _max = angle;
@@ -301,8 +425,11 @@ class RepTracker {
     return m;
   }
 
-  List<String> _judge(double minAngle, Map<String, double> m) {
+  List<String> _judge(double minAngle, Map<String, double> m, double secs) {
     final notes = <String>[];
+    if (rule.tempo && secs > 0 && secs < 1.2) {
+      notes.add('Too fast. Slow down and control the movement.');
+    }
     final lower = rule.id == 'squat' || rule.id == 'lunge';
     final full = rule.fullAngle;
     if (full != null && rule.fullNote != null) {
@@ -311,7 +438,7 @@ class RepTracker {
       final ok = rule.flip ? reached >= 180 - full : reached <= full;
       if (!ok) notes.add(rule.fullNote!);
     }
-    if (rule.id == 'arm_press' || rule.id == 'arm_pull' || rule.id == 'leg' || rule.id == 'raise' || rule.id == 'hinge') {
+    if (rule.limb != 'arm' && rule.id != 'squat' && rule.id != 'lunge' || rule.id == 'arm_press' || rule.id == 'arm_pull') {
       if (view == CamView.front && (m['asym'] ?? 0) > 20) {
         notes.add('Left and right sides differ by ${(m['asym'] ?? 0).round()}°.');
       }

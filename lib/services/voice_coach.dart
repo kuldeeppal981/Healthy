@@ -65,6 +65,9 @@ class VoiceCoach {
     'Bend a little': 'थोड़ा और मोड़ो',
     'Lift to about': 'कंधे तक उठाओ',
     'Left and right': 'दोनों तरफ बराबर रखो',
+    'Too fast': 'धीरे करो, कंट्रोल रखो',
+    'Hips are sagging': 'कमर ऊपर उठाओ, कोर टाइट रखो',
+    'Hips too high': 'कमर थोड़ी नीचे लाओ',
   };
 
   String _tr(String en) {
@@ -92,9 +95,33 @@ class VoiceCoach {
     if (!_ready || mode == 'off') return;
     final tip = notes.isEmpty ? '' : _tr(notes.first);
     final good = mode == 'hi' ? 'बढ़िया' : 'Good';
+    var text = '$n. ${tip.isEmpty ? good : tip}';
+    if (n % 5 == 0) {
+      text += mode == 'hi' ? ' बहुत बढ़िया, ऐसे ही चलते रहो' : ' Great work, keep going';
+    }
+    await _say(text, force: true);
+  }
+
+  /// Said when analysing starts, like a trainer setting you up.
+  Future<void> intro(String title) async {
     final text = mode == 'hi'
-        ? '$n. ${tip.isEmpty ? good : tip}'
-        : '$n. ${tip.isEmpty ? good : tip}';
+        ? 'तैयार हो जाओ। धीरे और कंट्रोल के साथ करो।'
+        : 'Get into position for $title. Move slowly and stay in control.';
+    await _say(text, force: true);
+  }
+
+  /// Said every 10 seconds of a hold.
+  Future<void> holdTick(int secs) async {
+    final text = mode == 'hi' ? '$secs सेकंड' : '$secs seconds';
+    await _say(text, force: true);
+  }
+
+  /// Said when the set is finished.
+  Future<void> finish(int? score) async {
+    if (score == null) return;
+    final text = mode == 'hi'
+        ? 'सेट पूरा। फॉर्म स्कोर सौ में से $score।'
+        : 'Set done. Form score $score out of 100.';
     await _say(text, force: true);
   }
 

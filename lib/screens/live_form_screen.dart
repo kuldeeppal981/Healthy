@@ -40,6 +40,7 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
   bool _mirror = false;
   FrameInfo _info = const FrameInfo(null, 'Step into the frame', '', {});
   int _lastReps = 0;
+  int _lastHoldTick = 0;
   final VoiceCoach _voice = VoiceCoach();
 
   @override
@@ -173,6 +174,13 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
         } else {
           _voice.live(info.cue, info.angle == null);
         }
+        if (widget.rule.hold) {
+          final tick = _tracker.holdTotal ~/ 10;
+          if (tick > _lastHoldTick) {
+            _lastHoldTick = tick;
+            _voice.holdTick(tick * 10);
+          }
+        }
       });
     } catch (_) {
       // Skip a bad frame.
@@ -201,8 +209,13 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
     });
   }
 
+  bool get _hasData => widget.rule.hold ? _tracker.holdTotal >= 3 : _tracker.reps > 0;
+
   void _summary() {
     final r = _tracker.results;
+    final score = _tracker.score;
+    final top = _tracker.topIssue;
+    final hold = widget.rule.hold;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -216,11 +229,56 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
             shrinkWrap: true,
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
             children: [
-              Text('${r.length} reps of ${widget.rule.title}',
+              Text(
+                  hold
+                      ? '${_tracker.holdTotal.round()} s of ${widget.rule.title}'
+                      : '${r.length} reps of ${widget.rule.title}',
                   style: TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+              const SizedBox(height: 10),
+              if (score != null)
+                AppCard(
+                  child: Row(
+                    children: [
+                      Text('$score',
+                          style: TextStyle(
+                              fontSize: 44,
+                              fontWeight: FontWeight.w900,
+                              color: score >= 80
+                                  ? AppColors.safe
+                                  : (score >= 60 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)))),
+                      Text(' / 100',
+                          style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w700)),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                                score >= 80
+                                    ? 'Form rating: Good'
+                                    : (score >= 60 ? 'Form rating: Okay' : 'Form rating: Needs work'),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w800, color: AppColors.ink)),
+                            Text(
+                                hold
+                                    ? '${_tracker.holdGood.round()} of ${_tracker.holdTotal.round()} s with a straight body line'
+                                    : '${r.where((x) => x.clean).length} of ${r.length} reps had no tips',
+                                style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (top != null) ...[
+                const SizedBox(height: 8),
+                Text('Fix this next set: $top',
+                    style: TextStyle(
+                        color: AppColors.primary, fontWeight: FontWeight.w700, height: 1.35)),
+              ],
               const SizedBox(height: 6),
-              if (r.isEmpty)
+              if (r.isEmpty && !hold)
                 Text('No full reps counted. Make sure your whole body is visible and move through the full range.',
                     style: TextStyle(color: AppColors.muted)),
               for (final x in r)
@@ -351,9 +409,12 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('${_tracker.reps}',
+                              Text(
+                                  widget.rule.hold
+                                      ? '${_tracker.holdTotal.round()}'
+                                      : '${_tracker.reps}',
                                   style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900)),
-                              Text('reps', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                              Text(widget.rule.hold ? 'seconds' : 'reps', style: TextStyle(color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
                         ),
@@ -383,19 +444,28 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
                   children: [
                     Expanded(
                       child: FilledButton(
-                        onPressed: () => setState(() {
-                          _started = !_started;
+                        onPressed: () {
+                          setState(() {
+                            _started = !_started;
+                            if (_started) {
+                              _tracker.reset();
+                              _lastReps = 0;
+                              _lastHoldTick = 0;
+                            }
+                          });
                           if (_started) {
-                            _tracker.reset();
-                            _lastReps = 0;
+                            _voice.intro(widget.rule.title);
+                          } else if (_hasData) {
+                            _voice.finish(_tracker.score);
+                            _summary();
                           }
-                        }),
+                        },
                         child: Text(_started ? 'Stop analysing' : 'Start analysing'),
                       ),
                     ),
                     const SizedBox(width: 10),
                     OutlinedButton(
-                      onPressed: _tracker.reps == 0 ? null : _summary,
+                      onPressed: !_hasData ? null : _summary,
                       style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52)),
                       child: const Text('Summary'),
                     ),
