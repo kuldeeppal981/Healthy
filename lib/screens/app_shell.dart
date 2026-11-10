@@ -14,6 +14,7 @@ import 'diary_screen.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 import 'onboarding_screen.dart';
+import 'form_check_screen.dart';
 import 'tour_screen.dart';
 import 'streak_card.dart';
 import 'workout_screen.dart';
@@ -44,6 +45,7 @@ class _AppShellState extends State<AppShell> {
           ?.passwordRecoveryEvents
           .listen((_) => _askNewPassword());
       streakStartupChecks(context);
+      unawaited(FormCheckRecovery.check(context));
       _checkInSub = context.read<AppState>().autoCheckInEvents.listen((_) {
         // Wait a moment so a closing sheet (add food) is gone first.
         Future<void>.delayed(const Duration(milliseconds: 700), () {

@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/exercise_library.dart';
 import '../services/form_ai.dart';
@@ -17,7 +19,10 @@ import '../widgets/ui_kit.dart';
 /// General guidance from one photo, not medical advice.
 class FormCheckScreen extends StatefulWidget {
   final String exercise;
-  const FormCheckScreen({super.key, required this.exercise});
+
+  /// A photo taken just before Android closed the app: it is checked at once.
+  final XFile? lostFile;
+  const FormCheckScreen({super.key, required this.exercise, this.lostFile});
 
   @override
   State<FormCheckScreen> createState() => _FormCheckScreenState();
@@ -32,11 +37,39 @@ class _FormCheckScreenState extends State<FormCheckScreen> {
   double _aspect = 3 / 4;
   FormResult? _result;
 
+  @override
+  void initState() {
+    super.initState();
+    final lost = widget.lostFile;
+    if (lost != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) unawaited(_analyze(lost));
+      });
+    }
+  }
+
   Future<void> _go(ImageSource source) async {
     setState(() => _error = null);
+    XFile? f;
     try {
-      final f = await _picker.pickImage(source: source, maxWidth: 1400, imageQuality: 80);
-      if (f == null) return;
+      // If Android closes the app while the camera is open, this note lets the
+      // app find the photo again on the next start.
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(FormCheckRecovery.key, widget.exercise);
+      f = await _picker.pickImage(source: source, maxWidth: 1400, imageQuality: 80);
+      await prefs.remove(FormCheckRecovery.key);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _error = 'Could not open the camera or photo. Allow permission and try again.');
+      }
+      return;
+    }
+    if (f == null) return;
+    await _analyze(f);
+  }
+
+  Future<void> _analyze(XFile f) async {
+    try {
       setState(() {
         _busy = true;
         _result = null;
@@ -301,4 +334,26 @@ class _SkeletonPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SkeletonPainter old) => old.r != r;
+}
+
+/// Android can close the app while the camera is open. On the next start this
+/// finds the photo again and opens the form check with it.
+class FormCheckRecovery {
+  static const key = 'formcheck_pending';
+
+  static Future<void> check(BuildContext context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final exercise = prefs.getString(key);
+      if (exercise == null) return;
+      await prefs.remove(key);
+      final lost = await ImagePicker().retrieveLostData();
+      final file = lost.file;
+      if (lost.isEmpty || file == null) return;
+      if (!context.mounted) return;
+      await Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => FormCheckScreen(exercise: exercise, lostFile: file),
+      ));
+    } catch (_) {}
+  }
 }
