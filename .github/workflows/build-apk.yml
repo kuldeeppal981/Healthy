@@ -50,7 +50,7 @@ jobs:
               '\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>'
               '\n    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>'
               '\n    <uses-permission android:name="android.permission.VIBRATE"/>'
-              '\n    <queries><intent><action android:name="android.speech.RecognitionService"/></intent><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent><package android:name="com.google.android.apps.healthdata"/></queries>'
+              '\n    <queries><intent><action android:name="android.speech.RecognitionService"/></intent><intent><action android:name="android.intent.action.TTS_SERVICE"/></intent><intent><action android:name="android.intent.action.VIEW"/><data android:scheme="https"/></intent><package android:name="com.google.android.apps.healthdata"/></queries>'
               '\n    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>'
               '\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>'
               '\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>'

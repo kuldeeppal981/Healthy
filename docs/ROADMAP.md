@@ -73,3 +73,5 @@ Merged to main and pushed (c704f08 and later). Still untested on a phone.
 - Feedback inbox: messages are read in the Supabase `feedback` table (no in-app admin view yet).
 
 - Ideas left: allergies/conditions "Add" list style, calories "burned" in detail screen, Home quick tiles (Meal photo/Scan/Voice) and "+" sheet in two groups (design shown, user has not chosen yet).
+
+- Live form: tune thresholds of generic rules (press/pull/leg/hinge/raise) after real tests; add plank/crunch/calf-raise rules; more Hindi phrases.

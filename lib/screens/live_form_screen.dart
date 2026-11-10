@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
 import '../services/pose_math.dart';
+import '../services/voice_coach.dart';
 import '../theme.dart';
 import '../widgets/ui_kit.dart';
 
@@ -39,11 +40,15 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
   bool _mirror = false;
   FrameInfo _info = const FrameInfo(null, 'Step into the frame', '', {});
   int _lastReps = 0;
+  final VoiceCoach _voice = VoiceCoach();
 
   @override
   void initState() {
     super.initState();
     _tracker = RepTracker(widget.rule, _view);
+    _voice.init().then((_) {
+      if (mounted) setState(() {});
+    });
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _init();
   }
@@ -164,6 +169,9 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
         if (reps != _lastReps) {
           _lastReps = reps;
           Haptic.done();
+          if (reps > 0) _voice.rep(reps, _tracker.results.last.notes);
+        } else {
+          _voice.live(info.cue, info.angle == null);
         }
       });
     } catch (_) {
@@ -180,6 +188,7 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
     if (c != null) {
       c.stopImageStream().catchError((_) {}).whenComplete(() => c.dispose());
     }
+    _voice.stop();
     _detector.close();
     super.dispose();
   }
@@ -261,6 +270,14 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
       appBar: AppBar(
         title: Text('Live form: ${widget.rule.title}'),
         actions: [
+          TextButton.icon(
+            onPressed: () async {
+              await _voice.setMode(_voice.next());
+              if (mounted) setState(() {});
+            },
+            icon: Icon(_voice.mode == 'off' ? Icons.volume_off_outlined : Icons.volume_up_outlined),
+            label: Text(_voice.label),
+          ),
           if (_cams.length > 1)
             IconButton(
               tooltip: 'Switch camera',

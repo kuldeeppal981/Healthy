@@ -47,37 +47,93 @@ class FormRule {
   final String sideHint;
   final String frontHint;
 
+  /// Which three body points make the main angle: arm (shoulder, elbow, wrist),
+  /// leg (hip, knee, ankle), hip (shoulder, hip, knee) or raise (hip, shoulder, elbow).
+  final String limb;
+
+  /// True when the move starts at a small angle and grows (lateral raise): the
+  /// angle is turned around (180 minus angle) so the rep counter works the same.
+  final bool flip;
+
+  /// Extra tip shown after a rep when the main angle did not reach this value.
+  final double? fullAngle;
+  final String? fullNote;
+
   const FormRule(this.id, this.title, this.downAngle, this.upAngle, this.jointLabel,
-      this.sideHint, this.frontHint);
+      this.sideHint, this.frontHint,
+      {this.limb = 'arm', this.flip = false, this.fullAngle, this.fullNote});
+
+  List<String> get points => switch (limb) {
+        'leg' => const ['hip', 'knee', 'ankle'],
+        'hip' => const ['shoulder', 'hip', 'knee'],
+        'raise' => const ['hip', 'shoulder', 'elbow'],
+        _ => const ['shoulder', 'elbow', 'wrist'],
+      };
 }
 
 const formRules = <FormRule>[
   FormRule('squat', 'Squat', 110, 160, 'Knee',
       'Side view: shows depth and how far your chest leans forward. Put the phone at hip height, 2 to 3 m away, whole body in frame.',
-      'Front view: shows knees caving in and weight shifting. Phone at hip height, 2 to 3 m away.'),
+      'Front view: shows knees caving in and weight shifting. Phone at hip height, 2 to 3 m away.',
+      limb: 'leg'),
   FormRule('lunge', 'Lunge', 110, 160, 'Front knee',
       'Side view: shows depth and torso lean. Whole body in frame.',
-      'Front view: shows knee tracking. Whole body in frame.'),
+      'Front view: shows knee tracking. Whole body in frame.',
+      limb: 'leg'),
   FormRule('pushup', 'Push-up', 95, 155, 'Elbow',
       'Side view only: shows depth and whether your hips sag or pike. Phone on the floor, 2 m away.',
       'Side view works best for push-ups.'),
   FormRule('curl', 'Biceps curl', 55, 140, 'Elbow',
       'Side view: shows if the elbow swings forward. Whole upper body in frame.',
       'Front view: shows full range and left/right difference.'),
+  FormRule('arm_press', 'Pressing move', 100, 150, 'Elbow',
+      'Side view: counts reps from your elbow angle. Show your whole arm and torso.',
+      'Front view: shows left/right difference. Show both arms.',
+      fullAngle: 95, fullNote: 'Lower a little further for full range, if it feels comfortable.'),
+  FormRule('arm_pull', 'Pulling move', 95, 150, 'Elbow',
+      'Side view: counts reps from your elbow angle. Show your whole arm and torso.',
+      'Rear or front view: shows left/right difference. Show both arms.',
+      fullAngle: 90, fullNote: 'Pull a little further for full range, if it feels comfortable.'),
+  FormRule('leg', 'Leg move', 110, 160, 'Knee',
+      'Side view: counts reps from your knee angle. Show your whole leg.',
+      'Front view: shows left/right difference. Show both legs.',
+      limb: 'leg', fullAngle: 100, fullNote: 'Bend a little further for full range, if it feels comfortable.'),
+  FormRule('hinge', 'Hip hinge', 130, 160, 'Hip',
+      'Side view: counts reps from your hip angle. Show shoulder, hip and knee, whole body in frame.',
+      'Side view works best for hip hinges.',
+      limb: 'hip'),
+  FormRule('raise', 'Raise', 105, 150, 'Shoulder',
+      'Side or front view: counts reps from how high your arm lifts. Show your whole arm.',
+      'Front view: shows left/right difference. Show both arms.',
+      limb: 'raise', flip: true, fullAngle: 100, fullNote: 'Lift to about shoulder height.'),
 ];
 
 /// Maps a library exercise name to a live rule, or null if not supported.
 FormRule? ruleFor(String exercise) {
   final n = exercise.toLowerCase();
   String? id;
-  if (n.contains('squat')) {
+  if (n.contains('garland') || n.contains('malasana') || n.contains('child')) {
+    id = null;
+  } else if (n.contains('leg press') || n.contains('step-up') || n.contains('leg curl') ||
+      n.contains('leg extension')) {
+    id = 'leg';
+  } else if (n.contains('squat')) {
     id = 'squat';
   } else if (n.contains('lunge')) {
     id = 'lunge';
   } else if (n.contains('push-up') || n.contains('pushup')) {
     id = 'pushup';
-  } else if (n.contains('curl') && !n.contains('leg')) {
+  } else if (n.contains('curl')) {
     id = 'curl';
+  } else if (n.contains('deadlift') || n.contains('hip thrust') || n.contains('glute bridge')) {
+    id = 'hinge';
+  } else if (n.contains('lateral raise') || n.contains('front raise')) {
+    id = 'raise';
+  } else if (n.contains('pulldown') || n.contains('pull-up') || n.contains('row') ||
+      n.contains('face pull')) {
+    id = 'arm_pull';
+  } else if (n.contains('press') || n.contains('dips') || n.contains('triceps')) {
+    id = 'arm_press';
   }
   if (id == null) return null;
   for (final r in formRules) {
@@ -141,35 +197,28 @@ class RepTracker {
   }
 
   FrameInfo update(Pts p) {
-    final lower = rule.id == 'squat' || rule.id == 'lunge';
-    final needs = lower
-        ? ['hip', 'knee', 'ankle']
-        : (rule.id == 'pushup' ? ['shoulder', 'elbow', 'wrist', 'hip'] : ['shoulder', 'elbow', 'wrist']);
+    final lower = rule.limb == 'leg';
+    final needs = rule.id == 'pushup' ? ['shoulder', 'elbow', 'wrist', 'hip'] : rule.points;
     final s = _side(p, needs);
     final pts = [for (final n in needs) p['${s}_$n']];
     if (pts.any((x) => !_ok(x))) {
-      final what = lower ? 'your legs' : (rule.id == 'pushup' ? 'your whole body' : 'your arm');
+      final what = lower
+          ? 'your legs'
+          : (rule.id == 'pushup' || rule.limb == 'hip' ? 'your whole body' : 'your arm');
       last = FrameInfo(null,
           'Cannot see $what clearly. Check the camera angle, light and that your whole body is in frame. Feedback is uncertain until then.',
           '', {});
       return last;
     }
 
-    double angle;
-    P a, b, c;
-    String joint;
-    if (lower) {
-      a = p['${s}_hip']!;
-      b = p['${s}_knee']!;
-      c = p['${s}_ankle']!;
-      joint = '${s}_knee';
-    } else {
-      a = p['${s}_shoulder']!;
-      b = p['${s}_elbow']!;
-      c = p['${s}_wrist']!;
-      joint = '${s}_elbow';
-    }
-    angle = angleDeg(a, b, c);
+    final names = rule.points;
+    final a = p['${s}_${names[0]}']!;
+    final b = p['${s}_${names[1]}']!;
+    final c = p['${s}_${names[2]}']!;
+    final joint = '${s}_${names[1]}';
+    final raw = angleDeg(a, b, c);
+    // Moves that start small and grow are turned around so one counter fits all.
+    final angle = rule.flip ? 180 - raw : raw;
 
     // --- rep state machine ---
     if (!_down) {
@@ -189,7 +238,8 @@ class RepTracker {
       }
       if (angle >= rule.upAngle) {
         final notes = _judge(_min, _bottom);
-        results.add(RepResult(results.length + 1, _min, angle, notes));
+        results.add(RepResult(results.length + 1, rule.flip ? 180 - _min : _min,
+            rule.flip ? 180 - angle : angle, notes));
         _down = false;
         _min = 999;
         _max = angle;
@@ -209,7 +259,7 @@ class RepTracker {
         flagged.add('${s}_hip');
       }
     }
-    last = FrameInfo(angle, null, cue, flagged..add(_down ? joint : ''));
+    last = FrameInfo(raw, null, cue, flagged..add(_down ? joint : ''));
     return last;
   }
 
@@ -234,8 +284,7 @@ class RepTracker {
         if (torso > 0) m['sway'] = (hipX - ankX).abs() / torso;
       }
       // Left/right difference of the main joint.
-      final lower = rule.id == 'squat' || rule.id == 'lunge';
-      final n1 = lower ? 'hip' : 'shoulder', n2 = lower ? 'knee' : 'elbow', n3 = lower ? 'ankle' : 'wrist';
+      final n1 = rule.points[0], n2 = rule.points[1], n3 = rule.points[2];
       final l1 = p['l_$n1'], l2 = p['l_$n2'], l3 = p['l_$n3'];
       final r1 = p['r_$n1'], r2 = p['r_$n2'], r3 = p['r_$n3'];
       if (_ok(l1) && _ok(l2) && _ok(l3) && _ok(r1) && _ok(r2) && _ok(r3)) {
@@ -255,7 +304,18 @@ class RepTracker {
   List<String> _judge(double minAngle, Map<String, double> m) {
     final notes = <String>[];
     final lower = rule.id == 'squat' || rule.id == 'lunge';
-    if (lower) {
+    final full = rule.fullAngle;
+    if (full != null && rule.fullNote != null) {
+      // For turned-around moves the stored minimum is 180 minus the real peak.
+      final reached = rule.flip ? 180 - minAngle : minAngle;
+      final ok = rule.flip ? reached >= 180 - full : reached <= full;
+      if (!ok) notes.add(rule.fullNote!);
+    }
+    if (rule.id == 'arm_press' || rule.id == 'arm_pull' || rule.id == 'leg' || rule.id == 'raise' || rule.id == 'hinge') {
+      if (view == CamView.front && (m['asym'] ?? 0) > 20) {
+        notes.add('Left and right sides differ by ${(m['asym'] ?? 0).round()}°.');
+      }
+    } else if (lower) {
       if (minAngle > 110) {
         notes.add('Shallow depth (${minAngle.round()}°). Go a little lower if it feels comfortable.');
       }
