@@ -274,3 +274,5 @@ Friends screen: more menu (3 dots) on friend rows and other people's feed posts 
 - Not done: recipe photo/AI estimate, edit a logged recipe, recipes shared with friends, nutrients beyond kcal/macros in recipes.
 
 - Form check photo recovery (UNTESTED): if Android closes the app while the camera is open (user landed on Home after the photo), `FormCheckRecovery` (in `form_check_screen.dart`, called from `AppShell.initState`) finds the lost photo with `retrieveLostData` and reopens the form check with it. Cause of the restart is a guess (app killed in the background); not confirmed.
+
+- Coach chat: meal cards with "Add to diary" (UNTESTED). The coach edge function (v19) ends meal suggestions with a `<meals>` JSON block; the function strips it, checks the numbers and returns `meals` next to `reply`. `coach_screen.dart` shows a card per meal, a confirm sheet (meal type, untick items) and Undo. Chat text now shows **bold** and list marks without stars. Numbers are the AI's estimate.

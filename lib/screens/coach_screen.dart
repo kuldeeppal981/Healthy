@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config.dart';
+import '../models.dart';
 import '../services/health_service.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -10,13 +11,65 @@ import '../widgets/pro_sheet.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/voice_capture.dart';
 
+class _FoodItem {
+  final String name;
+  final String serving;
+  final double kcal;
+  final double protein;
+  final double carbs;
+  final double fat;
+
+  const _FoodItem(this.name, this.serving, this.kcal, this.protein, this.carbs, this.fat);
+}
+
+/// One suggested meal from the coach (breakfast, lunch, snacks or dinner).
+class _MealGroup {
+  final String meal;
+  final List<_FoodItem> items;
+
+  const _MealGroup(this.meal, this.items);
+
+  double get kcal => items.fold(0.0, (s, e) => s + e.kcal);
+}
+
 class _Msg {
   final bool user;
   final String text;
   final bool error;
+  final List<_MealGroup> meals;
 
-  const _Msg(this.user, this.text, {this.error = false});
+  const _Msg(this.user, this.text, {this.error = false, this.meals = const []});
 }
+
+double _num(Object? v) => v is num ? v.toDouble() : 0;
+
+List<_MealGroup> _parseMeals(Object? raw) {
+  if (raw is! List) return const [];
+  final out = <_MealGroup>[];
+  for (final g in raw) {
+    if (g is! Map) continue;
+    final items = <_FoodItem>[];
+    for (final x in (g['items'] is List ? g['items'] as List : const [])) {
+      if (x is! Map || x['name'] is! String) continue;
+      items.add(_FoodItem(x['name'] as String, (x['serving'] as String?) ?? '',
+          _num(x['kcal']), _num(x['protein']), _num(x['carbs']), _num(x['fat'])));
+    }
+    final meal = g['meal'];
+    if (items.isNotEmpty) {
+      out.add(_MealGroup(
+          const ['breakfast', 'lunch', 'snacks', 'dinner'].contains(meal) ? meal as String : 'snacks',
+          items));
+    }
+  }
+  return out;
+}
+
+const _mealNames = {
+  'breakfast': 'Breakfast',
+  'lunch': 'Lunch',
+  'snacks': 'Snack',
+  'dinner': 'Dinner',
+};
 
 /// Chat with the AI coach. The question goes to a Supabase Edge Function,
 /// which holds the AI key and enforces a daily limit per user.
@@ -88,7 +141,8 @@ class _CoachScreenState extends State<CoachScreen> {
       );
       final data = res.data;
       final reply = data is Map ? data['reply'] as String? : null;
-      _add(_Msg(false, reply ?? 'I could not answer that. Try again.', error: reply == null));
+      _add(_Msg(false, reply ?? 'I could not answer that. Try again.',
+          error: reply == null, meals: _parseMeals(data is Map ? data['meals'] : null)));
     } on FunctionException catch (e) {
       final d = e.details;
       final msg = d is Map && d['message'] is String
@@ -239,27 +293,202 @@ class _CoachScreenState extends State<CoachScreen> {
     );
   }
 
+  /// Shows **bold** as bold and "* " list marks as dots, so no stars appear.
+  List<InlineSpan> _spans(String text, Color color) {
+    final clean = text.replaceAllMapped(RegExp(r'^\s*[*-]\s+', multiLine: true), (_) => '• ');
+    final spans = <InlineSpan>[];
+    final parts = clean.split('**');
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].isEmpty) continue;
+      spans.add(TextSpan(
+        text: parts[i],
+        style: TextStyle(fontWeight: i.isOdd ? FontWeight.w800 : FontWeight.w400, color: color),
+      ));
+    }
+    return spans;
+  }
+
   Widget _bubble(_Msg m) {
+    final color = m.user ? Colors.white : (m.error ? AppColors.danger : AppColors.ink);
     return Align(
       alignment: m.user ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.82),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.86),
         decoration: BoxDecoration(
           color: m.user
               ? AppColors.primary
               : (m.error ? AppColors.dangerBg : AppColors.chipBg),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
-          m.text,
-          style: TextStyle(
-            height: 1.4,
-            color: m.user ? Colors.white : (m.error ? AppColors.danger : AppColors.ink),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text.rich(
+              TextSpan(children: _spans(m.text, color)),
+              style: TextStyle(height: 1.4, color: color),
+            ),
+            for (final g in m.meals) _mealCard(g),
+            if (m.meals.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text('Coach\'s estimate. Change portions to match what you eat.',
+                    style: TextStyle(fontSize: 11, color: AppColors.muted)),
+              ),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _mealCard(_MealGroup g) {
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(_mealNames[g.meal] ?? 'Meal',
+              style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink)),
+          const SizedBox(height: 4),
+          for (final it in g.items)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      it.serving.isEmpty ? it.name : '${it.name} (${it.serving})',
+                      style: TextStyle(fontSize: 13, color: AppColors.ink),
+                    ),
+                  ),
+                  Text('${it.kcal.round()} kcal',
+                      style: TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.primaryDeep)),
+                ],
+              ),
+            ),
+          const SizedBox(height: 6),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+              onPressed: () => _addToDiary(g),
+              child: Text('Add to diary · ${g.kcal.round()} kcal'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addToDiary(_MealGroup g) async {
+    final state = context.read<AppState>();
+    var meal = g.meal;
+    final on = List<bool>.filled(g.items.length, true);
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: AppColors.card,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) {
+          final picked = [for (var i = 0; i < g.items.length; i++) if (on[i]) g.items[i]];
+          final kcal = picked.fold(0.0, (s, e) => s + e.kcal);
+          final p = picked.fold(0.0, (s, e) => s + e.protein);
+          final c = picked.fold(0.0, (s, e) => s + e.carbs);
+          final f = picked.fold(0.0, (s, e) => s + e.fat);
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Add to diary',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final e in _mealNames.entries)
+                        ChoiceChip(
+                          label: Text(e.value),
+                          selected: meal == e.key,
+                          onSelected: (_) => setS(() => meal = e.key),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  for (var i = 0; i < g.items.length; i++)
+                    CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: on[i],
+                      onChanged: (v) => setS(() => on[i] = v ?? false),
+                      title: Text(g.items[i].name),
+                      subtitle: g.items[i].serving.isEmpty ? null : Text(g.items[i].serving),
+                      secondary: Text('${g.items[i].kcal.round()} kcal',
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                    ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${kcal.round()} kcal · P ${p.round()} g · C ${c.round()} g · F ${f.round()} g (estimate)',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: picked.isEmpty ? null : () => Navigator.pop(ctx, true),
+                      child: Text('Add ${picked.length} item${picked.length == 1 ? '' : 's'}'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final now = DateTime.now();
+    final ids = <String>[];
+    var n = 0;
+    for (var i = 0; i < g.items.length; i++) {
+      if (!on[i]) continue;
+      final it = g.items[i];
+      final id = '${now.microsecondsSinceEpoch}-coach-${n++}';
+      ids.add(id);
+      state.addEntry(DiaryEntry(
+        id: id,
+        name: it.name,
+        meal: meal,
+        kcal: it.kcal,
+        protein: it.protein,
+        carbs: it.carbs,
+        fat: it.fat,
+        at: now,
+      ));
+    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Added ${ids.length} to ${_mealNames[meal]}'),
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () {
+          for (final id in ids) {
+            state.removeEntry(id);
+          }
+        },
+      ),
+    ));
   }
 }
