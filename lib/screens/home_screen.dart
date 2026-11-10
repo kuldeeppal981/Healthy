@@ -715,7 +715,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           Positioned(
             right: -12,
-            top: 22,
+            top: 54,
             child: IgnorePointer(
               child: const Opacity(opacity: 0.35, child: GlassArt(width: 46)),
             ),
