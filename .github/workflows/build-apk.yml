@@ -1,9 +1,19 @@
 name: Build Android APK
 
-# Runs ONLY when started by hand from the Actions tab
-# (Actions -> Build Android APK -> Run workflow). Not on push.
+# Runs automatically on every push to main (except docs-only changes),
+# and can still be started by hand: Actions -> Build Android APK -> Run workflow.
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   workflow_dispatch:
+
+# If a new push comes while a build is running, cancel the old build.
+concurrency:
+  group: build-apk
+  cancel-in-progress: true
 
 jobs:
   build:
