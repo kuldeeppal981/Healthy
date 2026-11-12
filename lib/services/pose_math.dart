@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import '../data/exercise_library.dart';
+
 /// A body point from the pose model: pixel position and how sure the model is.
 class P {
   final double x;
@@ -65,6 +67,16 @@ class FormRule {
   /// Whether a rep that is too fast gets a "slow down" tip (off for jumping moves).
   final bool tempo;
 
+  /// How reps are counted: 'angle' (joint angle, default), 'lift' (height gain of
+  /// ankles or hips), 'drop' (hips go down and back up), 'span' (shoulders turn),
+  /// 'cadence' (alternating legs) or 'still' (hold a pose steadily).
+  /// For the non-angle modes `downAngle`/`upAngle`/`fullAngle` are fractions of
+  /// torso length (or ratios for 'span'), not degrees.
+  final String mode;
+
+  /// Voice says the count only every 10 reps (fast moves).
+  final bool quiet;
+
   const FormRule(this.id, this.title, this.downAngle, this.upAngle, this.jointLabel,
       this.sideHint, this.frontHint,
       {this.limb = 'arm',
@@ -72,7 +84,9 @@ class FormRule {
       this.fullAngle,
       this.fullNote,
       this.hold = false,
-      this.tempo = true});
+      this.tempo = true,
+      this.mode = 'angle',
+      this.quiet = false});
 
   List<String> get points => switch (limb) {
         'leg' => const ['hip', 'knee', 'ankle'],
@@ -120,11 +134,11 @@ const formRules = <FormRule>[
   FormRule('jack', 'Jumping jacks', 105, 150, 'Shoulder',
       'Front view: counts a rep each time your arms go up. Show your whole body.',
       'Front view: counts a rep each time your arms go up. Show your whole body.',
-      limb: 'raise', flip: true, tempo: false),
+      limb: 'raise', flip: true, tempo: false, quiet: true),
   FormRule('climber', 'Mountain climbers', 120, 160, 'Hip',
       'Side view: counts each knee drive. Show your whole body.',
       'Side view works best.',
-      limb: 'hip', tempo: false),
+      limb: 'hip', tempo: false, quiet: true),
   FormRule('crunch', 'Crunch', 105, 130, 'Hip',
       'Side view, lying down: counts reps from your hip/torso angle. Show shoulder, hip and knee.',
       'Side view works best.',
@@ -137,6 +151,30 @@ const formRules = <FormRule>[
       'Side view on the floor: checks that shoulder, hip and ankle make a straight line. Show your whole body.',
       'Side view works best for planks.',
       limb: 'hip', hold: true),
+  FormRule('calf', 'Calf raise', 0, 0.07, 'Heel lift',
+      'Side view, standing: counts each time your heels lift. Show your whole body.',
+      'Front or rear view: counts each time your heels lift. Show your whole body.',
+      mode: 'lift', fullAngle: 0.12),
+  FormRule('skip', 'Skipping', 0, 0.05, 'Jump height',
+      'Side view: counts each jump. Show your whole body.',
+      'Front view: counts each jump. Show your whole body.',
+      mode: 'lift', tempo: false, quiet: true),
+  FormRule('burpee', 'Burpee', 0.3, 0.75, 'Hip drop',
+      'Side view: counts each time your hips go down to the floor and come back up. Show your whole body, 2 to 3 m away.',
+      'Side view works best.',
+      mode: 'drop', tempo: false),
+  FormRule('twist', 'Russian twist', 0.6, 0.85, 'Turn',
+      'Front view, sitting: counts each twist to a side. Show your shoulders and hips.',
+      'Front view works best.',
+      mode: 'span', tempo: false),
+  FormRule('cadence', 'Cardio pace', 0, 0.12, 'Stride',
+      'Side view: counts steps from your legs moving up and down. Show both legs.',
+      'Front view: counts steps from your legs moving up and down.',
+      mode: 'cadence', tempo: false, quiet: true),
+  FormRule('still', 'Hold pose', 0, 0, 'Steadiness',
+      'Show your whole body. Measures how long you hold the pose steadily. It does not judge the shape of the pose.',
+      'Show your whole body. Measures how long you hold the pose steadily. It does not judge the shape of the pose.',
+      hold: true, mode: 'still'),
 ];
 
 /// Maps a library exercise name to a live rule, or null if not supported.
@@ -145,6 +183,19 @@ FormRule? ruleFor(String exercise) {
   String? id;
   if (n.contains('plank') && !n.contains('chaturanga')) {
     id = 'plank';
+  } else if (exerciseLibrary.any((e) =>
+      e.name.toLowerCase() == n && (e.group == 'Yoga' || e.group == 'Stretch'))) {
+    id = 'still';
+  } else if (n.contains('calf raise')) {
+    id = 'calf';
+  } else if (n.contains('russian twist')) {
+    id = 'twist';
+  } else if (n.contains('burpee')) {
+    id = 'burpee';
+  } else if (n.contains('skipping') || n.contains('jump rope')) {
+    id = 'skip';
+  } else if (n.contains('treadmill') || n.contains('cycling')) {
+    id = 'cadence';
   } else if (n.contains('mountain climber')) {
     id = 'climber';
   } else if (n.contains('jumping jack')) {
@@ -155,8 +206,6 @@ FormRule? ruleFor(String exercise) {
     id = 'legraise';
   } else if (n.contains('cable fly') || n.contains('rear delt')) {
     id = 'raise';
-  } else if (n.contains('garland') || n.contains('malasana') || n.contains('child')) {
-    id = null;
   } else if (n.contains('leg press') || n.contains('step-up') || n.contains('leg curl') ||
       n.contains('leg extension')) {
     id = 'leg';
@@ -220,6 +269,13 @@ class RepTracker {
   DateTime? _lastT;
   double holdTotal = 0;
   double holdGood = 0;
+  double? _ref;
+  double _scale = 0;
+  double _spanRef = 0;
+  double _peak = 0;
+  int _sign = 0;
+  final List<DateTime> _stepTimes = [];
+  Map<String, P> _prev = {};
   FrameInfo last = const FrameInfo(null, 'Step into the frame', '', {});
 
   int get reps => results.length;
@@ -234,6 +290,20 @@ class RepTracker {
     _lastT = null;
     holdTotal = 0;
     holdGood = 0;
+    _ref = null;
+    _scale = 0;
+    _spanRef = 0;
+    _peak = 0;
+    _sign = 0;
+    _stepTimes.clear();
+    _prev = {};
+  }
+
+  /// Steps per minute over the last 20 seconds (cadence mode).
+  int get stepsPerMin {
+    final now = DateTime.now();
+    final recent = _stepTimes.where((t) => now.difference(t).inSeconds <= 20).length;
+    return recent * 3;
   }
 
   /// Form score 0 to 100: share of the set that looked clean. Null when too little data.
@@ -241,6 +311,18 @@ class RepTracker {
     if (rule.hold) {
       if (holdTotal < 3) return null;
       return (100 * holdGood / holdTotal).round();
+    }
+    if (rule.mode == 'cadence') {
+      if (_stepTimes.length < 8) return null;
+      final gaps = <double>[];
+      for (var i = 1; i < _stepTimes.length; i++) {
+        gaps.add(_stepTimes[i].difference(_stepTimes[i - 1]).inMilliseconds / 1000.0);
+      }
+      final mean = gaps.reduce((a, b) => a + b) / gaps.length;
+      if (mean <= 0) return null;
+      final varc = gaps.map((g) => (g - mean) * (g - mean)).reduce((a, b) => a + b) / gaps.length;
+      final cv = math.sqrt(varc) / mean;
+      return (100 - cv * 120).clamp(40, 100).round();
     }
     if (results.isEmpty) return null;
     var sum = 0.0;
@@ -317,7 +399,163 @@ class RepTracker {
     return score('l') >= score('r') ? 'l' : 'r';
   }
 
+  P? _mid(Pts p, String n) {
+    final a = p['l_$n'], b = p['r_$n'];
+    if (_ok(a) && _ok(b)) return P((a!.x + b!.x) / 2, (a.y + b.y) / 2, math.min(a.c, b.c));
+    if (_ok(a)) return a;
+    if (_ok(b)) return b;
+    return null;
+  }
+
+  FrameInfo _unsure(String what) {
+    last = FrameInfo(null,
+        'Cannot see $what clearly. Check the camera angle, light and that your whole body is in frame. Feedback is uncertain until then.',
+        '', {});
+    return last;
+  }
+
+  void _addRep(List<String> notes, double secs) {
+    results.add(RepResult(results.length + 1, _peak, _peak, notes, seconds: secs));
+  }
+
+  FrameInfo _updateStill(Pts p) {
+    const names = ['shoulder', 'hip', 'knee', 'ankle', 'wrist'];
+    final cur = <String, P>{};
+    for (final side in ['l', 'r']) {
+      for (final n in names) {
+        final q = p['${side}_$n'];
+        if (_ok(q)) cur['${side}_$n'] = q!;
+      }
+    }
+    final sh = _mid(p, 'shoulder'), hip = _mid(p, 'hip');
+    if (cur.length < 6 || sh == null || hip == null) {
+      _lastT = null;
+      _prev = {};
+      return _unsure('your whole body');
+    }
+    final torso = dist(sh, hip);
+    final now = DateTime.now();
+    var move = 0.0;
+    var k = 0;
+    cur.forEach((key, q) {
+      final o = _prev[key];
+      if (o != null) {
+        move += dist(q, o);
+        k++;
+      }
+    });
+    if (k > 0 && torso > 0) move = move / k / torso;
+    _prev = cur;
+    final prev = _lastT;
+    _lastT = now;
+    final steady = move < 0.04;
+    if (prev != null) {
+      final dt = now.difference(prev).inMilliseconds / 1000.0;
+      if (dt < 1) {
+        holdTotal += dt;
+        if (steady) holdGood += dt;
+      }
+    }
+    last = FrameInfo(null, null,
+        steady ? 'Good, hold and breathe' : 'Settle into the pose and hold still', {});
+    return last;
+  }
+
+  FrameInfo _updateMotion(Pts p) {
+    final sh = _mid(p, 'shoulder'), hip = _mid(p, 'hip');
+    if (sh == null || hip == null) return _unsure('your body');
+    final torso = dist(sh, hip);
+    if (torso <= 0) return _unsure('your body');
+    _scale = math.max(_scale * 0.999, torso);
+    final now = DateTime.now();
+    var cue = 'Keep going';
+    var value = 0.0;
+
+    if (rule.mode == 'lift' || rule.mode == 'drop') {
+      final pt = rule.id == 'calf' ? _mid(p, 'ankle') : hip;
+      if (pt == null) return _unsure('your legs');
+      final y = pt.y;
+      final r0 = _ref ?? y;
+      double r;
+      if (rule.mode == 'lift') {
+        r = y > r0 ? y : r0 - (r0 - y) * 0.01; // lowest point seen, drifts slowly
+        value = (r - y) / _scale;
+      } else {
+        r = y < r0 ? y : r0 + (y - r0) * 0.01; // highest point seen, drifts slowly
+        value = (y - r) / _scale;
+      }
+      _ref = r;
+      if (!_down) {
+        if (value >= rule.upAngle) {
+          _down = true;
+          _peak = value;
+          _repStart = now;
+        }
+      } else {
+        if (value > _peak) _peak = value;
+        final back = rule.mode == 'lift' ? rule.upAngle * 0.4 : rule.downAngle;
+        if (value <= back) {
+          final secs = now.difference(_repStart).inMilliseconds / 1000.0;
+          final notes = <String>[];
+          final full = rule.fullAngle;
+          if (full != null && _peak < full) {
+            notes.add('Rise higher on your toes, if it feels comfortable.');
+          }
+          if (rule.tempo && secs < 1.0) {
+            notes.add('Too fast. Slow down and control the movement.');
+          }
+          _addRep(notes, secs);
+          _down = false;
+        }
+      }
+      cue = _down ? 'Good, now come back down' : 'Ready';
+    } else if (rule.mode == 'span') {
+      final l = p['l_shoulder'], r = p['r_shoulder'];
+      if (!_ok(l) || !_ok(r)) return _unsure('your shoulders');
+      final span = (l!.x - r!.x).abs();
+      _spanRef = math.max(span, _spanRef * 0.995);
+      final ratio = _spanRef > 0 ? span / _spanRef : 1.0;
+      value = ratio;
+      if (!_down) {
+        if (ratio <= rule.downAngle) {
+          _down = true;
+          _repStart = now;
+        }
+      } else if (ratio >= rule.upAngle) {
+        _peak = ratio;
+        _addRep(const [], now.difference(_repStart).inMilliseconds / 1000.0);
+        _down = false;
+      }
+      cue = _down ? 'Good, twist back' : 'Ready';
+    } else {
+      // cadence: legs alternate up and down
+      final la = p['l_ankle'], ra = p['r_ankle'];
+      if (!_ok(la) || !_ok(ra)) return _unsure('both legs');
+      final diff = (la!.y - ra!.y) / _scale;
+      value = diff;
+      if (diff > rule.upAngle && _sign != 1) {
+        _sign = 1;
+        _stepTimes.add(now);
+        _addRep(const [], 0);
+      } else if (diff < -rule.upAngle && _sign != -1) {
+        _sign = -1;
+        _stepTimes.add(now);
+        _addRep(const [], 0);
+      }
+      final sp = stepsPerMin;
+      cue = sp > 0 ? '$sp steps per minute' : 'Ready';
+      if (_stepTimes.length >= 12) {
+        final s = score;
+        if (s != null && s < 70) cue = 'Pace is uneven. Keep a steady rhythm';
+      }
+    }
+    last = FrameInfo(value * 100, null, cue, {});
+    return last;
+  }
+
   FrameInfo update(Pts p) {
+    if (rule.mode == 'still') return _updateStill(p);
+    if (rule.mode != 'angle') return _updateMotion(p);
     if (rule.hold) return _updateHold(p);
     final lower = rule.limb == 'leg';
     final needs = rule.id == 'pushup' ? ['shoulder', 'elbow', 'wrist', 'hip'] : rule.points;

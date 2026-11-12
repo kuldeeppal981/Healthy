@@ -66,6 +66,9 @@ class VoiceCoach {
     'Lift to about': 'कंधे तक उठाओ',
     'Left and right': 'दोनों तरफ बराबर रखो',
     'Too fast': 'धीरे करो, कंट्रोल रखो',
+    'Rise higher': 'और ऊपर उठो',
+    'Settle into': 'थोड़ा स्थिर हो जाओ',
+    'Pace is uneven': 'रफ़्तार बराबर रखो',
     'Hips are sagging': 'कमर ऊपर उठाओ, कोर टाइट रखो',
     'Hips too high': 'कमर थोड़ी नीचे लाओ',
   };
@@ -91,8 +94,9 @@ class VoiceCoach {
   }
 
   /// Called when a rep is finished: count, then the first tip (or "good").
-  Future<void> rep(int n, List<String> notes) async {
+  Future<void> rep(int n, List<String> notes, {bool quiet = false}) async {
     if (!_ready || mode == 'off') return;
+    if (quiet && notes.isEmpty && n % 10 != 0) return;
     final tip = notes.isEmpty ? '' : _tr(notes.first);
     final good = mode == 'hi' ? 'बढ़िया' : 'Good';
     var text = '$n. ${tip.isEmpty ? good : tip}';
@@ -116,6 +120,21 @@ class VoiceCoach {
     await _say(text, force: true);
   }
 
+  /// Breathing cue for yoga and stretch holds, every 5 seconds.
+  Future<void> breath(int tick, int secs) async {
+    final text = tick.isOdd
+        ? (mode == 'hi' ? 'सांस लो' : 'Breathe in')
+        : (mode == 'hi' ? '$secs सेकंड, सांस छोड़ो' : '$secs seconds. Breathe out');
+    await _say(text, force: true);
+  }
+
+  /// Said every 30 seconds on treadmill or bike.
+  Future<void> pace(int spm) async {
+    if (spm <= 0) return;
+    final text = mode == 'hi' ? 'रफ़्तार $spm स्टेप प्रति मिनट' : '$spm steps per minute. Keep it steady.';
+    await _say(text, force: true);
+  }
+
   /// Said when the set is finished.
   Future<void> finish(int? score) async {
     if (score == null) return;
@@ -131,7 +150,8 @@ class VoiceCoach {
       await _say(_tr('Cannot see'), gapSec: 12);
       return;
     }
-    if (cue.isEmpty || cue == 'Ready' || cue.startsWith('Good')) return;
+    if (cue.isEmpty || cue == 'Ready' || cue == 'Keep going' || cue.startsWith('Good')) return;
+    if (cue.endsWith('steps per minute')) return;
     await _say(_tr(cue), gapSec: 5);
   }
 

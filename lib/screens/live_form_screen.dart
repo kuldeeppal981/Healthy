@@ -41,6 +41,8 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
   FrameInfo _info = const FrameInfo(null, 'Step into the frame', '', {});
   int _lastReps = 0;
   int _lastHoldTick = 0;
+  int _lastBreathTick = 0;
+  DateTime _lastPaceAt = DateTime.now();
   final VoiceCoach _voice = VoiceCoach();
 
   @override
@@ -170,16 +172,29 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
         if (reps != _lastReps) {
           _lastReps = reps;
           Haptic.done();
-          if (reps > 0) _voice.rep(reps, _tracker.results.last.notes);
+          if (reps > 0 && widget.rule.mode != 'cadence') {
+            _voice.rep(reps, _tracker.results.last.notes, quiet: widget.rule.quiet);
+          }
         } else {
-          _voice.live(info.cue, info.angle == null);
+          _voice.live(info.cue, info.uncertain != null);
         }
-        if (widget.rule.hold) {
+        if (widget.rule.mode == 'still') {
+          final tick = _tracker.holdTotal ~/ 5;
+          if (tick > _lastBreathTick) {
+            _lastBreathTick = tick;
+            _voice.breath(tick, tick * 5);
+          }
+        } else if (widget.rule.hold) {
           final tick = _tracker.holdTotal ~/ 10;
           if (tick > _lastHoldTick) {
             _lastHoldTick = tick;
             _voice.holdTick(tick * 10);
           }
+        }
+        if (widget.rule.mode == 'cadence' &&
+            DateTime.now().difference(_lastPaceAt).inSeconds >= 30) {
+          _lastPaceAt = DateTime.now();
+          _voice.pace(_tracker.stepsPerMin);
         }
       });
     } catch (_) {
@@ -232,7 +247,9 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
               Text(
                   hold
                       ? '${_tracker.holdTotal.round()} s of ${widget.rule.title}'
-                      : '${r.length} reps of ${widget.rule.title}',
+                      : (widget.rule.mode == 'cadence'
+                          ? '${r.length} steps, about ${_tracker.stepsPerMin} per minute'
+                          : '${r.length} reps of ${widget.rule.title}'),
                   style: TextStyle(
                       fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.ink)),
               const SizedBox(height: 10),
@@ -261,9 +278,13 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
                                 style: TextStyle(
                                     fontWeight: FontWeight.w800, color: AppColors.ink)),
                             Text(
-                                hold
-                                    ? '${_tracker.holdGood.round()} of ${_tracker.holdTotal.round()} s with a straight body line'
-                                    : '${r.where((x) => x.clean).length} of ${r.length} reps had no tips',
+                                widget.rule.mode == 'still'
+                                    ? '${_tracker.holdGood.round()} of ${_tracker.holdTotal.round()} s held steady'
+                                    : hold
+                                        ? '${_tracker.holdGood.round()} of ${_tracker.holdTotal.round()} s with a straight body line'
+                                        : (widget.rule.mode == 'cadence'
+                                            ? 'Score shows how even your rhythm was'
+                                            : '${r.where((x) => x.clean).length} of ${r.length} reps had no tips'),
                                 style: TextStyle(color: AppColors.muted, fontSize: 12)),
                           ],
                         ),
@@ -281,7 +302,7 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
               if (r.isEmpty && !hold)
                 Text('No full reps counted. Make sure your whole body is visible and move through the full range.',
                     style: TextStyle(color: AppColors.muted)),
-              for (final x in r)
+              for (final x in (widget.rule.mode == 'cadence' ? <RepResult>[] : r))
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Row(
@@ -295,7 +316,9 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                                'Rep ${x.number}: ${widget.rule.jointLabel} ${x.minAngle.round()}° to ${x.maxAngle.round()}°',
+                                widget.rule.mode == 'angle'
+                                    ? 'Rep ${x.number}: ${widget.rule.jointLabel} ${x.minAngle.round()}° to ${x.maxAngle.round()}°'
+                                    : 'Rep ${x.number}: ${x.seconds.toStringAsFixed(1)} s',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w700, color: AppColors.ink)),
                             for (final n in x.notes)
@@ -414,7 +437,10 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
                                       ? '${_tracker.holdTotal.round()}'
                                       : '${_tracker.reps}',
                                   style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900)),
-                              Text(widget.rule.hold ? 'seconds' : 'reps', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                              Text(
+                                  widget.rule.hold
+                                      ? 'seconds'
+                                      : (widget.rule.mode == 'cadence' ? 'steps' : 'reps'), style: TextStyle(color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
                         ),
@@ -423,9 +449,22 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                  _info.angle == null ? '--' : '${_info.angle!.round()}°',
+                                  widget.rule.mode == 'cadence'
+                                      ? '${_tracker.stepsPerMin}'
+                                      : widget.rule.mode == 'still'
+                                          ? (_tracker.holdTotal < 1
+                                              ? '--'
+                                              : '${(100 * _tracker.holdGood / _tracker.holdTotal).round()}%')
+                                          : _info.angle == null
+                                              ? '--'
+                                              : widget.rule.mode == 'angle'
+                                                  ? '${_info.angle!.round()}°'
+                                                  : '${_info.angle!.round()}%',
                                   style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900)),
-                              Text(widget.rule.jointLabel,
+                              Text(
+                                  widget.rule.mode == 'cadence'
+                                      ? 'steps/min'
+                                      : widget.rule.jointLabel,
                                   style: TextStyle(color: AppColors.muted, fontSize: 12)),
                             ],
                           ),
@@ -451,6 +490,8 @@ class _LiveFormScreenState extends State<LiveFormScreen> {
                               _tracker.reset();
                               _lastReps = 0;
                               _lastHoldTick = 0;
+                              _lastBreathTick = 0;
+                              _lastPaceAt = DateTime.now();
                             }
                           });
                           if (_started) {
