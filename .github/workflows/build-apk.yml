@@ -369,6 +369,19 @@ jobs:
           EOF
           grep -n -A8 "release {" android/app/build.gradle* || true
 
+      - name: Turn off Android lint for release (lint crashes on some plugins)
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/no-lint.gradle <<'EOF'
+          allprojects {
+              tasks.configureEach { t ->
+                  if (t.name.startsWith('lintVital') || t.name.startsWith('lintAnalyze') || t.name.startsWith('lintReport') || t.name == 'lint') {
+                      t.enabled = false
+                  }
+              }
+          }
+          EOF
+
       - name: Add app icon and notification icon
         run: |
           set -e
