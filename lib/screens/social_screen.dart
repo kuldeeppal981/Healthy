@@ -854,7 +854,7 @@ class _FriendsTabState extends State<_FriendsTab> {
                   FilledButton(
                     style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
                     onPressed: () => Share.share(
-                        'Add me on Healthy! Open Friends and challenges, then enter my code: ${svc.code}'),
+                        'Add me on Smartfitly! Open Friends and challenges, then enter my code: ${svc.code}'),
                     child: const Text('Share code'),
                   ),
                 ],
@@ -1273,7 +1273,7 @@ class _ChallengeScreenState extends State<ChallengeScreen> {
                           FilledButton(
                             style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
                             onPressed: () => Share.share(
-                                'Join my challenge "${c.name}" on Healthy! Open Friends and challenges, then Join with code ${c.code}'),
+                                'Join my challenge "${c.name}" on Smartfitly! Open Friends and challenges, then Join with code ${c.code}'),
                             child: const Text('Invite'),
                           ),
                         ],

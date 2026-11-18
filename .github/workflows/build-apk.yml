@@ -153,7 +153,7 @@ jobs:
                   for (id in appWidgetIds) {
                       val views = RemoteViews(context.packageName, R.layout.healthy_widget)
                       try {
-                          views.setTextViewText(R.id.w_kcal, prefs.getString("w_kcal", null) ?: "Open Healthy")
+                          views.setTextViewText(R.id.w_kcal, prefs.getString("w_kcal", null) ?: "Open Smartfitly")
                           views.setTextViewText(R.id.w_protein, prefs.getString("w_protein", null) ?: "")
                           views.setTextViewText(R.id.w_steps, prefs.getString("w_steps", null) ?: "")
                           views.setTextViewText(R.id.w_streak, prefs.getString("w_streak", null) ?: "")
@@ -201,7 +201,7 @@ jobs:
                       android:id="@+id/w_kcal"
                       android:layout_width="wrap_content"
                       android:layout_height="wrap_content"
-                      android:text="Open Healthy"
+                      android:text="Open Smartfitly"
                       android:textColor="#FFFFFF"
                       android:textSize="22sp"
                       android:textStyle="bold" />
@@ -382,6 +382,17 @@ jobs:
           }
           EOF
 
+      - name: Set app name to Smartfitly
+        run: |
+          python3 - <<'EOF'
+          import re
+          f = 'android/app/src/main/AndroidManifest.xml'
+          s = open(f).read()
+          s = re.sub(r'android:label="[^"]*"', 'android:label="Smartfitly"', s, count=1)
+          open(f, 'w').write(s)
+          EOF
+          grep -n 'android:label' android/app/src/main/AndroidManifest.xml || true
+
       - name: Add app icon and notification icon
         run: |
           set -e
@@ -395,19 +406,10 @@ jobs:
                   android:pathData="M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z"/>
           </vector>
           EOF
-          cat > $main/res/drawable/ic_launcher_fg.xml <<'EOF'
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              android:width="108dp" android:height="108dp"
-              android:viewportWidth="108" android:viewportHeight="108">
-              <group android:translateX="27.6" android:translateY="27.6" android:scaleX="2.2" android:scaleY="2.2">
-                  <path android:fillColor="#FFFFFFFF"
-                      android:pathData="M12,21.35l-1.45,-1.32C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3c1.74,0 3.41,0.81 4.5,2.09C13.09,3.81 14.76,3 16.5,3 19.58,3 22,5.42 22,8.5c0,3.78 -3.4,6.86 -8.55,11.54L12,21.35z"/>
-              </group>
-          </vector>
-          EOF
+          cp assets/logo/ic_launcher_fg.png $main/res/drawable/ic_launcher_fg.png
           cat > $main/res/drawable/ic_launcher_bg.xml <<'EOF'
           <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-              <gradient android:startColor="#4ADE80" android:endColor="#16A34A" android:angle="45"/>
+              <gradient android:startColor="#34D399" android:endColor="#15803D" android:angle="45"/>
           </shape>
           EOF
           cat > $main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'

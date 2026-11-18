@@ -65,7 +65,7 @@ class HealthConnectScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Healthy only reads this data, and keeps it on your phone. Your watch must sync to Health Connect first (for example through its own app, Google Fit or Samsung Health).',
+                  'Smartfitly only reads this data, and keeps it on your phone. Your watch must sync to Health Connect first (for example through its own app, Google Fit or Samsung Health).',
                   style: TextStyle(color: AppColors.muted, height: 1.4, fontSize: 13),
                 ),
                 if (svc.error != null) ...[
@@ -161,7 +161,7 @@ class HealthConnectScreen extends StatelessWidget {
                   child: Text('Disconnect', style: TextStyle(color: AppColors.danger)),
                 ),
                 Text(
-                  'To remove Healthy\'s access completely, open Health Connect on your phone and change app permissions.',
+                  'To remove Smartfitly\'s access completely, open Health Connect on your phone and change app permissions.',
                   style: TextStyle(color: AppColors.muted, fontSize: 11),
                 ),
               ],

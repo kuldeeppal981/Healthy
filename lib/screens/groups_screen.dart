@@ -322,7 +322,7 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   void _invite() {
     final g = widget.group;
     Share.share(
-        'Join my group "${g.name}" on Healthy. Open Healthy, go to Explore, Community, League and groups, tap Groups, Join with code, and enter ${g.code}.');
+        'Join my group "${g.name}" on Smartfitly. Open Smartfitly, go to Explore, Community, League and groups, tap Groups, Join with code, and enter ${g.code}.');
   }
 
   Future<void> _newChallenge() async {

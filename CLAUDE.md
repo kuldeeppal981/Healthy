@@ -1,9 +1,12 @@
-# Healthy (working name): project guide for Claude and other coding agents
+# Smartfitly (was "Healthy"): project guide for Claude and other coding agents
 
 Read this first in every new session. Details live in `docs/`:
 - `docs/FEATURES.md`: everything built, where the code is, what is untested
 - `docs/ROADMAP.md`: what is next, backlog, user-side setup still pending
 - `docs/DATABASE.md`: Supabase tables, security rules, functions, edge function
+
+## Name and logo
+Final app name: **Smartfitly** (logo in `assets/logo/` and `assets/images/logo.png`; workflow sets the launcher label and icon). Internal names stay `healthy_app`, `com.kuldeep.healthy_app`, `HealthyWidgetProvider`, repo `Healthy`; the package name must be changed BEFORE the first Play Store upload (not done yet). Edge function text still says "Healthy Pro" (redeploy needed to change).
 
 ## What this is
 A HealthifyMe-style health app for India, built with Flutter (Android only for now):

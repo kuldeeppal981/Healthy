@@ -146,7 +146,7 @@ class _HealthAppState extends State<HealthApp> with WidgetsBindingObserver {
         return MaterialApp(
           key: ValueKey('${ts.accentIndex}-$dark-${ts.highContrast}'),
           navigatorKey: rootNavKey,
-          title: 'Healthy',
+          title: 'Smartfitly',
           debugShowCheckedModeBanner: false,
           theme: buildTheme(),
           builder: (context, child) {

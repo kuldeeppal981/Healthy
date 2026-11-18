@@ -143,14 +143,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
           children: [
             if (!widget.editing) ...[
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDeep]),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.favorite, color: Colors.white, size: 30),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset('assets/images/logo.png', width: 64, height: 64),
               ),
               const SizedBox(height: 16),
               const Text('Welcome',

@@ -12,12 +12,12 @@ class _Slide {
 }
 
 const _slides = [
-  _Slide(Icons.waving_hand_outlined, 'Welcome to Healthy',
+  _Slide(Icons.waving_hand_outlined, 'Welcome to Smartfitly',
       'A free health app made for India. A quick look at the main things you can do. It takes 30 seconds.'),
   _Slide(Icons.photo_camera_outlined, 'Log food with a photo',
       'Tap the + button, then Meal photo. Take a picture of your plate and AI estimates the calories. Fix the portions, then add it to your diary. You can also use voice, barcode or type.'),
   _Slide(Icons.medical_information_outlined, 'Add your health report',
-      'Open Profile, then Medical report, and take a photo of your lab report. Healthy tells you which foods to limit and eat more of, and checks your meals against it. General guidance, not medical advice.'),
+      'Open Profile, then Medical report, and take a photo of your lab report. Smartfitly tells you which foods to limit and eat more of, and checks your meals against it. General guidance, not medical advice.'),
   _Slide(Icons.accessibility_new, 'Check your workout form',
       'While you log a workout, tap form check on an exercise. Send a photo or use the live camera and get simple tips to fix your form.'),
   _Slide(Icons.shield_outlined, 'Allergy alerts',

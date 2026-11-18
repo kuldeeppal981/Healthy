@@ -21,7 +21,7 @@ Future<void> showShareCard(BuildContext context) {
   return _showStoryShare(
     context,
     fileName: 'healthy-progress.png',
-    text: 'My progress on Healthy',
+    text: 'My progress on Smartfitly',
     card: _StoryCard(
       label: 'MY PROGRESS',
       big: '${s.foodStreak}',
@@ -44,7 +44,7 @@ Future<void> showPrShareCard(
   return _showStoryShare(
     context,
     fileName: 'healthy-pr.png',
-    text: 'New personal record: $name $kgText kg x $reps. Tracked on Healthy',
+    text: 'New personal record: $name $kgText kg x $reps. Tracked on Smartfitly',
     card: _StoryCard(
       label: 'PERSONAL RECORD',
       big: '$kgText kg',
@@ -142,7 +142,7 @@ class _StoryCard extends StatelessWidget {
                 ],
               ),
             const SizedBox(height: 18),
-            const Text('Tracked with Healthy',
+            const Text('Tracked with Smartfitly',
                 style: TextStyle(color: Colors.white60, fontSize: 12)),
           ],
         ),

@@ -33,7 +33,7 @@ class _ProScreenState extends State<ProScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Healthy Pro')),
+      appBar: AppBar(title: const Text('Smartfitly Pro')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -52,7 +52,7 @@ class _ProScreenState extends State<ProScreen> {
               children: [
                 const Center(child: HeroArt(ArtKind.crown, size: 96)),
                 const SizedBox(height: 10),
-                const Text('Healthy Pro',
+                const Text('Smartfitly Pro',
                     style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 6),
                 const Text('More AI every day. Your core app stays free.',

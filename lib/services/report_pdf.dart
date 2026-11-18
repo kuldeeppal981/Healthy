@@ -44,7 +44,7 @@ Future<Uint8List> buildReportPdf(MonthReport r, {String? name}) async {
       pageFormat: PdfPageFormat.a4,
       margin: const pw.EdgeInsets.all(32),
       build: (_) => [
-        pw.Text('Healthy',
+        pw.Text('Smartfitly',
             style: pw.TextStyle(
                 fontSize: 12, fontWeight: pw.FontWeight.bold, color: purple)),
         pw.Text('Monthly fitness report',

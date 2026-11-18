@@ -206,10 +206,10 @@ class SettingsScreen extends StatelessWidget {
               MenuRow(
                 icon: Icons.info_outline,
                 title: 'About and licences',
-                subtitle: 'Healthy $appVersion, open source licences',
+                subtitle: 'Smartfitly $appVersion, open source licences',
                 onTap: () => showLicensePage(
                     context: context,
-                    applicationName: 'Healthy',
+                    applicationName: 'Smartfitly',
                     applicationVersion: appVersion),
               ),
             ]),
@@ -224,7 +224,7 @@ class SettingsScreen extends StatelessWidget {
             ]),
             const SizedBox(height: 18),
             Center(
-              child: Text('Healthy $appVersion',
+              child: Text('Smartfitly $appVersion',
                   style: TextStyle(fontSize: 12, color: AppColors.muted)),
             ),
           ],

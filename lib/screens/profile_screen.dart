@@ -177,12 +177,12 @@ class ProfileScreen extends StatelessWidget {
           MenuRow(
             icon: Icons.help_outline,
             title: 'App tour',
-            subtitle: 'A quick look at what Healthy can do',
+            subtitle: 'A quick look at what Smartfitly can do',
             onTap: () => _open(context, const TourScreen()),
           ),
           MenuRow(
             icon: Icons.workspace_premium_outlined,
-            title: 'Healthy Pro',
+            title: 'Smartfitly Pro',
             subtitle: 'Free vs Pro, more AI requests',
             onTap: () => _open(context, const ProScreen()),
           ),

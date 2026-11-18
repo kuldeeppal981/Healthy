@@ -18,7 +18,7 @@ const _faq = <List<String>>[
   ],
   [
     'How do I add my health report?',
-    'Profile, then Medical report. Take a photo of your lab report. Healthy picks out foods to limit and prefer. It is general guidance, not medical advice.'
+    'Profile, then Medical report. Take a photo of your lab report. Smartfitly picks out foods to limit and prefer. It is general guidance, not medical advice.'
   ],
   [
     'How does form check work?',
@@ -180,7 +180,7 @@ class _HelpFeedbackScreenState extends State<HelpFeedbackScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                      'Your message is saved with your account and app version ($appVersion). Only the Healthy team can read it.',
+                      'Your message is saved with your account and app version ($appVersion). Only the Smartfitly team can read it.',
                       style: TextStyle(fontSize: 11, color: AppColors.muted)),
                 ],
               ),

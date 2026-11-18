@@ -487,7 +487,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       if (!ok) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Allow notifications for Healthy in your phone settings.'),
+          content: Text('Allow notifications for Smartfitly in your phone settings.'),
         ));
         return;
       }
@@ -495,7 +495,7 @@ class _WorkoutScreenState extends State<WorkoutScreen> {
       if (!exact && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
-              'Allow "Alarms and reminders" for Healthy so the alarm rings on time.'),
+              'Allow "Alarms and reminders" for Smartfitly so the alarm rings on time.'),
         ));
       }
     }

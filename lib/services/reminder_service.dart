@@ -398,17 +398,17 @@ class ReminderService extends ChangeNotifier {
       final now = DateTime.now();
       bool logged(String meal) => smart && state.mealEntries(meal).isNotEmpty;
       if (breakfast.enabled) {
-        await _daily(1, 'Breakfast time', 'Log your breakfast in Healthy.',
+        await _daily(1, 'Breakfast time', 'Log your breakfast in Smartfitly.',
             _mealTime(state, 'breakfast', breakfast.time),
             skipToday: logged('breakfast'));
       }
       if (lunch.enabled) {
-        await _daily(2, 'Lunch time', 'Log your lunch in Healthy.',
+        await _daily(2, 'Lunch time', 'Log your lunch in Smartfitly.',
             _mealTime(state, 'lunch', lunch.time),
             skipToday: logged('lunch'));
       }
       if (dinner.enabled) {
-        await _daily(3, 'Dinner time', 'Log your dinner in Healthy.',
+        await _daily(3, 'Dinner time', 'Log your dinner in Smartfitly.',
             _mealTime(state, 'dinner', dinner.time),
             skipToday: logged('dinner'));
       }

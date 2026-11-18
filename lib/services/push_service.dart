@@ -45,7 +45,7 @@ class PushService {
         if (n == null) return;
         unawaited(ReminderService.instance.showNow(
           (m.messageId ?? DateTime.now().toIso8601String()).hashCode & 0x3fffffff,
-          n.title ?? 'Healthy',
+          n.title ?? 'Smartfitly',
           n.body ?? '',
           kind: NotifyPrefs.kindOf(n.title ?? ''),
         ));

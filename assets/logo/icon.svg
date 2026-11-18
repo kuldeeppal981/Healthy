@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#15803D"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#g)"/>
+  <!-- S made of one smooth stroke -->
+  <g transform="translate(512 445) scale(1.1) translate(-508 -474)"><path d="M668 330 C640 250 540 226 468 262 C386 304 396 410 486 452 L548 480 C640 522 650 628 566 676 C486 722 376 692 348 596"
+        fill="none" stroke="#fff" stroke-width="86" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- pulse spark at the top end -->
+  <circle cx="716" cy="250" r="38" fill="#fff"/></g>
+  <path d="M270 872 L410 872 L450 818 L504 918 L558 836 L596 872 L754 872"
+        fill="none" stroke="#fff" stroke-opacity="0.85" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

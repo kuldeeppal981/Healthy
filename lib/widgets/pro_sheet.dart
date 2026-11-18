@@ -29,7 +29,7 @@ void showProLimitSheet(BuildContext context, String message) {
                 Navigator.of(context)
                     .push(MaterialPageRoute<void>(builder: (_) => const ProScreen()));
               },
-              child: const Text('See Healthy Pro'),
+              child: const Text('See Smartfitly Pro'),
             ),
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Maybe later')),
           ],

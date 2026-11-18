@@ -26,7 +26,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       if (!ok) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Allow notifications for Healthy in your phone settings.'),
+          content: Text('Allow notifications for Smartfitly in your phone settings.'),
         ));
         return;
       }

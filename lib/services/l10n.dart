@@ -127,7 +127,7 @@ const _hi = <String, String>{
   'Skip': 'छोड़ें',
   'Get started': 'शुरू करें',
   // tour
-  'Welcome to Healthy': 'Healthy में आपका स्वागत है',
+  'Welcome to Smartfitly': 'Smartfitly में आपका स्वागत है',
   'Log food with a photo': 'फोटो से खाना जोड़ें',
   'Add your health report': 'अपनी हेल्थ रिपोर्ट जोड़ें',
   'Check your workout form': 'अपना वर्कआउट फॉर्म जाँचें',

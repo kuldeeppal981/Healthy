@@ -297,3 +297,6 @@ Every library exercise now has a Live button. New `FormRule.mode` values in `ser
 - `cadence`: treadmill / cycling (alternating ankles = steps, steps per minute, rhythm score from step gaps, voice pace every 30 s).
 - `still`: all Yoga and Stretch entries (library group lookup): time held steadily + steadiness %, voice breathing cues every 5 s. It does NOT judge pose shape.
 Fast moves are `quiet` (voice counts every 10th rep). Thresholds are guesses; tune after real tests. Plank, mountain climbers etc. as in the section above.
+
+## Rename + logo (UNTESTED)
+App name Smartfitly in all user-visible text; launcher label set by workflow step; adaptive icon foreground from `assets/logo/ic_launcher_fg.png`, green gradient background; logo shown on login and onboarding screens (`assets/images/logo.png`). Package id unchanged.

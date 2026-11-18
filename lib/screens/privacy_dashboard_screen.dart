@@ -15,7 +15,7 @@ import 'health_connect_screen.dart';
 import 'privacy_screen.dart';
 import 'delete_data_screen.dart';
 
-/// One place to see what Healthy stores, what is shared, what the AI sees,
+/// One place to see what Smartfitly stores, what is shared, what the AI sees,
 /// and to export or delete your data.
 class PrivacyDashboardScreen extends StatelessWidget {
   const PrivacyDashboardScreen({super.key});
@@ -45,7 +45,7 @@ class PrivacyDashboardScreen extends StatelessWidget {
       final dir = await getTemporaryDirectory();
       final f = File('${dir.path}/healthy_my_data.json');
       await f.writeAsString(const JsonEncoder.withIndent('  ').convert(s.toSnapshot()));
-      await Share.shareXFiles([XFile(f.path)], text: 'My Healthy data (JSON)');
+      await Share.shareXFiles([XFile(f.path)], text: 'My Smartfitly data (JSON)');
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -131,7 +131,7 @@ class PrivacyDashboardScreen extends StatelessWidget {
                         h.unavailable
                             ? 'Health Connect is not available on this phone.'
                             : h.connected
-                                ? 'Health Connect is connected. Healthy only reads steps, heart rate, sleep and exercise. It never writes to it.'
+                                ? 'Health Connect is connected. Smartfitly only reads steps, heart rate, sleep and exercise. It never writes to it.'
                                 : 'Health Connect is not connected. No watch or phone health data is read.',
                       ),
                       const SizedBox(height: 6),
@@ -249,7 +249,7 @@ class PrivacyDashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'The file opens in the share sheet, so you choose where it goes. It is not uploaded by Healthy.',
+                    'The file opens in the share sheet, so you choose where it goes. It is not uploaded by Smartfitly.',
                     style: TextStyle(fontSize: 12, color: AppColors.muted),
                   ),
                 ],

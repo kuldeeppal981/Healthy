@@ -213,15 +213,9 @@ class _AuthScreenState extends State<AuthScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDeep]),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.favorite, color: Colors.white, size: 30),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset('assets/images/logo.png', width: 64, height: 64),
             ),
             const SizedBox(height: 16),
             Text(title,

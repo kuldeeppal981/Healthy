@@ -35,7 +35,7 @@ class _ReportScreenState extends State<ReportScreen> {
       final bytes = await buildReportPdf(r);
       await Printing.sharePdf(
         bytes: bytes,
-        filename: 'Healthy-report-${_month.year}-${_month.month.toString().padLeft(2, '0')}.pdf',
+        filename: 'Smartfitly-report-${_month.year}-${_month.month.toString().padLeft(2, '0')}.pdf',
       );
     } catch (_) {
       if (mounted) {
