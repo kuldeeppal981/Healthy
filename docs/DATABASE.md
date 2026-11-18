@@ -77,3 +77,5 @@ Invite "links" are codes shared with the share sheet (real deep links need Play 
 
 ## Settings extras (applied via MCP, summary in `supabase/migrations/settings_extras.sql`)
 Tables `notif_prefs(user_id, friends, cheers, quiet_on, quiet_from, quiet_to, tz_min)` and `feedback(id, user_id, kind, message, app_version)`; RLS on, no policies, RPC only. RPCs `set_notif_prefs`, `send_feedback`. `notify_push` now reads `notif_prefs`: title "New cheer" respects `cheers`; "New friend request", "Friend request accepted" and "Nudge from ..." respect `friends`; all pushes respect quiet hours. Read feedback with SQL: `select * from feedback order by created_at desc`.
+
+Table `pro_interest(user_id pk, plan monthly|yearly, price cheap|fair|high, feature, created_at, updated_at)`; RLS on, no policies, RPC `set_pro_interest` (authenticated only, one row per user, updates on repeat). Read with SQL: `select count(*) from pro_interest`, or group by plan/price/feature. Migration file `supabase/migrations/pro_interest.sql`.

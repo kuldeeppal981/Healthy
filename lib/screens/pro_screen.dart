@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../config.dart';
 
 import '../services/plan_service.dart';
 import '../state/app_state.dart';
@@ -18,6 +21,91 @@ class ProScreen extends StatefulWidget {
 
 class _ProScreenState extends State<ProScreen> {
   late Future<PlanInfo> _plan = PlanService.load();
+
+  Future<void> _interest(AppState s) async {
+    String plan = 'yearly', price = 'fair', feature = 'AI coach';
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setM) {
+        Widget group(String title, List<List<String>> opts, String cur, void Function(String) pick) =>
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 14),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    for (final o in opts)
+                      ChoiceChip(
+                        label: Text(o[1]),
+                        selected: cur == o[0],
+                        onSelected: (_) => setM(() => pick(o[0])),
+                      ),
+                  ],
+                ),
+              ],
+            );
+        return SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tell us what you would like',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 4),
+                Text('This is not a payment. It only helps us plan Pro.',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12)),
+                group('Which plan?', [
+                  ['monthly', 'Monthly Rs 99'],
+                  ['yearly', 'Yearly Rs 799'],
+                ], plan, (v) => plan = v),
+                group('How does the price feel?', [
+                  ['cheap', 'Cheap'],
+                  ['fair', 'Fair'],
+                  ['high', 'Too high'],
+                ], price, (v) => price = v),
+                group('What would you want most?', [
+                  ['AI coach', 'More AI coach'],
+                  ['Diet plan', 'AI diet plan'],
+                  ['Meal photo', 'Meal photo calories'],
+                  ['Reports', 'Reports and trends'],
+                ], feature, (v) => feature = v),
+                const SizedBox(height: 18),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Send'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+    if (ok != true || !mounted) return;
+    final next = Map<String, dynamic>.from(s.prefs)..['proNotify'] = true;
+    s.savePrefs(next);
+    var sent = false;
+    if (cloudEnabled && s.signedIn) {
+      try {
+        final r = await Supabase.instance.client.rpc('set_pro_interest',
+            params: {'p_plan': plan, 'p_price': price, 'p_feature': feature});
+        sent = r == 'ok';
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(sent
+            ? 'Thank you. Noted. Pro is not open for payment yet.'
+            : 'Noted on this phone. Sign in and connect to the internet so we can count you.')));
+  }
 
   static const _rows = <List<String>>[
     ['Calorie diary, water, steps, weight', 'Free', 'Pro'],
@@ -149,16 +237,9 @@ class _ProScreenState extends State<ProScreen> {
             final s = context.watch<AppState>();
             final on = s.prefs['proNotify'] == true;
             return FilledButton.icon(
-              onPressed: on
-                  ? null
-                  : () {
-                      final next = Map<String, dynamic>.from(s.prefs)..['proNotify'] = true;
-                      s.savePrefs(next);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Noted. Pro is not open for payment yet.')));
-                    },
+              onPressed: on ? null : () => _interest(s),
               icon: Icon(on ? Icons.check : Icons.notifications_active_outlined),
-              label: Text(on ? 'We will tell you when Pro opens' : 'Notify me when Pro opens'),
+              label: Text(on ? 'We will tell you when Pro opens' : 'I am interested in Pro'),
             );
           }),
           const SizedBox(height: 8),

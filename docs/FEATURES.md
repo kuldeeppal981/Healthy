@@ -300,3 +300,6 @@ Fast moves are `quiet` (voice counts every 10th rep). Thresholds are guesses; tu
 
 ## Rename + logo (UNTESTED)
 App name Smartfitly in all user-visible text; launcher label set by workflow step; adaptive icon foreground from `assets/logo/ic_launcher_fg.png`, green gradient background; logo shown on login and onboarding screens (`assets/images/logo.png`). Package id unchanged.
+
+## Pro interest survey (UNTESTED)
+Pro screen button "I am interested in Pro" opens a sheet (plan, price feeling, wanted feature) and calls RPC `set_pro_interest`; needs sign-in + internet, else only saved on the phone. Results are read with SQL (see DATABASE.md).
