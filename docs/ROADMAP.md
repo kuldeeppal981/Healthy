@@ -75,3 +75,6 @@ Merged to main and pushed (c704f08 and later). Still untested on a phone.
 - Ideas left: allergies/conditions "Add" list style, calories "burned" in detail screen, Home quick tiles (Meal photo/Scan/Voice) and "+" sheet in two groups (design shown, user has not chosen yet).
 
 - Live form: tune thresholds of generic rules (press/pull/leg/hinge/raise) after real tests; add plank/crunch/calf-raise rules; more Hindi phrases.
+
+## Play Store plan (started 23 Nov 2026)
+Personal account chosen. Needs closed test: 12+ testers opted in 14 days in a row, then apply for production. Done: privacy page `docs/privacy.html` (needs contact email, publish via GitHub Pages /docs), listing draft `docs/play-store/listing.md`. Todo: package name (waiting for owner), signing key + AAB, Data Safety form, screenshots.
