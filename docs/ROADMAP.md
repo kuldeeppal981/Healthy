@@ -28,7 +28,7 @@ Beat HealthifyMe by being free where they charge, safe for allergies, great for 
 - Real push notifications via Firebase FCM: DONE (see FEATURES)
 
 ## Needs the user (cannot be done from the sandbox)
-- Push setup: Firebase project + Android app `com.kuldeep.healthy_app`; GitHub secrets FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_SENDER_ID, FIREBASE_PROJECT_ID; Supabase secrets FIREBASE_SERVICE_ACCOUNT; run `supabase/migrations/push_notifications.sql` (nothing to edit).
+- Push setup: Firebase project + Android app `com.nklabs.smartfitly`; GitHub secrets FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_SENDER_ID, FIREBASE_PROJECT_ID; Supabase secrets FIREBASE_SERVICE_ACCOUNT; run `supabase/migrations/push_notifications.sql` (nothing to edit).
 - Supabase dashboard: add Edge Function secret `GEMINI_API_KEY` (key from aistudio.google.com/apikey);
   optional `GEMINI_MODEL`, `COACH_DAILY_LIMIT`
 - Supabase: custom SMTP + edit the "Confirm sign up" email template to send the code (templates cannot
@@ -77,4 +77,4 @@ Merged to main and pushed (c704f08 and later). Still untested on a phone.
 - Live form: tune thresholds of generic rules (press/pull/leg/hinge/raise) after real tests; add plank/crunch/calf-raise rules; more Hindi phrases.
 
 ## Play Store plan (started 23 Nov 2026)
-Personal account chosen. Needs closed test: 12+ testers opted in 14 days in a row, then apply for production. Done: privacy page `docs/privacy.html` (needs contact email, publish via GitHub Pages /docs), listing draft `docs/play-store/listing.md`. Todo: package name (waiting for owner), signing key + AAB, Data Safety form, screenshots.
+Personal account chosen. Needs closed test: 12+ testers opted in 14 days in a row, then apply for production. Done: privacy page `docs/privacy.html` (needs contact email, publish via GitHub Pages /docs), listing draft `docs/play-store/listing.md`. Package name set to `com.nklabs.smartfitly` (studio NK Labs, untested build). Todo: signing key + AAB, Data Safety form, screenshots.

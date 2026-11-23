@@ -6,7 +6,7 @@ Read this first in every new session. Details live in `docs/`:
 - `docs/DATABASE.md`: Supabase tables, security rules, functions, edge function
 
 ## Name and logo
-Final app name: **Smartfitly** (logo in `assets/logo/` and `assets/images/logo.png`; workflow sets the launcher label and icon). Internal names stay `healthy_app`, `com.kuldeep.healthy_app`, `HealthyWidgetProvider`, repo `Healthy`; the package name must be changed BEFORE the first Play Store upload (not done yet). Edge function text still says "Healthy Pro" (redeploy needed to change).
+Final app name: **Smartfitly** (logo in `assets/logo/` and `assets/images/logo.png`; workflow sets the launcher label and icon). Studio name: **NK Labs**. Play package / applicationId is now `com.nklabs.smartfitly` (patched by a workflow step; it must never change after the first Play Store upload). Internal Dart package stays `healthy_app` and the Kotlin namespace stays `com.kuldeep.healthy_app` (so imports and widget code keep working), plus `HealthyWidgetProvider`, repo `Healthy`. Edge function text still says "Healthy Pro" (redeploy needed to change).
 
 ## What this is
 A HealthifyMe-style health app for India, built with Flutter (Android only for now):

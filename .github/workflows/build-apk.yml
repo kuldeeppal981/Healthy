@@ -369,6 +369,25 @@ jobs:
           EOF
           grep -n -A8 "release {" android/app/build.gradle* || true
 
+      - name: Set application id (package name) to com.nklabs.smartfitly
+        run: |
+          python3 - <<'EOF'
+          import re, os
+          done = False
+          for f in ['android/app/build.gradle.kts', 'android/app/build.gradle']:
+              if not os.path.exists(f):
+                  continue
+              s = open(f).read()
+              t = re.sub(r'applicationId\s*=?\s*"[^"]*"', 'applicationId = "com.nklabs.smartfitly"', s, count=1)
+              if t != s:
+                  open(f, 'w').write(t)
+                  done = True
+          print('applicationId patched:', done)
+          if not done:
+              raise SystemExit('applicationId not found in build.gradle')
+          EOF
+          grep -n "applicationId\|namespace" android/app/build.gradle* || true
+
       - name: Turn off Android lint for release (lint crashes on some plugins)
         run: |
           mkdir -p ~/.gradle/init.d
